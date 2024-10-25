@@ -135,8 +135,11 @@ y = y + 1;
 
       this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
       this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+      this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
       this.brushSettings = { pointSize: 15, pointColor: 'red', pointShape: 'circle' };
       this.startPoint = null;
+      this.isDragging = false;
+      this.lastMousePosition = null;
 
       this.initializeControls();
     }
@@ -147,9 +150,16 @@ y = y + 1;
         const x = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
         const y = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
 
-        // Mise à jour de la matrice et dessin pendant le drag
+        this.lastMousePosition = { x, y };  // Mise à jour de la dernière position de la souris
         this.grid.updateMatrix(x, y, this.brushSettings);
         this.updateCanvas();
+      }
+    }
+
+    drawOnDragInterval() {
+      if (this.lastMousePosition) {
+        const { x, y } = this.lastMousePosition;
+        this.grid.updateMatrix(x, y, this.brushSettings);
       }
     }
 
@@ -204,6 +214,8 @@ y = y + 1;
       const rect = this.canvas.getBoundingClientRect();
       const x = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
       const y = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
+      this.isDragging = true;
+      this.lastMousePosition = { x, y };
 
       if (this.brushSettings.pointShape === 'segment') {
         this.startPoint = { x, y };
@@ -214,6 +226,7 @@ y = y + 1;
     }
 
     handleMouseUp(event) {
+      this.isDragging = false;
       if (this.brushSettings.pointShape === 'segment' && this.startPoint) {
         const rect = this.canvas.getBoundingClientRect();
         const endX = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
@@ -352,6 +365,12 @@ y = y + 1;
     startInterval() {
       this.intervalId = setInterval(() => {
         this.transformationManager.applyTransformation(this.canvasManager.grid);
+
+        // Dessiner en mode "Draw on Drag" même si la souris ne bouge pas
+        if (this.canvasManager.drawOnDrag && this.canvasManager.isDragging) {
+          this.canvasManager.drawOnDragInterval();
+        }
+
         this.canvasManager.updateCanvas();
       }, this.intervalMs);
     }
