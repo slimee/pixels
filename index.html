@@ -84,7 +84,7 @@ y = y + 1;
       let err = dx - dy;
 
       while (true) {
-        this.updateMatrix(x1, y1, brushSettings);
+        this.updateMatrix(x1, y1, { ...brushSettings, isSegment: true });
         if (x1 === x2 && y1 === y2) break;
         const e2 = 2 * err;
         if (e2 > -dy) {
@@ -177,7 +177,7 @@ y = y + 1;
         this.startPoint = { x, y };
       } else {
         this.grid.updateMatrix(x, y, this.brushSettings);
-        this.updatesegmentCanvas();
+        this.updateCanvas();
       }
     }
 
@@ -217,6 +217,14 @@ y = y + 1;
       }
     }
 
+    drawSegment(x, y, brushSettings) {
+      const posX = x * this.grid.cellSize + this.grid.cellSize / 2;
+      const posY = y * this.grid.cellSize + this.grid.cellSize / 2;
+
+      this.context.fillStyle = brushSettings.pointColor;
+      this.context.fillRect(posX - brushSettings.pointSize / 2, posY - brushSettings.pointSize / 2, brushSettings.pointSize, brushSettings.pointSize);
+    }
+
     updateCanvas() {
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
       const rows = this.grid.matrix.length;
@@ -226,7 +234,11 @@ y = y + 1;
         for (let x = 0; x < cols; x++) {
           const brushSettings = this.grid.getBrushSettings(x, y);
           if (brushSettings) {
-            this.drawPoint(x, y, brushSettings);
+            if (brushSettings.isSegment) {
+              this.drawSegment(x, y, brushSettings);
+            } else {
+              this.drawPoint(x, y, brushSettings);
+            }
           }
         }
       }
@@ -237,6 +249,11 @@ y = y + 1;
     constructor(transformationCodeElement) {
       this.transformationCodeElement = transformationCodeElement;
       this.transformationFunction = null;
+
+      // Évaluer la fonction de transformation lors de la perte de focus
+      this.transformationCodeElement.addEventListener('blur', () => {
+        this.createTransformationFunction();
+      });
     }
 
     createTransformationFunction() {
@@ -268,8 +285,9 @@ y = y + 1;
       this.intervalSpeedValue = document.getElementById(intervalSpeedValueId);
       this.isPlaying = false;
       this.intervalId = null;
-      this.intervalMs = 1000;
+      this.intervalMs = 1000 / 25;  // Défaut : 25 IPS
 
+      this.intervalSpeedInput.value = 25;  // Valeur par défaut définie à 25 IPS
       this.playPauseButton.addEventListener('click', this.togglePlayPause.bind(this));
       this.intervalSpeedInput.addEventListener('input', this.updateIntervalSpeed.bind(this));
 
