@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas avec Transformation Paramétrable et Matrice Sans Bord</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        .controls {
+            margin-top: 10px;
+        }
+        .controls button, .controls select, .controls input {
+            margin-right: 10px;
+        }
+        .transformation-box {
+            margin-top: 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<h1>Canvas avec Transformation Paramétrable et Matrice Sans Bord</h1>
+<canvas id="myCanvas" width="500" height="500"></canvas>
+
+<div class="controls">
+    <button id="playPauseButton">Play</button>
+    <label for="pointSize">Taille du pinceau:</label>
+    <input type="range" id="pointSize" min="5" max="50" value="15">
+    <label for="pointColor">Couleur du pinceau:</label>
+    <input type="color" id="pointColor" value="#ff0000">
+    <label for="pointShape">Forme du pinceau:</label>
+    <select id="pointShape">
+        <option value="circle">Cercle</option>
+        <option value="square">Carré</option>
+        <option value="triangle">Triangle</option>
+        <option value="segment">Segment</option>
+    </select>
+    <label for="intervalSpeed">Vitesse (IPS):</label>
+    <input type="range" id="intervalSpeed" min="0.1" max="25" step="0.1" value="1">
+    <span id="intervalSpeedValue">1 IPS</span>
+    <label for="cellSize">Taille de cellule:</label>
+    <input type="range" id="cellSize" min="1" max="10" value="10">
+    <span id="cellSizeValue">10 px</span>
+</div>
+
+<textarea id="transformationCode" class="transformation-box" rows="4">
+x = x + 1;
+y = y + 1;
+</textarea>
+
+<script>
+  class Grid {
+    constructor(width, height, cellSize) {
+      this.width = width;
+      this.height = height;
+      this.cellSize = cellSize;
+      this.matrix = this.createMatrix();
+    }
+
+    createMatrix() {
+      const rows = Math.floor(this.height / this.cellSize);
+      const cols = Math.floor(this.width / this.cellSize);
+      return Array.from({ length: rows }, () => Array(cols).fill(null));
+    }
+
+    setCellSize(cellSize) {
+      this.cellSize = cellSize;
+      this.matrix = this.createMatrix();
+    }
+
+    updateMatrix(x, y, brushSettings) {
+      if (this.matrix[y] && this.matrix[y][x] !== undefined) {
+        this.matrix[y][x] = { ...brushSettings };
+      }
+    }
+
+    getBrushSettings(x, y) {
+      if (this.matrix[y] && this.matrix[y][x] !== undefined) {
+        return this.matrix[y][x];
+      }
+      return null;
+    }
+
+    applyTransformation(transformationFunction) {
+      const newMatrix = this.createMatrix();
+      const rows = this.matrix.length;
+      const cols = this.matrix[0].length;
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (this.matrix[y][x]) {
+            let { x: newX, y: newY } = transformationFunction(x, y);
+
+            newX = (newX + cols) % cols;
+            newY = (newY + rows) % rows;
+
+            newMatrix[newY][newX] = this.matrix[y][x];
+          }
+        }
+      }
+
+      this.matrix = newMatrix;
+    }
+  }
+
+  class CanvasManager {
+    constructor(canvas, grid) {
+      this.canvas = canvas;
+      this.context = canvas.getContext('2d');
+      this.grid = grid;
+
+      this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+      this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+      this.brushSettings = { pointSize: 15, pointColor: 'red', pointShape: 'circle' };
+      this.startPoint = null;
+
+      this.initializeControls();
+    }
+
+    initializeControls() {
+      const pointSizeInput = document.getElementById('pointSize');
+      const pointColorInput = document.getElementById('pointColor');
+      const pointShapeInput = document.getElementById('pointShape');
+      const cellSizeInput = document.getElementById('cellSize');
+      const cellSizeValueDisplay = document.getElementById('cellSizeValue');
+
+      pointSizeInput.addEventListener('input', () => {
+        this.brushSettings.pointSize = parseInt(pointSizeInput.value, 10);
+      });
+
+      pointColorInput.addEventListener('input', () => {
+        this.brushSettings.pointColor = pointColorInput.value;
+      });
+
+      pointShapeInput.addEventListener('change', () => {
+        this.brushSettings.pointShape = pointShapeInput.value;
+      });
+
+      cellSizeInput.addEventListener('input', () => {
+        const newSize = parseInt(cellSizeInput.value, 10);
+        cellSizeValueDisplay.textContent = `${newSize} px`;
+        this.grid.setCellSize(newSize);
+        this.updateCanvas();
+      });
+    }
+
+    handleMouseDown(event) {
+      const rect = this.canvas.getBoundingClientRect();
+      const x = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
+      const y = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
+
+      if (this.brushSettings.pointShape === 'segment') {
+        this.startPoint = { x, y };
+      } else {
+        this.grid.updateMatrix(x, y, this.brushSettings);
+        this.updateCanvas();
+      }
+    }
+
+    handleMouseUp(event) {
+      if (this.brushSettings.pointShape === 'segment' && this.startPoint) {
+        const rect = this.canvas.getBoundingClientRect();
+        const endX = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
+        const endY = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
+
+        this.drawSegment(this.startPoint.x, this.startPoint.y, endX, endY, this.brushSettings);
+        this.startPoint = null; // Reset start point after drawing
+      }
+    }
+
+    drawPoint(x, y, brushSettings) {
+      const posX = x * this.grid.cellSize + this.grid.cellSize / 2;
+      const posY = y * this.grid.cellSize + this.grid.cellSize / 2;
+
+      this.context.fillStyle = brushSettings.pointColor;
+
+      if (brushSettings.pointShape === 'circle') {
+        this.context.beginPath();
+        this.context.arc(posX, posY, brushSettings.pointSize / 2, 0, Math.PI * 2);
+        this.context.fill();
+      } else if (brushSettings.pointShape === 'square') {
+        const halfSize = brushSettings.pointSize / 2;
+        this.context.fillRect(posX - halfSize, posY - halfSize, brushSettings.pointSize, brushSettings.pointSize);
+      } else if (brushSettings.pointShape === 'triangle') {
+        const halfSize = brushSettings.pointSize / 2;
+        this.context.beginPath();
+        this.context.moveTo(posX, posY - halfSize);
+        this.context.lineTo(posX - halfSize, posY + halfSize);
+        this.context.lineTo(posX + halfSize, posY + halfSize);
+        this.context.closePath();
+        this.context.fill();
+      }
+    }
+
+    drawSegment(x1, y1, x2, y2, brushSettings) {
+      const posX1 = x1 * this.grid.cellSize + this.grid.cellSize / 2;
+      const posY1 = y1 * this.grid.cellSize + this.grid.cellSize / 2;
+      const posX2 = x2 * this.grid.cellSize + this.grid.cellSize / 2;
+      const posY2 = y2 * this.grid.cellSize + this.grid.cellSize / 2;
+
+      this.context.strokeStyle = brushSettings.pointColor;
+      this.context.lineWidth = brushSettings.pointSize;
+      this.context.beginPath();
+      this.context.moveTo(posX1, posY1);
+      this.context.lineTo(posX2, posY2);
+      this.context.stroke();
+    }
+
+    updateCanvas() {
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      const rows = this.grid.matrix.length;
+      const cols = this.grid.matrix[0].length;
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const brushSettings = this.grid.getBrushSettings(x, y);
+          if (brushSettings) {
+            this.drawPoint(x, y, brushSettings);
+          }
+        }
+      }
+    }
+  }
+
+  class TransformationManager {
+    constructor(transformationCodeElement) {
+      this.transformationCodeElement = transformationCodeElement;
+      this.transformationFunction = null;
+    }
+
+    createTransformationFunction() {
+      const transformationCodeText = this.transformationCodeElement.value;
+
+      try {
+        this.transformationFunction = new Function('x', 'y', `
+                        ${transformationCodeText}
+                        return { x, y };
+                    `);
+      } catch (error) {
+        console.error("Erreur dans la fonction de transformation : ", error);
+      }
+    }
+
+    applyTransformation(grid) {
+      if (this.transformationFunction) {
+        grid.applyTransformation(this.transformationFunction);
+      }
+    }
+  }
+
+  class ControlPanel {
+    constructor(canvasManager, transformationManager, playPauseButtonId, intervalSpeedInputId, intervalSpeedValueId) {
+      this.canvasManager = canvasManager;
+      this.transformationManager = transformationManager;
+      this.playPauseButton = document.getElementById(playPauseButtonId);
+      this.intervalSpeedInput = document.getElementById(intervalSpeedInputId);
+      this.intervalSpeedValue = document.getElementById(intervalSpeedValueId);
+      this.isPlaying = false;
+      this.intervalId = null;
+      this.intervalMs = 1000;
+
+      this.playPauseButton.addEventListener('click', this.togglePlayPause.bind(this));
+      this.intervalSpeedInput.addEventListener('input', this.updateIntervalSpeed.bind(this));
+
+      this.updateIntervalSpeed();
+    }
+
+    updateIntervalSpeed() {
+      const ips = parseFloat(this.intervalSpeedInput.value);
+      this.intervalMs = 1000 / ips;
+      this.intervalSpeedValue.textContent = `${ips.toFixed(1)} IPS`;
+
+      if (this.isPlaying) {
+        clearInterval(this.intervalId);
+        this.startInterval();
+      }
+    }
+
+    togglePlayPause() {
+      this.isPlaying = !this.isPlaying;
+      this.playPauseButton.textContent = this.isPlaying ? 'Pause' : 'Play';
+
+      if (this.isPlaying) {
+        this.transformationManager.createTransformationFunction();
+        this.startInterval();
+      } else {
+        clearInterval(this.intervalId);
+      }
+    }
+
+    startInterval() {
+      this.intervalId = setInterval(() => {
+        this.transformationManager.applyTransformation(this.canvasManager.grid);
+        this.canvasManager.updateCanvas();
+      }, this.intervalMs);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('myCanvas');
+
+    const grid = new Grid(canvas.width, canvas.height, 10);
+    const canvasManager = new CanvasManager(canvas, grid);
+    const transformationManager = new TransformationManager(document.getElementById('transformationCode'));
+
+    new ControlPanel(canvasManager, transformationManager, 'playPauseButton', 'intervalSpeed', 'intervalSpeedValue');
+  });
+</script>
+</body>
+</html>
