@@ -76,6 +76,28 @@ y = y + 1;
       }
     }
 
+    drawSegmentOnMatrix(x1, y1, x2, y2, brushSettings) {
+      const dx = Math.abs(x2 - x1);
+      const dy = Math.abs(y2 - y1);
+      const sx = x1 < x2 ? 1 : -1;
+      const sy = y1 < y2 ? 1 : -1;
+      let err = dx - dy;
+
+      while (true) {
+        this.updateMatrix(x1, y1, brushSettings);
+        if (x1 === x2 && y1 === y2) break;
+        const e2 = 2 * err;
+        if (e2 > -dy) {
+          err -= dy;
+          x1 += sx;
+        }
+        if (e2 < dx) {
+          err += dx;
+          y1 += sy;
+        }
+      }
+    }
+
     getBrushSettings(x, y) {
       if (this.matrix[y] && this.matrix[y][x] !== undefined) {
         return this.matrix[y][x];
@@ -155,7 +177,7 @@ y = y + 1;
         this.startPoint = { x, y };
       } else {
         this.grid.updateMatrix(x, y, this.brushSettings);
-        this.updateCanvas();
+        this.updatesegmentCanvas();
       }
     }
 
@@ -165,8 +187,9 @@ y = y + 1;
         const endX = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
         const endY = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
 
-        this.drawSegment(this.startPoint.x, this.startPoint.y, endX, endY, this.brushSettings);
-        this.startPoint = null; // Reset start point after drawing
+        this.grid.drawSegmentOnMatrix(this.startPoint.x, this.startPoint.y, endX, endY, this.brushSettings);
+        this.startPoint = null;
+        this.updateCanvas();
       }
     }
 
@@ -192,20 +215,6 @@ y = y + 1;
         this.context.closePath();
         this.context.fill();
       }
-    }
-
-    drawSegment(x1, y1, x2, y2, brushSettings) {
-      const posX1 = x1 * this.grid.cellSize + this.grid.cellSize / 2;
-      const posY1 = y1 * this.grid.cellSize + this.grid.cellSize / 2;
-      const posX2 = x2 * this.grid.cellSize + this.grid.cellSize / 2;
-      const posY2 = y2 * this.grid.cellSize + this.grid.cellSize / 2;
-
-      this.context.strokeStyle = brushSettings.pointColor;
-      this.context.lineWidth = brushSettings.pointSize;
-      this.context.beginPath();
-      this.context.moveTo(posX1, posY1);
-      this.context.lineTo(posX2, posY2);
-      this.context.stroke();
     }
 
     updateCanvas() {
