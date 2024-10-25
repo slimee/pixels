@@ -141,12 +141,44 @@ y = y + 1;
       this.initializeControls();
     }
 
+    handleMouseMove(event) {
+      if (this.drawOnDrag && this.isDragging) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
+        const y = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
+
+        // Mise à jour de la matrice et dessin pendant le drag
+        this.grid.updateMatrix(x, y, this.brushSettings);
+        this.updateCanvas();
+      }
+    }
+
     initializeControls() {
       const pointSizeInput = document.getElementById('pointSize');
       const pointColorInput = document.getElementById('pointColor');
       const pointShapeInput = document.getElementById('pointShape');
       const cellSizeInput = document.getElementById('cellSize');
       const cellSizeValueDisplay = document.getElementById('cellSizeValue');
+
+      const drawOnDragCheckbox = document.createElement('input');
+      drawOnDragCheckbox.type = 'checkbox';
+      drawOnDragCheckbox.id = 'drawOnDrag';
+      drawOnDragCheckbox.checked = false;
+      const label = document.createElement('label');
+      label.htmlFor = 'drawOnDrag';
+      label.innerText = "Draw on Drag";
+      document.querySelector('.controls').appendChild(label);
+      document.querySelector('.controls').appendChild(drawOnDragCheckbox);
+
+      drawOnDragCheckbox.addEventListener('change', () => {
+        this.drawOnDrag = drawOnDragCheckbox.checked;
+      });
+      this.canvas.addEventListener('mousedown', () => this.isDragging = true);
+      this.canvas.addEventListener('mouseup', () => this.isDragging = false);
+      this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+
+      // Ajout de l'écouteur de mouvement de la souris
+      this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
 
       pointSizeInput.addEventListener('input', () => {
         this.brushSettings.pointSize = parseInt(pointSizeInput.value, 10);
