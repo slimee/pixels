@@ -38,11 +38,8 @@
         <option value="segment">Segment</option>
     </select>
     <label for="intervalSpeed">Vitesse (IPS):</label>
-    <input type="range" id="intervalSpeed" min="0.1" max="25" step="0.1" value="1">
+    <input type="range" id="intervalSpeed" min="0.1" max="100" step="0.1" value="25">
     <span id="intervalSpeedValue">1 IPS</span>
-    <label for="cellSize">Taille de cellule:</label>
-    <input type="range" id="cellSize" min="1" max="10" value="10">
-    <span id="cellSizeValue">10 px</span>
 </div>
 
 <textarea id="transformationCode" class="transformation-box" rows="4">
@@ -52,22 +49,16 @@ y = y + 1;
 
 <script>
   class Grid {
-    constructor(width, height, cellSize) {
+    constructor(width, height) {
       this.width = width;
       this.height = height;
-      this.cellSize = cellSize;
       this.matrix = this.createMatrix();
     }
 
     createMatrix() {
-      const rows = Math.floor(this.height / this.cellSize);
-      const cols = Math.floor(this.width / this.cellSize);
+      const rows = this.height;
+      const cols = this.width;
       return Array.from({ length: rows }, () => Array(cols).fill(null));
-    }
-
-    setCellSize(cellSize) {
-      this.cellSize = cellSize;
-      this.matrix = this.createMatrix();
     }
 
     updateMatrix(x, y, brushSettings) {
@@ -147,8 +138,8 @@ y = y + 1;
     handleMouseMove(event) {
       if (this.drawOnDrag && this.isDragging) {
         const rect = this.canvas.getBoundingClientRect();
-        const x = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
-        const y = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
+        const x = Math.floor(event.clientX - rect.left);
+        const y = Math.floor(event.clientY - rect.top);
 
         this.lastMousePosition = { x, y };  // Mise à jour de la dernière position de la souris
         this.grid.updateMatrix(x, y, this.brushSettings);
@@ -167,8 +158,6 @@ y = y + 1;
       const pointSizeInput = document.getElementById('pointSize');
       const pointColorInput = document.getElementById('pointColor');
       const pointShapeInput = document.getElementById('pointShape');
-      const cellSizeInput = document.getElementById('cellSize');
-      const cellSizeValueDisplay = document.getElementById('cellSizeValue');
 
       const drawOnDragCheckbox = document.createElement('input');
       drawOnDragCheckbox.type = 'checkbox';
@@ -176,7 +165,7 @@ y = y + 1;
       drawOnDragCheckbox.checked = false;
       const label = document.createElement('label');
       label.htmlFor = 'drawOnDrag';
-      label.innerText = "Draw on Drag";
+      label.innerText = "Dessin continu";
       document.querySelector('.controls').appendChild(label);
       document.querySelector('.controls').appendChild(drawOnDragCheckbox);
 
@@ -201,19 +190,12 @@ y = y + 1;
       pointShapeInput.addEventListener('change', () => {
         this.brushSettings.pointShape = pointShapeInput.value;
       });
-
-      cellSizeInput.addEventListener('input', () => {
-        const newSize = parseInt(cellSizeInput.value, 10);
-        cellSizeValueDisplay.textContent = `${newSize} px`;
-        this.grid.setCellSize(newSize);
-        this.updateCanvas();
-      });
     }
 
     handleMouseDown(event) {
       const rect = this.canvas.getBoundingClientRect();
-      const x = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
-      const y = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
+      const x = Math.floor(event.clientX - rect.left);
+      const y = Math.floor(event.clientY - rect.top);
       this.isDragging = true;
       this.lastMousePosition = { x, y };
 
@@ -229,8 +211,8 @@ y = y + 1;
       this.isDragging = false;
       if (this.brushSettings.pointShape === 'segment' && this.startPoint) {
         const rect = this.canvas.getBoundingClientRect();
-        const endX = Math.floor((event.clientX - rect.left) / this.grid.cellSize);
-        const endY = Math.floor((event.clientY - rect.top) / this.grid.cellSize);
+        const endX = Math.floor(event.clientX - rect.left);
+        const endY = Math.floor(event.clientY - rect.top);
 
         this.grid.drawSegmentOnMatrix(this.startPoint.x, this.startPoint.y, endX, endY, this.brushSettings);
         this.startPoint = null;
@@ -239,8 +221,8 @@ y = y + 1;
     }
 
     drawPoint(x, y, brushSettings) {
-      const posX = x * this.grid.cellSize + this.grid.cellSize / 2;
-      const posY = y * this.grid.cellSize + this.grid.cellSize / 2;
+      const posX = x + 0.5;
+      const posY = y + 0.5;
 
       this.context.fillStyle = brushSettings.pointColor;
 
@@ -263,8 +245,8 @@ y = y + 1;
     }
 
     drawSegment(x, y, brushSettings) {
-      const posX = x * this.grid.cellSize + this.grid.cellSize / 2;
-      const posY = y * this.grid.cellSize + this.grid.cellSize / 2;
+      const posX = x + 0.5;
+      const posY = y + 0.5;
 
       this.context.fillStyle = brushSettings.pointColor;
       this.context.fillRect(posX - brushSettings.pointSize / 2, posY - brushSettings.pointSize / 2, brushSettings.pointSize, brushSettings.pointSize);
@@ -330,9 +312,7 @@ y = y + 1;
       this.intervalSpeedValue = document.getElementById(intervalSpeedValueId);
       this.isPlaying = false;
       this.intervalId = null;
-      this.intervalMs = 1000 / 25;  // Défaut : 25 IPS
 
-      this.intervalSpeedInput.value = 25;  // Valeur par défaut définie à 25 IPS
       this.playPauseButton.addEventListener('click', this.togglePlayPause.bind(this));
       this.intervalSpeedInput.addEventListener('input', this.updateIntervalSpeed.bind(this));
 
