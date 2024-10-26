@@ -7,6 +7,7 @@
     <style>
         canvas {
             border: 1px solid black;
+            position: relative;
         }
         .controls {
             margin-top: 10px;
@@ -18,11 +19,29 @@
             margin-top: 20px;
             width: 100%;
         }
+        /* Ancre pour redimensionner le canevas */
+        .resize-anchor {
+            width: 10px;
+            height: 10px;
+            background-color: grey;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            cursor: nwse-resize;
+        }
+        .canvas-container {
+            position: relative;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
 <h1>Canvas avec Transformation Paramétrable et Matrice Sans Bord</h1>
-<canvas id="myCanvas" width="500" height="500"></canvas>
+
+<div class="canvas-container">
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+    <div class="resize-anchor" id="resizeAnchor"></div>
+</div>
 
 <div class="controls">
     <button id="playPauseButton">Play</button>
@@ -59,6 +78,12 @@ y = y + 1;
       const rows = this.height;
       const cols = this.width;
       return Array.from({ length: rows }, () => Array(cols).fill(null));
+    }
+
+    resize(width, height) {
+      this.width = width;
+      this.height = height;
+      this.matrix = this.createMatrix();
     }
 
     updateMatrix(x, y, brushSettings) {
@@ -133,6 +158,36 @@ y = y + 1;
       this.lastMousePosition = null;
 
       this.initializeControls();
+      this.initializeResize();
+    }
+
+    initializeResize() {
+      const resizeAnchor = document.getElementById("resizeAnchor");
+      let isResizing = false;
+
+      resizeAnchor.addEventListener("mousedown", (event) => {
+        isResizing = true;
+        event.preventDefault();
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        if (isResizing) {
+          const newWidth = event.clientX - this.canvas.getBoundingClientRect().left;
+          const newHeight = event.clientY - this.canvas.getBoundingClientRect().top;
+          this.resizeCanvas(newWidth, newHeight);
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        isResizing = false;
+      });
+    }
+
+    resizeCanvas(newWidth, newHeight) {
+      this.canvas.width = newWidth;
+      this.canvas.height = newHeight;
+      this.grid.resize(newWidth, newHeight);
+      this.updateCanvas();
     }
 
     handleMouseMove(event) {
@@ -176,7 +231,6 @@ y = y + 1;
       this.canvas.addEventListener('mouseup', () => this.isDragging = false);
       this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
 
-      // Ajout de l'écouteur de mouvement de la souris
       this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
 
       pointSizeInput.addEventListener('input', () => {
@@ -359,7 +413,7 @@ y = y + 1;
   document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('myCanvas');
 
-    const grid = new Grid(canvas.width, canvas.height, 10);
+    const grid = new Grid(canvas.width, canvas.height);
     const canvasManager = new CanvasManager(canvas, grid);
     const transformationManager = new TransformationManager(document.getElementById('transformationCode'));
 
