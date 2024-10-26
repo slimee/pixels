@@ -81,9 +81,17 @@ y = y + 1;
     }
 
     resize(width, height) {
+      const newMatrix = Array.from({ length: height }, (_, y) =>
+        Array.from({ length: width }, (_, x) => {
+          const oldX = x % this.width;
+          const oldY = y % this.height;
+          return (this.matrix[oldY] && this.matrix[oldY][oldX]) || null;
+        })
+      );
+
       this.width = width;
       this.height = height;
-      this.matrix = this.createMatrix();
+      this.matrix = newMatrix;
     }
 
     updateMatrix(x, y, brushSettings) {
