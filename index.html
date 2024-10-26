@@ -7,19 +7,10 @@
     <style>
         canvas {
             border: 1px solid black;
-            position: relative;
         }
         .controls {
             margin-top: 10px;
         }
-        .controls button, .controls select, .controls input {
-            margin-right: 10px;
-        }
-        .transformation-box {
-            margin-top: 20px;
-            width: 100%;
-        }
-        /* Ancre pour redimensionner le canevas */
         .resize-anchor {
             width: 10px;
             height: 10px;
@@ -44,6 +35,7 @@
 </div>
 
 <div class="controls">
+    <button id="clearButton">Effacer</button>
     <button id="playPauseButton">Play</button>
     <label for="pointSize">Taille du pinceau:</label>
     <input type="range" id="pointSize" min="5" max="50" value="15">
@@ -58,7 +50,9 @@
     </select>
     <label for="intervalSpeed">Vitesse (IPS):</label>
     <input type="range" id="intervalSpeed" min="0.1" max="100" step="0.1" value="25">
-    <span id="intervalSpeedValue">1 IPS</span>
+    <span id="intervalSpeedValue">25 IPS</span>
+    <label for="drawOnDrag">Dessin continu</label>
+    <input type="checkbox" id="drawOnDrag">
 </div>
 
 <textarea id="transformationCode" class="transformation-box" rows="4">
@@ -71,44 +65,78 @@ y = y + 1;
     constructor(width, height) {
       this.width = width;
       this.height = height;
-      this.matrix = this.createMatrix();
+      this.matrix = new Uint8ClampedArray(width * height * 4); // Stockage RGBA pour chaque pixel
     }
 
-    createMatrix() {
-      const rows = this.height;
-      const cols = this.width;
-      return Array.from({ length: rows }, () => Array(cols).fill(null));
+    hexToRGBA(hex) {
+      const bigint = parseInt(hex.slice(1), 16);
+      return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255,
+        a: 255 // Opacité complète
+      };
     }
 
-    resize(width, height) {
-      const newMatrix = Array.from({ length: height }, (_, y) =>
-        Array.from({ length: width }, (_, x) => {
-          const oldX = x % this.width;
-          const oldY = y % this.height;
-          return (this.matrix[oldY] && this.matrix[oldY][oldX]) || null;
-        })
-      );
-
-      this.width = width;
-      this.height = height;
-      this.matrix = newMatrix;
+    wrapCoordinate(value, max) {
+      return ((value % max) + max) % max;
     }
 
     updateMatrix(x, y, brushSettings) {
-      if (this.matrix[y] && this.matrix[y][x] !== undefined) {
-        this.matrix[y][x] = { ...brushSettings };
+      const color = this.hexToRGBA(brushSettings.pointColor);
+      const halfSize = Math.floor(brushSettings.pointSize / 2);
+
+      if (brushSettings.pointShape === 'segment' && brushSettings.endX !== undefined && brushSettings.endY !== undefined) {
+        this.paintSegment(x, y, brushSettings.endX, brushSettings.endY, color, brushSettings.pointSize);
+      } else if (brushSettings.pointShape === 'circle') {
+        this.paintCircle(x, y, halfSize, color);
+      } else if (brushSettings.pointShape === 'square') {
+        this.paintSquare(x, y, halfSize, color);
+      } else if (brushSettings.pointShape === 'triangle') {
+        this.paintTriangle(x, y, halfSize, color);
       }
     }
 
-    drawSegmentOnMatrix(x1, y1, x2, y2, brushSettings) {
+    paintCircle(x, y, halfSize, color) {
+      for (let offsetY = -halfSize; offsetY <= halfSize; offsetY++) {
+        for (let offsetX = -halfSize; offsetX <= halfSize; offsetX++) {
+          if (Math.sqrt(offsetX ** 2 + offsetY ** 2) <= halfSize) {
+            this.setPixelColor(x + offsetX, y + offsetY, color);
+          }
+        }
+      }
+    }
+
+    paintSquare(x, y, halfSize, color) {
+      for (let offsetY = -halfSize; offsetY <= halfSize; offsetY++) {
+        for (let offsetX = -halfSize; offsetX <= halfSize; offsetX++) {
+          this.setPixelColor(x + offsetX, y + offsetY, color);
+        }
+      }
+    }
+
+    paintTriangle(x, y, halfSize, color) {
+      for (let offsetY = 0; offsetY <= halfSize; offsetY++) {
+        for (let offsetX = -offsetY; offsetX <= offsetY; offsetX++) {
+          this.setPixelColor(x + offsetX, y - offsetY + halfSize, color);
+        }
+      }
+    }
+
+    paintSegment(x1, y1, x2, y2, color, brushSize) {
       const dx = Math.abs(x2 - x1);
       const dy = Math.abs(y2 - y1);
       const sx = x1 < x2 ? 1 : -1;
       const sy = y1 < y2 ? 1 : -1;
       let err = dx - dy;
+      const halfSize = Math.floor(brushSize / 2);
 
       while (true) {
-        this.updateMatrix(x1, y1, { ...brushSettings, isSegment: true });
+        for (let offsetY = -halfSize; offsetY <= halfSize; offsetY++) {
+          for (let offsetX = -halfSize; offsetX <= halfSize; offsetX++) {
+            this.setPixelColor(x1 + offsetX, y1 + offsetY, color);
+          }
+        }
         if (x1 === x2 && y1 === y2) break;
         const e2 = 2 * err;
         if (e2 > -dy) {
@@ -122,31 +150,32 @@ y = y + 1;
       }
     }
 
-    getBrushSettings(x, y) {
-      if (this.matrix[y] && this.matrix[y][x] !== undefined) {
-        return this.matrix[y][x];
-      }
-      return null;
+
+
+    setPixelColor(x, y, color) {
+      const wrappedX = this.wrapCoordinate(x, this.width);
+      const wrappedY = this.wrapCoordinate(y, this.height);
+      const index = (wrappedY * this.width + wrappedX) * 4;
+      this.matrix[index] = color.r;
+      this.matrix[index + 1] = color.g;
+      this.matrix[index + 2] = color.b;
+      this.matrix[index + 3] = color.a;
     }
 
-    applyTransformation(transformationFunction) {
-      const newMatrix = this.createMatrix();
-      const rows = this.matrix.length;
-      const cols = this.matrix[0].length;
 
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          if (this.matrix[y][x]) {
-            let { x: newX, y: newY } = transformationFunction(x, y);
-
-            newX = (newX + cols) % cols;
-            newY = (newY + rows) % rows;
-
-            newMatrix[newY][newX] = this.matrix[y][x];
-          }
+    resize(width, height) {
+      const newMatrix = new Uint8ClampedArray(width * height * 4);
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const oldX = x % this.width;
+          const oldY = y % this.height;
+          const newIndex = (y * width + x) * 4;
+          const oldIndex = (oldY * this.width + oldX) * 4;
+          newMatrix.set(this.matrix.slice(oldIndex, oldIndex + 4), newIndex);
         }
       }
-
+      this.width = width;
+      this.height = height;
       this.matrix = newMatrix;
     }
   }
@@ -156,17 +185,112 @@ y = y + 1;
       this.canvas = canvas;
       this.context = canvas.getContext('2d');
       this.grid = grid;
-
-      this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
-      this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
-      this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-      this.brushSettings = { pointSize: 15, pointColor: 'red', pointShape: 'circle' };
+      this.imageData = this.context.createImageData(this.grid.width, this.grid.height);
+      this.brushSettings = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
+      this.isDrawing = false;
       this.startPoint = null;
-      this.isDragging = false;
-      this.lastMousePosition = null;
-
       this.initializeControls();
       this.initializeResize();
+    }
+
+    initializeControls() {
+      const pointSizeInput = document.getElementById('pointSize');
+      const pointColorInput = document.getElementById('pointColor');
+      const pointShapeInput = document.getElementById('pointShape');
+      const drawOnDragCheckbox = document.getElementById('drawOnDrag');
+      const clearButton = document.getElementById('clearButton');
+      clearButton.addEventListener('click', () => this.clearCanvas());
+
+      pointSizeInput.addEventListener('input', () => {
+        this.brushSettings.pointSize = parseInt(pointSizeInput.value, 10);
+      });
+
+      pointColorInput.addEventListener('input', () => {
+        this.brushSettings.pointColor = pointColorInput.value;
+      });
+
+      pointShapeInput.addEventListener('change', () => {
+        this.brushSettings.pointShape = pointShapeInput.value;
+      });
+
+      drawOnDragCheckbox.addEventListener('change', () => {
+        this.drawOnDrag = drawOnDragCheckbox.checked;
+      });
+
+      this.canvas.addEventListener('mousedown', (event) => this.handleMouseDown(event));
+
+      this.canvas.addEventListener('mousemove', (event) => {
+        if (this.isDrawing && this.drawOnDrag && this.brushSettings.pointShape !== 'segment') {
+          const rect = this.canvas.getBoundingClientRect();
+          const x = Math.floor(event.clientX - rect.left);
+          const y = Math.floor(event.clientY - rect.top);
+          this.lastMousePosition = { x, y };
+          this.drawAt(x, y);
+        }
+      });
+
+      this.canvas.addEventListener('mouseup', (event) => {
+        if (this.isDrawing && this.brushSettings.pointShape === 'segment' && this.startPoint) {
+          const rect = this.canvas.getBoundingClientRect();
+          const x = Math.floor(event.clientX - rect.left);
+          const y = Math.floor(event.clientY - rect.top);
+          this.grid.updateMatrix(this.startPoint.x, this.startPoint.y, {
+            ...this.brushSettings, endX: x, endY: y
+          });
+          this.startPoint = null;
+        }
+        this.isDrawing = false;
+        this.updateCanvas();
+      });
+    }
+
+    handleMouseDown(event) {
+      const rect = this.canvas.getBoundingClientRect();
+      const x = Math.floor(event.clientX - rect.left);
+      const y = Math.floor(event.clientY - rect.top);
+      this.isDrawing = true;
+      this.lastMousePosition = { x, y };
+      if (this.brushSettings.pointShape === 'segment') {
+        this.startPoint = { x, y }; // Enregistrer le point de départ
+      } else {
+        this.drawAt(x, y);
+      }
+
+      document.addEventListener('mousemove', this.handleMouseMove);
+      document.addEventListener('mouseup', this.handleMouseUp);
+    }
+
+    handleMouseMove = (event) => {
+      if (this.isDrawing && this.drawOnDrag && this.brushSettings.pointShape !== 'segment') {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = Math.floor(event.clientX - rect.left);
+        const y = Math.floor(event.clientY - rect.top);
+        this.drawAt(x, y);
+      }
+    }
+
+    handleMouseUp = (event) => {
+      if (this.isDrawing && this.brushSettings.pointShape === 'segment' && this.startPoint) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = Math.floor(event.clientX - rect.left);
+        const y = Math.floor(event.clientY - rect.top);
+        this.grid.updateMatrix(this.startPoint.x, this.startPoint.y, {
+          ...this.brushSettings, endX: x, endY: y
+        });
+        this.startPoint = null;
+      }
+      this.isDrawing = false;
+      this.updateCanvas();
+
+      // Supprimer les écouteurs globaux
+      document.removeEventListener('mousemove', this.handleMouseMove);
+      document.removeEventListener('mouseup', this.handleMouseUp);
+    }
+
+    clearCanvas() {
+      // Réinitialise la matrice en la remplissant de pixels transparents
+      this.grid.matrix.fill(0);
+      this.updateCanvas();  // Rafraîchit l'affichage du canvas
     }
 
     initializeResize() {
@@ -195,19 +319,18 @@ y = y + 1;
       this.canvas.width = newWidth;
       this.canvas.height = newHeight;
       this.grid.resize(newWidth, newHeight);
+      this.imageData = this.context.createImageData(this.grid.width, this.grid.height);
       this.updateCanvas();
     }
 
-    handleMouseMove(event) {
-      if (this.drawOnDrag && this.isDragging) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = Math.floor(event.clientX - rect.left);
-        const y = Math.floor(event.clientY - rect.top);
+    drawAt(x, y) {
+      this.grid.updateMatrix(x, y, this.brushSettings);
+      this.updateCanvas();
+    }
 
-        this.lastMousePosition = { x, y };  // Mise à jour de la dernière position de la souris
-        this.grid.updateMatrix(x, y, this.brushSettings);
-        this.updateCanvas();
-      }
+    updateCanvas() {
+      this.imageData.data.set(this.grid.matrix);
+      this.context.putImageData(this.imageData, 0, 0);
     }
 
     drawOnDragInterval() {
@@ -216,152 +339,37 @@ y = y + 1;
         this.grid.updateMatrix(x, y, this.brushSettings);
       }
     }
-
-    initializeControls() {
-      const pointSizeInput = document.getElementById('pointSize');
-      const pointColorInput = document.getElementById('pointColor');
-      const pointShapeInput = document.getElementById('pointShape');
-
-      const drawOnDragCheckbox = document.createElement('input');
-      drawOnDragCheckbox.type = 'checkbox';
-      drawOnDragCheckbox.id = 'drawOnDrag';
-      drawOnDragCheckbox.checked = false;
-      const label = document.createElement('label');
-      label.htmlFor = 'drawOnDrag';
-      label.innerText = "Dessin continu";
-      document.querySelector('.controls').appendChild(label);
-      document.querySelector('.controls').appendChild(drawOnDragCheckbox);
-
-      drawOnDragCheckbox.addEventListener('change', () => {
-        this.drawOnDrag = drawOnDragCheckbox.checked;
-      });
-      this.canvas.addEventListener('mousedown', () => this.isDragging = true);
-      this.canvas.addEventListener('mouseup', () => this.isDragging = false);
-      this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-
-      this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-
-      pointSizeInput.addEventListener('input', () => {
-        this.brushSettings.pointSize = parseInt(pointSizeInput.value, 10);
-      });
-
-      pointColorInput.addEventListener('input', () => {
-        this.brushSettings.pointColor = pointColorInput.value;
-      });
-
-      pointShapeInput.addEventListener('change', () => {
-        this.brushSettings.pointShape = pointShapeInput.value;
-      });
-    }
-
-    handleMouseDown(event) {
-      const rect = this.canvas.getBoundingClientRect();
-      const x = Math.floor(event.clientX - rect.left);
-      const y = Math.floor(event.clientY - rect.top);
-      this.isDragging = true;
-      this.lastMousePosition = { x, y };
-
-      if (this.brushSettings.pointShape === 'segment') {
-        this.startPoint = { x, y };
-      } else {
-        this.grid.updateMatrix(x, y, this.brushSettings);
-        this.updateCanvas();
-      }
-    }
-
-    handleMouseUp(event) {
-      this.isDragging = false;
-      if (this.brushSettings.pointShape === 'segment' && this.startPoint) {
-        const rect = this.canvas.getBoundingClientRect();
-        const endX = Math.floor(event.clientX - rect.left);
-        const endY = Math.floor(event.clientY - rect.top);
-
-        this.grid.drawSegmentOnMatrix(this.startPoint.x, this.startPoint.y, endX, endY, this.brushSettings);
-        this.startPoint = null;
-        this.updateCanvas();
-      }
-    }
-
-    drawPoint(x, y, brushSettings) {
-      const posX = x + 0.5;
-      const posY = y + 0.5;
-
-      this.context.fillStyle = brushSettings.pointColor;
-
-      if (brushSettings.pointShape === 'circle') {
-        this.context.beginPath();
-        this.context.arc(posX, posY, brushSettings.pointSize / 2, 0, Math.PI * 2);
-        this.context.fill();
-      } else if (brushSettings.pointShape === 'square') {
-        const halfSize = brushSettings.pointSize / 2;
-        this.context.fillRect(posX - halfSize, posY - halfSize, brushSettings.pointSize, brushSettings.pointSize);
-      } else if (brushSettings.pointShape === 'triangle') {
-        const halfSize = brushSettings.pointSize / 2;
-        this.context.beginPath();
-        this.context.moveTo(posX, posY - halfSize);
-        this.context.lineTo(posX - halfSize, posY + halfSize);
-        this.context.lineTo(posX + halfSize, posY + halfSize);
-        this.context.closePath();
-        this.context.fill();
-      }
-    }
-
-    drawSegment(x, y, brushSettings) {
-      const posX = x + 0.5;
-      const posY = y + 0.5;
-
-      this.context.fillStyle = brushSettings.pointColor;
-      this.context.fillRect(posX - brushSettings.pointSize / 2, posY - brushSettings.pointSize / 2, brushSettings.pointSize, brushSettings.pointSize);
-    }
-
-    updateCanvas() {
-      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      const rows = this.grid.matrix.length;
-      const cols = this.grid.matrix[0].length;
-
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const brushSettings = this.grid.getBrushSettings(x, y);
-          if (brushSettings) {
-            if (brushSettings.isSegment) {
-              this.drawSegment(x, y, brushSettings);
-            } else {
-              this.drawPoint(x, y, brushSettings);
-            }
-          }
-        }
-      }
-    }
   }
 
   class TransformationManager {
     constructor(transformationCodeElement) {
       this.transformationCodeElement = transformationCodeElement;
       this.transformationFunction = null;
-
-      // Évaluer la fonction de transformation lors de la perte de focus
-      this.transformationCodeElement.addEventListener('blur', () => {
-        this.createTransformationFunction();
-      });
+      transformationCodeElement.addEventListener('blur', () => this.createTransformationFunction());
     }
 
     createTransformationFunction() {
       const transformationCodeText = this.transformationCodeElement.value;
-
       try {
-        this.transformationFunction = new Function('x', 'y', `
-                        ${transformationCodeText}
-                        return { x, y };
-                    `);
+        this.transformationFunction = new Function('x', 'y', `${transformationCodeText} return { x, y };`);
       } catch (error) {
         console.error("Erreur dans la fonction de transformation : ", error);
       }
     }
 
     applyTransformation(grid) {
-      if (this.transformationFunction) {
-        grid.applyTransformation(this.transformationFunction);
+      const newMatrix = new Uint8ClampedArray(grid.width * grid.height * 4);
+      for (let y = 0; y < grid.height; y++) {
+        for (let x = 0; x < grid.width; x++) {
+          const { x: newX, y: newY } = this.transformationFunction(x, y);
+          const targetX = (newX + grid.width) % grid.width;
+          const targetY = (newY + grid.height) % grid.height;
+          const newIndex = (targetY * grid.width + targetX) * 4;
+          const oldIndex = (y * grid.width + x) * 4;
+          newMatrix.set(grid.matrix.slice(oldIndex, oldIndex + 4), newIndex);
+        }
       }
+      grid.matrix = newMatrix;
     }
   }
 
@@ -375,8 +383,8 @@ y = y + 1;
       this.isPlaying = false;
       this.intervalId = null;
 
-      this.playPauseButton.addEventListener('click', this.togglePlayPause.bind(this));
-      this.intervalSpeedInput.addEventListener('input', this.updateIntervalSpeed.bind(this));
+      this.playPauseButton.addEventListener('click', () => this.togglePlayPause());
+      this.intervalSpeedInput.addEventListener('input', () => this.updateIntervalSpeed());
 
       this.updateIntervalSpeed();
     }
@@ -408,8 +416,8 @@ y = y + 1;
       this.intervalId = setInterval(() => {
         this.transformationManager.applyTransformation(this.canvasManager.grid);
 
-        // Dessiner en mode "Draw on Drag" même si la souris ne bouge pas
-        if (this.canvasManager.drawOnDrag && this.canvasManager.isDragging) {
+        // Vérifie si le dessin continu est activé
+        if (this.canvasManager.drawOnDrag && this.canvasManager.isDrawing) {
           this.canvasManager.drawOnDragInterval();
         }
 
@@ -420,11 +428,9 @@ y = y + 1;
 
   document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('myCanvas');
-
     const grid = new Grid(canvas.width, canvas.height);
     const canvasManager = new CanvasManager(canvas, grid);
     const transformationManager = new TransformationManager(document.getElementById('transformationCode'));
-
     new ControlPanel(canvasManager, transformationManager, 'playPauseButton', 'intervalSpeed', 'intervalSpeedValue');
   });
 </script>
