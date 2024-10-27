@@ -40,6 +40,7 @@
     <label for="pointSize">Taille du pinceau:</label>
     <input type="range" id="pointSize" min="5" max="50" value="15">
     <label for="pointColor">Couleur du pinceau:</label>
+    <button id="eraserButton">Gomme</button>
     <input type="color" id="pointColor" value="#ff0000">
     <label for="pointShape">Forme du pinceau:</label>
     <select id="pointShape">
@@ -83,9 +84,14 @@ y = y + 1;
     }
 
     updateMatrix(x, y, brushSettings) {
-      const color = this.hexToRGBA(brushSettings.pointColor);
+      const isEraser = brushSettings.pointColor === null;
+      const color = isEraser
+        ? { r: 0, g: 0, b: 0, a: 0 }  // Couleur transparente pour la gomme
+        : this.hexToRGBA(brushSettings.pointColor);
+
       const halfSize = Math.floor(brushSettings.pointSize / 2);
 
+      // Utilise la forme du pinceau sélectionnée
       if (brushSettings.pointShape === 'segment' && brushSettings.endX !== undefined && brushSettings.endY !== undefined) {
         this.paintSegment(x, y, brushSettings.endX, brushSettings.endY, color, brushSettings.pointSize);
       } else if (brushSettings.pointShape === 'circle') {
@@ -199,7 +205,13 @@ y = y + 1;
       const pointShapeInput = document.getElementById('pointShape');
       const drawOnDragCheckbox = document.getElementById('drawOnDrag');
       const clearButton = document.getElementById('clearButton');
+      const eraserButton = document.getElementById('eraserButton');
+
       clearButton.addEventListener('click', () => this.clearCanvas());
+
+      eraserButton.addEventListener('click', () => {
+        this.brushSettings.pointColor = null;
+      });
 
       pointSizeInput.addEventListener('input', () => {
         this.brushSettings.pointSize = parseInt(pointSizeInput.value, 10);
