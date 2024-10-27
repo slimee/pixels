@@ -233,6 +233,13 @@ y = y + 1;
         this.brushSettings.pointColor = pointColorInput.value;
       });
 
+      pointColorInput.addEventListener('click', () => {
+        eraserButton.classList.remove("active");
+        pointColorInput.classList.remove("disabled");
+        this.brushSettings.pointColor = pointColorInput.value; // Rétablit la couleur
+      });
+
+
       pointShapeInput.addEventListener('change', () => {
         this.brushSettings.pointShape = pointShapeInput.value;
       });
