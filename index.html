@@ -206,24 +206,47 @@ y = y + 1;
       this.isDrawing = false;
       this.startPoint = null;
       this.initializeControls();
-      this.initializeResize();
     }
 
     initializeControls() {
-      const pointSizeInput = document.getElementById('pointSize');
-      const pointColorInput = document.getElementById('pointColor');
-      const pointShapeInput = document.getElementById('pointShape');
-      const drawOnDragCheckbox = document.getElementById('drawOnDrag');
-      const clearButton = document.getElementById('clearButton');
-      const eraserButton = document.getElementById('eraserButton');
+      this.initClearButton();
+      this.initEraserButton();
+      this.initBrushSettings();
+      this.initDrawOnDragCheckbox();
+      this.initCanvasMouseEvents();
+      this.initializeResize();
+    }
 
+// Initialisation du bouton "Effacer"
+    initClearButton() {
+      const clearButton = document.getElementById('clearButton');
       clearButton.addEventListener('click', () => this.clearCanvas());
+    }
+
+// Initialisation du bouton "Gomme"
+    initEraserButton() {
+      const eraserButton = document.getElementById('eraserButton');
+      const pointColorInput = document.getElementById('pointColor');
 
       eraserButton.addEventListener('click', () => {
         const isEraserActive = eraserButton.classList.toggle("active");
         this.brushSettings.pointColor = isEraserActive ? null : pointColorInput.value; // Null si gomme active, sinon couleur
         pointColorInput.classList.toggle("disabled", isEraserActive); // Barre la couleur si gomme active
       });
+
+      // Désactive la gomme en rétablissant la couleur lorsque l’utilisateur clique sur le sélecteur de couleur
+      pointColorInput.addEventListener('click', () => {
+        eraserButton.classList.remove("active");
+        pointColorInput.classList.remove("disabled");
+        this.brushSettings.pointColor = pointColorInput.value; // Rétablit la couleur
+      });
+    }
+
+// Initialisation des paramètres de pinceau : taille, couleur et forme
+    initBrushSettings() {
+      const pointSizeInput = document.getElementById('pointSize');
+      const pointColorInput = document.getElementById('pointColor');
+      const pointShapeInput = document.getElementById('pointShape');
 
       pointSizeInput.addEventListener('input', () => {
         this.brushSettings.pointSize = parseInt(pointSizeInput.value, 10);
@@ -233,21 +256,21 @@ y = y + 1;
         this.brushSettings.pointColor = pointColorInput.value;
       });
 
-      pointColorInput.addEventListener('click', () => {
-        eraserButton.classList.remove("active");
-        pointColorInput.classList.remove("disabled");
-        this.brushSettings.pointColor = pointColorInput.value; // Rétablit la couleur
-      });
-
-
       pointShapeInput.addEventListener('change', () => {
         this.brushSettings.pointShape = pointShapeInput.value;
       });
+    }
 
+// Initialisation de l'option "Dessin continu"
+    initDrawOnDragCheckbox() {
+      const drawOnDragCheckbox = document.getElementById('drawOnDrag');
       drawOnDragCheckbox.addEventListener('change', () => {
         this.drawOnDrag = drawOnDragCheckbox.checked;
       });
+    }
 
+// Initialisation des événements de la souris pour dessiner sur le canvas
+    initCanvasMouseEvents() {
       this.canvas.addEventListener('mousedown', (event) => this.handleMouseDown(event));
 
       this.canvas.addEventListener('mousemove', (event) => {
@@ -274,6 +297,7 @@ y = y + 1;
         this.updateCanvas();
       });
     }
+
 
     handleMouseDown(event) {
       const rect = this.canvas.getBoundingClientRect();
