@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canvas avec Transformation Paramétrable et Matrice Sans Bord</title>
     <style>
         canvas {
             border: 1px solid black;
@@ -11,6 +10,7 @@
         .controls {
             margin-top: 10px;
         }
+        .matrix-selector { margin-top: 10px; }
         .resize-anchor {
             width: 10px;
             height: 10px;
@@ -46,6 +46,9 @@
 
 <div class="controls">
     <button id="clearButton">Effacer</button>
+    <button id="addMatrixButton">Ajouter Matrice</button>
+    <button id="removeMatrixButton">Supprimer Matrice</button>
+    <select id="matrixSelector" class="matrix-selector"></select>
     <button id="playPauseButton">Play</button>
     <label for="pointSize">Taille du pinceau:</label>
     <input type="range" id="pointSize" min="5" max="50" value="15">
@@ -77,6 +80,10 @@ y = y + 1;
       this.width = width;
       this.height = height;
       this.matrix = new Uint8ClampedArray(width * height * 4); // Stockage RGBA pour chaque pixel
+    }
+
+    clear() {
+      this.matrix.fill(0);
     }
 
     hexToRGBA(hex) {
@@ -205,6 +212,10 @@ y = y + 1;
       this.brushSettings = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
       this.isDrawing = false;
       this.startPoint = null;
+      this.matrices = [grid]; // Liste des matrices
+      this.currentMatrixIndex = 0; // Index de la matrice courante
+
+      this.updateMatrixSelector();
       this.initializeControls();
     }
 
@@ -215,6 +226,11 @@ y = y + 1;
       this.initDrawOnDragCheckbox();
       this.initCanvasMouseEvents();
       this.initializeResize();
+      this.initMatrixControls();
+    }
+
+    get currentMatrix() {
+      return this.matrices[this.currentMatrixIndex];
     }
 
 // Initialisation du bouton "Effacer"
@@ -345,6 +361,7 @@ y = y + 1;
     clearCanvas() {
       // Réinitialise la matrice en la remplissant de pixels transparents
       this.grid.matrix.fill(0);
+      this.currentMatrix.clear();
       this.updateCanvas();  // Rafraîchit l'affichage du canvas
     }
 
@@ -385,7 +402,56 @@ y = y + 1;
 
     updateCanvas() {
       this.imageData.data.set(this.grid.matrix);
+      this.imageData.data.fill(0); // Clear existing canvas data
+      for (const matrix of this.matrices) {
+        this.imageData.data.set(matrix.matrix);
+      }
       this.context.putImageData(this.imageData, 0, 0);
+    }
+
+    initMatrixControls() {
+      const addMatrixButton = document.getElementById("addMatrixButton");
+      const removeMatrixButton = document.getElementById("removeMatrixButton");
+      const matrixSelector = document.getElementById("matrixSelector");
+
+        addMatrixButton.addEventListener("click", () => {
+            const newMatrix = new Grid(this.canvas.width, this.canvas.height);
+            this.matrices.push(newMatrix);
+            this.currentMatrixIndex = this.matrices.length - 1;
+            this.updateMatrixSelector();
+            this.updateCanvas();
+          });
+
+        removeMatrixButton.addEventListener("click", () => {
+            if (this.matrices.length > 1) {
+                this.matrices.splice(this.currentMatrixIndex, 1);
+                this.currentMatrixIndex = Math.max(0, this.currentMatrixIndex - 1);
+                this.updateMatrixSelector();
+                this.updateCanvas();
+              }
+          });
+
+        matrixSelector.addEventListener("change", (event) => {
+            this.currentMatrixIndex = parseInt(event.target.value, 10);
+            this.updateCanvas();
+            this.updateTransformationCode();
+          });
+    }
+
+    updateMatrixSelector() {
+      const matrixSelector = document.getElementById("matrixSelector");
+      matrixSelector.innerHTML = '';
+      this.matrices.forEach((_, index) => {
+          const option = document.createElement("option");
+          option.value = index;
+          option.textContent = `Matrice ${index + 1}`;
+          if (index === this.currentMatrixIndex) option.selected = true;
+          matrixSelector.appendChild(option);
+        });
+    }
+
+    updateTransformationCode() {
+      document.getElementById("transformationCode").value = this.transformationManager.getCode(this.currentMatrixIndex);
     }
 
     drawOnDragInterval() {
@@ -470,6 +536,9 @@ y = y + 1;
     startInterval() {
       this.intervalId = setInterval(() => {
         this.transformationManager.applyTransformation(this.canvasManager.grid);
+        for (const matrix of this.canvasManager.matrices) {
+          this.transformationManager.applyTransformation(matrix);
+        }
 
         // Vérifie si le dessin continu est activé
         if (this.canvasManager.drawOnDrag && this.canvasManager.isDrawing) {
