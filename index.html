@@ -205,7 +205,7 @@ y = y + 1;
       this.canvas = canvas;
       this.context = canvas.getContext('2d');
       this.transformationManager = transformationManager;
-      this.imageData = this.context.createImageData(this.matrice.width, this.matrice.height);
+      this.imageData = this.context.createImageData(matrice.width, matrice.height);
       this.brushSettings = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
       this.isDrawing = false;
       this.startPoint = null;
@@ -419,9 +419,20 @@ y = y + 1;
     }
 
     updateCanvas() {
+      this.imageData.data.fill(0);
+
       for (const matrix of this.matrices) {
-        this.imageData.data.set(matrix.matrix);
+        for (let i = 0; i < matrix.matrix.length; i += 4) {
+          if (matrix.matrix[i + 3] !== 0) { // Canaux RGBA, [i+3] est l'alpha
+            this.imageData.data[i] = matrix.matrix[i];       // Rouge
+            this.imageData.data[i + 1] = matrix.matrix[i + 1]; // Vert
+            this.imageData.data[i + 2] = matrix.matrix[i + 2]; // Bleu
+            this.imageData.data[i + 3] = matrix.matrix[i + 3]; // Alpha
+          }
+        }
       }
+
+      // Applique les données de l'imageData sur le canvas
       this.context.putImageData(this.imageData, 0, 0);
     }
 
@@ -530,7 +541,6 @@ y = y + 1;
 
     startInterval() {
       this.intervalId = setInterval(() => {
-        this.transformationManager.applyTransformation(this.canvasManager.grid);
         for (const matrix of this.canvasManager.matrices) {
           this.transformationManager.applyTransformation(matrix);
         }
