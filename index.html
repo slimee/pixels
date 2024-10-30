@@ -46,6 +46,7 @@
 
 <div class="controls">
     <button id="clearButton">Effacer</button>
+    <button id="clearAllButton">Tout effacer</button>
     <button id="addMatrixButton">Ajouter </button>
     <button id="removeMatrixButton">Supprimer </button>
     <select id="matrixSelector" class="matrix-selector"></select>
@@ -233,6 +234,7 @@ y = y + 1;
 
     initializeControls() {
       this.initClearButton();
+      this.initClearAllButton();
       this.initEraserButton();
       this.initBrushSettings();
       this.initDrawOnDragCheckbox();
@@ -247,7 +249,12 @@ y = y + 1;
 
     initClearButton() {
       const clearButton = document.getElementById('clearButton');
-      clearButton.addEventListener('click', () => this.clearCanvas());
+      clearButton.addEventListener('click', () => this.clearCurrentMatrix());
+    }
+
+    initClearAllButton() {
+      const clearAllButton = document.getElementById('clearAllButton');
+      clearAllButton.addEventListener('click', () => this.clearAllMatrices());
     }
 
     initEraserButton() {
@@ -409,8 +416,13 @@ y = y + 1;
       document.removeEventListener('mouseup', this.handleMouseUp);
     }
 
-    clearCanvas() {
+    clearCurrentMatrix() {
       this.currentMatrix.clear();
+      this.updateCanvas();
+    }
+
+    clearAllMatrices() {
+      this.matrices.forEach(matrix => matrix.clear());
       this.updateCanvas();
     }
 
