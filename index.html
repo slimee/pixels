@@ -451,44 +451,54 @@ y = y + 1;
         this.transformationManager.getCode(this.currentMatrixIndex);
     }
 
-    updateTransformationCode() {
-      document.getElementById("transformationCode").value = this.transformationManager.getCode(this.currentMatrixIndex);
-    }
-
     drawOnDragInterval() {
       if (this.lastMousePosition) {
         const { x, y } = this.lastMousePosition;
         this.currentMatrix.updateMatrix(x, y, this.brushSettings);
       }
     }
+
+    updateTransformationCode() {
+      const code = this.transformationManager.getCode(this.currentMatrixIndex);
+      document.getElementById("transformationCode").value = code;
+    }
   }
 
   class TransformationManager {
     constructor(transformationCodeElement) {
       this.transformationCodeElement = transformationCodeElement;
-      this.transformationFunction = null;
-      this.codes = {};
-      transformationCodeElement.addEventListener('blur', () => this.createTransformationFunction());
+      this.transformationFunctions = {}; // Stocke les fonctions de transformation par matrice
+      this.codes = {}; // Stocke le code de transformation par matrice
+      transformationCodeElement.addEventListener('blur', () => this.saveTransformationCode());
+    }
+
+    saveTransformationCode(matrixIndex) {
+      const code = this.transformationCodeElement.value;
+      this.codes[matrixIndex] = code;
+      this.createTransformationFunction(matrixIndex, code);
     }
 
     getCode(matrixIndex) {
       return this.codes[matrixIndex] || 'x = x + 1;\ny = y + 1;';
     }
 
-    createTransformationFunction() {
-      const transformationCodeText = this.transformationCodeElement.value;
+    createTransformationFunction(matrixIndex, code) {
       try {
-        this.transformationFunction = new Function('x', 'y', `${transformationCodeText} return { x, y };`);
+        this.transformationFunctions[matrixIndex] = new Function('x', 'y', `${code} return { x, y };`);
       } catch (error) {
         console.error("Erreur dans la fonction de transformation : ", error);
       }
     }
 
-    applyTransformation(grid) {
+    getTransformationFunction(matrixIndex) {
+      return this.transformationFunctions[matrixIndex] || ((x, y) => ({ x, y }));
+    }
+
+    applyTransformation(grid, transformationFunction) {
       const newMatrix = new Uint8ClampedArray(grid.width * grid.height * 4);
       for (let y = 0; y < grid.height; y++) {
         for (let x = 0; x < grid.width; x++) {
-          const { x: newX, y: newY } = this.transformationFunction(x, y);
+          const { x: newX, y: newY } = transformationFunction(x, y);
           const targetX = (newX + grid.width) % grid.width;
           const targetY = (newY + grid.height) % grid.height;
           const newIndex = (targetY * grid.width + targetX) * 4;
@@ -528,24 +538,21 @@ y = y + 1;
     }
 
     togglePlayPause() {
+      this.isPlaying
+        ? clearInterval(this.intervalId)
+        : this.startInterval();
+
       this.isPlaying = !this.isPlaying;
       this.playPauseButton.textContent = this.isPlaying ? 'Pause' : 'Play';
-
-      if (this.isPlaying) {
-        this.transformationManager.createTransformationFunction();
-        this.startInterval();
-      } else {
-        clearInterval(this.intervalId);
-      }
     }
 
     startInterval() {
       this.intervalId = setInterval(() => {
-        for (const matrix of this.canvasManager.matrices) {
-          this.transformationManager.applyTransformation(matrix);
-        }
+        this.canvasManager.matrices.forEach((matrix, index) => {
+          const transformationFunction = this.transformationManager.getTransformationFunction(index);
+          this.transformationManager.applyTransformation(matrix, transformationFunction);
+        });
 
-        // Vérifie si le dessin continu est activé
         if (this.canvasManager.drawOnDrag && this.canvasManager.isDrawing) {
           this.canvasManager.drawOnDragInterval();
         }
