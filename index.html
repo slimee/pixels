@@ -468,8 +468,7 @@ y = y + 1;
           matrixSelector.appendChild(option);
         });
 
-      document.getElementById("transformationCode").value =
-        this.transformationManager.getCode(this.currentMatrixIndex);
+      this.updateTransformationCode();
     }
 
     drawOnDragInterval() {
@@ -493,7 +492,8 @@ y = y + 1;
       transformationCodeElement.addEventListener('blur', () => this.saveTransformationCode());
     }
 
-    saveTransformationCode(matrixIndex, code = this.transformationCodeElement.value) {
+    saveTransformationCode(matrixIndex) {
+      const code = this.transformationCodeElement.value;
       this.codes[matrixIndex] = code;
       this.createTransformationFunction(matrixIndex, code);
     }
