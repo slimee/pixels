@@ -201,19 +201,34 @@ y = y + 1;
   }
 
   class CanvasManager {
-    constructor(canvas, matrice, transformationManager) {
+    constructor(canvas, transformationManager) {
       this.canvas = canvas;
       this.context = canvas.getContext('2d');
       this.transformationManager = transformationManager;
-      this.imageData = this.context.createImageData(matrice.width, matrice.height);
+      this.imageData = this.context.createImageData(canvas.width, canvas.height);
       this.brushSettings = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
       this.isDrawing = false;
       this.startPoint = null;
-      this.matrices = [matrice]; // Liste des matrices
-      this.currentMatrixIndex = 0; // Index de la  courante
+      this.matrices = [];
+      this.currentMatrixIndex = 0;
 
       this.initializeControls();
       this.updateMatrixSelector();
+
+      this.addNewMatrix();
+    }
+
+    addNewMatrix(matrice = null) {
+      const newMatrix = matrice || new Grid(this.canvas.width, this.canvas.height);
+      this.matrices.push(newMatrix);
+      this.currentMatrixIndex = this.matrices.length - 1;
+
+      // Initialiser la fonction de transformation pour le nouveau calque
+      const initialCode = this.transformationManager.getCode(this.currentMatrixIndex);
+      this.transformationManager.saveTransformationCode(this.currentMatrixIndex, initialCode);
+
+      this.updateMatrixSelector();
+      this.updateCanvas();
     }
 
     initializeControls() {
@@ -333,13 +348,7 @@ y = y + 1;
       const removeMatrixButton = document.getElementById("removeMatrixButton");
       const matrixSelector = document.getElementById("matrixSelector");
 
-      addMatrixButton.addEventListener("click", () => {
-        const newMatrix = new Grid(this.canvas.width, this.canvas.height);
-        this.matrices.push(newMatrix);
-        this.currentMatrixIndex = this.matrices.length - 1;
-        this.updateMatrixSelector();
-        this.updateCanvas();
-      });
+      addMatrixButton.addEventListener("click", () => this.addNewMatrix());
 
       removeMatrixButton.addEventListener("click", () => {
         if (this.matrices.length > 1) {
@@ -472,8 +481,7 @@ y = y + 1;
       transformationCodeElement.addEventListener('blur', () => this.saveTransformationCode());
     }
 
-    saveTransformationCode(matrixIndex) {
-      const code = this.transformationCodeElement.value;
+    saveTransformationCode(matrixIndex, code = this.transformationCodeElement.value) {
       this.codes[matrixIndex] = code;
       this.createTransformationFunction(matrixIndex, code);
     }
@@ -564,9 +572,8 @@ y = y + 1;
 
   document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('myCanvas');
-    const grid = new Grid(canvas.width, canvas.height);
     const transformationManager = new TransformationManager(document.getElementById('transformationCode'));
-    const canvasManager = new CanvasManager(canvas, grid, transformationManager);
+    const canvasManager = new CanvasManager(canvas, transformationManager);
     new ControlPanel(canvasManager, transformationManager, 'playPauseButton', 'intervalSpeed', 'intervalSpeedValue');
   });
 </script>
