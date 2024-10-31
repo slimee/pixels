@@ -64,7 +64,7 @@
         <option value="segment">Segment</option>
     </select>
     <label for="intervalSpeed">Vitesse (IPS):</label>
-    <input type="range" id="intervalSpeed" min="0.1" max="100" step="0.1" value="25">
+    <input type="range" id="intervalSpeedInput" min="0.1" max="100" step="0.1" value="25">
     <span id="intervalSpeedValue">25 IPS</span>
     <label for="drawOnDrag">Dessin continu</label>
     <input type="checkbox" id="drawOnDrag">
@@ -76,6 +76,30 @@ y = y + 1;
 </textarea>
 
 <script>
+  class UI {
+    constructor(){
+      this.clearButton = document.getElementById('clearButton');
+      this.clearAllButton = document.getElementById('clearAllButton');
+      this.eraserButton = document.getElementById('eraserButton');
+      this.pointColorInput = document.getElementById('pointColor');
+      this.pointSizeInput = document.getElementById('pointSize');
+      this.pointColorInput = document.getElementById('pointColor');
+      this.pointShapeInput = document.getElementById('pointShape');
+      this.drawOnDragCheckbox = document.getElementById('drawOnDrag');
+      this.canvas = document.getElementById('myCanvas');
+      this.resizeAnchor = document.getElementById("resizeAnchor");
+      this.addMatrixButton = document.getElementById("addMatrixButton");
+      this.removeMatrixButton = document.getElementById("removeMatrixButton");
+      this.matrixSelector = document.getElementById("matrixSelector");
+      this.transformationCodeInput = document.getElementById("transformationCode");
+      this.playPauseButton = document.getElementById('playPauseButton');
+      this.intervalSpeedInput = document.getElementById('intervalSpeedInput');
+      this.intervalSpeedValue = document.getElementById('intervalSpeedValue');
+
+    }
+  }
+
+
   class Grid {
     constructor(width, height) {
       this.width = width;
@@ -202,11 +226,12 @@ y = y + 1;
   }
 
   class CanvasManager {
-    constructor(canvas, transformationManager) {
-      this.canvas = canvas;
-      this.context = canvas.getContext('2d');
+    constructor(transformationManager, ui) {
+      this.ui = ui;
+      this.context = this.ui.canvas.getContext('2d');
       this.transformationManager = transformationManager;
-      this.imageData = this.context.createImageData(canvas.width, canvas.height);
+
+      this.imageData = this.context.createImageData(this.ui.canvas.width, this.ui.canvas.height);
       this.brushSettings = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
       this.isDrawing = false;
       this.startPoint = null;
@@ -220,7 +245,7 @@ y = y + 1;
     }
 
     addNewMatrix(matrice = null) {
-      const newMatrix = matrice || new Grid(this.canvas.width, this.canvas.height);
+      const newMatrix = matrice || new Grid(this.ui.canvas.width, this.ui.canvas.height);
       this.matrices.push(newMatrix);
       this.currentMatrixIndex = this.matrices.length - 1;
 
@@ -248,64 +273,54 @@ y = y + 1;
     }
 
     initClearButton() {
-      const clearButton = document.getElementById('clearButton');
-      clearButton.addEventListener('click', () => this.clearCurrentMatrix());
+      this.ui.clearButton.addEventListener('click', () => this.clearCurrentMatrix());
     }
 
     initClearAllButton() {
-      const clearAllButton = document.getElementById('clearAllButton');
-      clearAllButton.addEventListener('click', () => this.clearAllMatrices());
+      this.ui.clearAllButton.addEventListener('click', () => this.clearAllMatrices());
     }
 
     initEraserButton() {
-      const eraserButton = document.getElementById('eraserButton');
-      const pointColorInput = document.getElementById('pointColor');
-
-      eraserButton.addEventListener('click', () => {
-        const isEraserActive = eraserButton.classList.toggle("active");
-        this.brushSettings.pointColor = isEraserActive ? null : pointColorInput.value; // Null si gomme active, sinon couleur
-        pointColorInput.classList.toggle("disabled", isEraserActive); // Barre la couleur si gomme active
+      this.ui.eraserButton.addEventListener('click', () => {
+        const isEraserActive = this.ui.eraserButton.classList.toggle("active");
+        this.brushSettings.pointColor = isEraserActive ? null : this.ui.pointColorInput.value; // Null si gomme active, sinon couleur
+        this.ui.pointColorInput.classList.toggle("disabled", isEraserActive); // Barre la couleur si gomme active
       });
 
       // Désactive la gomme en rétablissant la couleur lorsque l’utilisateur clique sur le sélecteur de couleur
-      pointColorInput.addEventListener('click', () => {
-        eraserButton.classList.remove("active");
-        pointColorInput.classList.remove("disabled");
-        this.brushSettings.pointColor = pointColorInput.value; // Rétablit la couleur
+      this.ui.pointColorInput.addEventListener('click', () => {
+        this.ui.eraserButton.classList.remove("active");
+        this.ui.pointColorInput.classList.remove("disabled");
+        this.brushSettings.pointColor = this.ui.pointColorInput.value; // Rétablit la couleur
       });
     }
 
     initBrushSettings() {
-      const pointSizeInput = document.getElementById('pointSize');
-      const pointColorInput = document.getElementById('pointColor');
-      const pointShapeInput = document.getElementById('pointShape');
-
-      pointSizeInput.addEventListener('input', () => {
-        this.brushSettings.pointSize = parseInt(pointSizeInput.value, 10);
+      this.ui.pointSizeInput.addEventListener('input', () => {
+        this.brushSettings.pointSize = parseInt(this.ui.pointSizeInput.value, 10);
       });
 
-      pointColorInput.addEventListener('input', () => {
-        this.brushSettings.pointColor = pointColorInput.value;
+      this.ui.pointColorInput.addEventListener('input', () => {
+        this.brushSettings.pointColor = this.ui.pointColorInput.value;
       });
 
-      pointShapeInput.addEventListener('change', () => {
-        this.brushSettings.pointShape = pointShapeInput.value;
+      this.ui.pointShapeInput.addEventListener('change', () => {
+        this.brushSettings.pointShape = this.ui.pointShapeInput.value;
       });
     }
 
     initDrawOnDragCheckbox() {
-      const drawOnDragCheckbox = document.getElementById('drawOnDrag');
-      drawOnDragCheckbox.addEventListener('change', () => {
-        this.drawOnDrag = drawOnDragCheckbox.checked;
+      this.ui.drawOnDragCheckbox.addEventListener('change', () => {
+        this.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
       });
     }
 
     initCanvasMouseEvents() {
-      this.canvas.addEventListener('mousedown', (event) => this.handleMouseDown(event));
+      this.ui.canvas.addEventListener('mousedown', (event) => this.handleMouseDown(event));
 
-      this.canvas.addEventListener('mousemove', (event) => {
+      this.ui.canvas.addEventListener('mousemove', (event) => {
         if (this.isDrawing && this.drawOnDrag && this.brushSettings.pointShape !== 'segment') {
-          const rect = this.canvas.getBoundingClientRect();
+          const rect = this.ui.canvas.getBoundingClientRect();
           const x = Math.floor(event.clientX - rect.left);
           const y = Math.floor(event.clientY - rect.top);
           this.lastMousePosition = { x, y };
@@ -313,9 +328,9 @@ y = y + 1;
         }
       });
 
-      this.canvas.addEventListener('mouseup', (event) => {
+      this.ui.canvas.addEventListener('mouseup', (event) => {
         if (this.isDrawing && this.brushSettings.pointShape === 'segment' && this.startPoint) {
-          const rect = this.canvas.getBoundingClientRect();
+          const rect = this.ui.canvas.getBoundingClientRect();
           const x = Math.floor(event.clientX - rect.left);
           const y = Math.floor(event.clientY - rect.top);
           this.currentMatrix.updateMatrix(this.startPoint.x, this.startPoint.y, {
@@ -329,18 +344,17 @@ y = y + 1;
     }
 
     initializeResize() {
-      const resizeAnchor = document.getElementById("resizeAnchor");
       let isResizing = false;
 
-      resizeAnchor.addEventListener("mousedown", (event) => {
+      this.ui.resizeAnchor.addEventListener("mousedown", (event) => {
         isResizing = true;
         event.preventDefault();
       });
 
       document.addEventListener("mousemove", (event) => {
         if (isResizing) {
-          const newWidth = event.clientX - this.canvas.getBoundingClientRect().left;
-          const newHeight = event.clientY - this.canvas.getBoundingClientRect().top;
+          const newWidth = event.clientX - this.ui.canvas.getBoundingClientRect().left;
+          const newHeight = event.clientY - this.ui.canvas.getBoundingClientRect().top;
           this.resizeCanvas(newWidth, newHeight);
         }
       });
@@ -351,13 +365,9 @@ y = y + 1;
     }
 
     initMatrixControls() {
-      const addMatrixButton = document.getElementById("addMatrixButton");
-      const removeMatrixButton = document.getElementById("removeMatrixButton");
-      const matrixSelector = document.getElementById("matrixSelector");
+      this.ui.addMatrixButton.addEventListener("click", () => this.addNewMatrix());
 
-      addMatrixButton.addEventListener("click", () => this.addNewMatrix());
-
-      removeMatrixButton.addEventListener("click", () => {
+      this.ui.removeMatrixButton.addEventListener("click", () => {
         if (this.matrices.length > 1) {
           this.matrices.splice(this.currentMatrixIndex, 1);
           this.currentMatrixIndex = Math.max(0, this.currentMatrixIndex - 1);
@@ -366,15 +376,15 @@ y = y + 1;
         }
       });
 
-      matrixSelector.addEventListener("change", (event) => {
+      this.ui.matrixSelector.addEventListener("change", (event) => {
         this.currentMatrixIndex = parseInt(event.target.value, 10);
         this.updateCanvas();
-        this.updateTransformationCode();
+        this.updateTransformationCodeInput();
       });
     }
 
     handleMouseDown(event) {
-      const rect = this.canvas.getBoundingClientRect();
+      const rect = this.ui.canvas.getBoundingClientRect();
       const x = Math.floor(event.clientX - rect.left);
       const y = Math.floor(event.clientY - rect.top);
       this.isDrawing = true;
@@ -391,7 +401,7 @@ y = y + 1;
 
     handleMouseMove = (event) => {
       if (this.isDrawing && this.drawOnDrag && this.brushSettings.pointShape !== 'segment') {
-        const rect = this.canvas.getBoundingClientRect();
+        const rect = this.ui.canvas.getBoundingClientRect();
         const x = Math.floor(event.clientX - rect.left);
         const y = Math.floor(event.clientY - rect.top);
         this.drawAt(x, y);
@@ -400,7 +410,7 @@ y = y + 1;
 
     handleMouseUp = (event) => {
       if (this.isDrawing && this.brushSettings.pointShape === 'segment' && this.startPoint) {
-        const rect = this.canvas.getBoundingClientRect();
+        const rect = this.ui.canvas.getBoundingClientRect();
         const x = Math.floor(event.clientX - rect.left);
         const y = Math.floor(event.clientY - rect.top);
         this.currentMatrix.updateMatrix(this.startPoint.x, this.startPoint.y, {
@@ -427,8 +437,8 @@ y = y + 1;
     }
 
     resizeCanvas(newWidth, newHeight) {
-      this.canvas.width = newWidth;
-      this.canvas.height = newHeight;
+      this.ui.canvas.width = newWidth;
+      this.ui.canvas.height = newHeight;
       this.currentMatrix.resize(newWidth, newHeight);
       this.imageData = this.context.createImageData(this.currentMatrix.width, this.currentMatrix.height);
       this.updateCanvas();
@@ -458,17 +468,16 @@ y = y + 1;
     }
 
     updateMatrixSelector() {
-      const matrixSelector = document.getElementById("matrixSelector");
-      matrixSelector.innerHTML = '';
+      this.ui.matrixSelector.innerHTML = '';
       this.matrices.forEach((_, index) => {
           const option = document.createElement("option");
           option.value = index;
           option.textContent = `Calque ${index + 1}`;
           if (index === this.currentMatrixIndex) option.selected = true;
-          matrixSelector.appendChild(option);
+          this.ui.matrixSelector.appendChild(option);
         });
 
-      this.updateTransformationCode();
+      this.updateTransformationCodeInput();
     }
 
     drawOnDragInterval() {
@@ -478,22 +487,21 @@ y = y + 1;
       }
     }
 
-    updateTransformationCode() {
-      const code = this.transformationManager.getCode(this.currentMatrixIndex);
-      document.getElementById("transformationCode").value = code;
+    updateTransformationCodeInput() {
+      this.ui.transformationCodeInput.value = this.transformationManager.getCode(this.currentMatrixIndex);
     }
   }
 
   class TransformationManager {
-    constructor(transformationCodeElement) {
-      this.transformationCodeElement = transformationCodeElement;
+    constructor(ui) {
+      this.ui = ui;
       this.transformationFunctions = {}; // Stocke les fonctions de transformation par matrice
       this.codes = {}; // Stocke le code de transformation par matrice
-      transformationCodeElement.addEventListener('blur', () => this.saveTransformationCode());
+      this.ui.transformationCodeInput.addEventListener('blur', () => this.saveTransformationCode());
     }
 
     saveTransformationCode(matrixIndex) {
-      const code = this.transformationCodeElement.value;
+      const code = this.ui.transformationCodeInput.value;
       this.codes[matrixIndex] = code;
       this.createTransformationFunction(matrixIndex, code);
     }
@@ -531,25 +539,24 @@ y = y + 1;
   }
 
   class ControlPanel {
-    constructor(canvasManager, transformationManager, playPauseButtonId, intervalSpeedInputId, intervalSpeedValueId) {
+    constructor(canvasManager, transformationManager, ui) {
       this.canvasManager = canvasManager;
       this.transformationManager = transformationManager;
-      this.playPauseButton = document.getElementById(playPauseButtonId);
-      this.intervalSpeedInput = document.getElementById(intervalSpeedInputId);
-      this.intervalSpeedValue = document.getElementById(intervalSpeedValueId);
+      this.ui = ui;
+
       this.isPlaying = false;
       this.intervalId = null;
 
-      this.playPauseButton.addEventListener('click', () => this.togglePlayPause());
-      this.intervalSpeedInput.addEventListener('input', () => this.updateIntervalSpeed());
+      this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
+      this.ui.intervalSpeedInput.addEventListener('input', () => this.updateIntervalSpeed());
 
       this.updateIntervalSpeed();
     }
 
     updateIntervalSpeed() {
-      const ips = parseFloat(this.intervalSpeedInput.value);
+      const ips = parseFloat(this.ui.intervalSpeedInput.value);
       this.intervalMs = 1000 / ips;
-      this.intervalSpeedValue.textContent = `${ips.toFixed(1)} IPS`;
+      this.ui.intervalSpeedValue.textContent = `${ips.toFixed(1)} IPS`;
 
       if (this.isPlaying) {
         clearInterval(this.intervalId);
@@ -563,7 +570,7 @@ y = y + 1;
         : this.startInterval();
 
       this.isPlaying = !this.isPlaying;
-      this.playPauseButton.textContent = this.isPlaying ? 'Pause' : 'Play';
+      this.ui.playPauseButton.textContent = this.isPlaying ? 'Pause' : 'Play';
     }
 
     startInterval() {
@@ -583,10 +590,10 @@ y = y + 1;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById('myCanvas');
-    const transformationManager = new TransformationManager(document.getElementById('transformationCode'));
-    const canvasManager = new CanvasManager(canvas, transformationManager);
-    new ControlPanel(canvasManager, transformationManager, 'playPauseButton', 'intervalSpeed', 'intervalSpeedValue');
+    const ui = new UI();
+    const transformationManager = new TransformationManager(ui);
+    const canvasManager = new CanvasManager(transformationManager, ui);
+    new ControlPanel(canvasManager, transformationManager, ui);
   });
 </script>
 </body>
