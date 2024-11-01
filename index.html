@@ -98,8 +98,13 @@ y = y + 1;
     }
   }
 
-
-  class Grid {
+  class State {
+    constructor() {
+      this.currentMatrixIndex = 0;
+    }
+  }
+  
+  class Matrix {
     constructor(width, height) {
       this.width = width;
       this.height = height;
@@ -120,26 +125,22 @@ y = y + 1;
       };
     }
 
-    wrapCoordinate(value, max) {
-      return ((value % max) + max) % max;
-    }
-
-    updateMatrix(x, y, brushSettings) {
-      const isEraser = brushSettings.pointColor === null;
+    paint(x, y, brush) {
+      const isEraser = brush.pointColor === null;
       const color = isEraser
         ? { r: 0, g: 0, b: 0, a: 0 }  // Couleur transparente pour la gomme
-        : this.hexToRGBA(brushSettings.pointColor);
+        : this.hexToRGBA(brush.pointColor);
 
-      const halfSize = Math.floor(brushSettings.pointSize / 2);
+      const halfSize = Math.floor(brush.pointSize / 2);
 
       // Utilise la forme du pinceau sélectionnée
-      if (brushSettings.pointShape === 'segment' && brushSettings.endX !== undefined && brushSettings.endY !== undefined) {
-        this.paintSegment(x, y, brushSettings.endX, brushSettings.endY, color, brushSettings.pointSize);
-      } else if (brushSettings.pointShape === 'circle') {
+      if (brush.pointShape === 'segment' && brush.endX !== undefined && brush.endY !== undefined) {
+        this.paintSegment(x, y, brush.endX, brush.endY, color, brush.pointSize);
+      } else if (brush.pointShape === 'circle') {
         this.paintCircle(x, y, halfSize, color);
-      } else if (brushSettings.pointShape === 'square') {
+      } else if (brush.pointShape === 'square') {
         this.paintSquare(x, y, halfSize, color);
-      } else if (brushSettings.pointShape === 'triangle') {
+      } else if (brush.pointShape === 'triangle') {
         this.paintTriangle(x, y, halfSize, color);
       }
     }
@@ -197,10 +198,14 @@ y = y + 1;
       }
     }
 
-    setPixelColor(x, y, color) {
-      const wrappedX = this.wrapCoordinate(x, this.width);
-      const wrappedY = this.wrapCoordinate(y, this.height);
-      const index = (wrappedY * this.width + wrappedX) * 4;
+    wrapCoordinate(value, max) {
+      return ((value % max) + max) % max;
+    }
+
+    setPixelColor(rawX, rawY, color) {
+      const x = this.wrapCoordinate(rawX, this.width);
+      const y = this.wrapCoordinate(rawY, this.height);
+      const index = (y * this.width + x) * 4;
       this.matrix[index] = color.r;
       this.matrix[index + 1] = color.g;
       this.matrix[index + 2] = color.b;
@@ -225,17 +230,17 @@ y = y + 1;
   }
 
   class CanvasManager {
-    constructor(transformationManager, ui) {
+    constructor(state, transformationManager, ui) {
+      this.state = state;
       this.ui = ui;
       this.context = this.ui.canvas.getContext('2d');
       this.transformationManager = transformationManager;
 
       this.imageData = this.context.createImageData(this.ui.canvas.width, this.ui.canvas.height);
-      this.brushSettings = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
+      this.brush = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
       this.isDrawing = false;
       this.startPoint = null;
       this.matrices = [];
-      this.currentMatrixIndex = 0;
 
       this.initializeControls();
       this.updateMatrixSelector();
@@ -243,14 +248,22 @@ y = y + 1;
       this.addNewMatrix();
     }
 
+    get currentMatrixIndex() {
+      return this.state.currentMatrixIndex;
+    }
+
+    set currentMatrixIndex(index) {
+      this.state.currentMatrixIndex = index;
+    }
+
     addNewMatrix(matrice = null) {
-      const newMatrix = matrice || new Grid(this.ui.canvas.width, this.ui.canvas.height);
+      const newMatrix = matrice || new Matrix(this.ui.canvas.width, this.ui.canvas.height);
       this.matrices.push(newMatrix);
       this.currentMatrixIndex = this.matrices.length - 1;
 
       // Initialiser la fonction de transformation pour le nouveau calque
       const initialCode = this.transformationManager.getCode(this.currentMatrixIndex);
-      this.transformationManager.saveTransformationCode(this.currentMatrixIndex, initialCode);
+      this.transformationManager.transformationCodeChanged(this.currentMatrixIndex, initialCode);
 
       this.updateMatrixSelector();
       this.updateCanvas();
@@ -282,7 +295,7 @@ y = y + 1;
     initEraserButton() {
       this.ui.eraserButton.addEventListener('click', () => {
         const isEraserActive = this.ui.eraserButton.classList.toggle("active");
-        this.brushSettings.pointColor = isEraserActive ? null : this.ui.pointColorInput.value;
+        this.brush.pointColor = isEraserActive ? null : this.ui.pointColorInput.value;
         this.ui.pointColorInput.classList.toggle("disabled", isEraserActive);
       });
 
@@ -290,21 +303,21 @@ y = y + 1;
       this.ui.pointColorInput.addEventListener('click', () => {
         this.ui.eraserButton.classList.remove("active");
         this.ui.pointColorInput.classList.remove("disabled");
-        this.brushSettings.pointColor = this.ui.pointColorInput.value; // Rétablit la couleur
+        this.brush.pointColor = this.ui.pointColorInput.value; // Rétablit la couleur
       });
     }
 
     initBrushSettings() {
       this.ui.pointSizeInput.addEventListener('input', () => {
-        this.brushSettings.pointSize = parseInt(this.ui.pointSizeInput.value, 10);
+        this.brush.pointSize = parseInt(this.ui.pointSizeInput.value, 10);
       });
 
       this.ui.pointColorInput.addEventListener('input', () => {
-        this.brushSettings.pointColor = this.ui.pointColorInput.value;
+        this.brush.pointColor = this.ui.pointColorInput.value;
       });
 
       this.ui.pointShapeInput.addEventListener('change', () => {
-        this.brushSettings.pointShape = this.ui.pointShapeInput.value;
+        this.brush.pointShape = this.ui.pointShapeInput.value;
       });
     }
 
@@ -318,7 +331,7 @@ y = y + 1;
       this.ui.canvas.addEventListener('mousedown', (event) => this.handleMouseDown(event));
 
       this.ui.canvas.addEventListener('mousemove', (event) => {
-        if (this.isDrawing && this.drawOnDrag && this.brushSettings.pointShape !== 'segment') {
+        if (this.isDrawing && this.drawOnDrag && this.brush.pointShape !== 'segment') {
           const rect = this.ui.canvas.getBoundingClientRect();
           const x = Math.floor(event.clientX - rect.left);
           const y = Math.floor(event.clientY - rect.top);
@@ -328,12 +341,12 @@ y = y + 1;
       });
 
       this.ui.canvas.addEventListener('mouseup', (event) => {
-        if (this.isDrawing && this.brushSettings.pointShape === 'segment' && this.startPoint) {
+        if (this.isDrawing && this.brush.pointShape === 'segment' && this.startPoint) {
           const rect = this.ui.canvas.getBoundingClientRect();
           const x = Math.floor(event.clientX - rect.left);
           const y = Math.floor(event.clientY - rect.top);
-          this.currentMatrix.updateMatrix(this.startPoint.x, this.startPoint.y, {
-            ...this.brushSettings, endX: x, endY: y
+          this.currentMatrix.paint(this.startPoint.x, this.startPoint.y, {
+            ...this.brush, endX: x, endY: y
           });
           this.startPoint = null;
         }
@@ -343,24 +356,21 @@ y = y + 1;
     }
 
     initResize() {
-      let isResizing = false;
+      const addListeners = () => {
+        document.addEventListener("mousemove", mouseMove);
+        document.addEventListener("mouseup", removeListeners);
+      }
+      const removeListeners = () => {
+        document.removeEventListener("mousemove", mouseMove);
+        document.removeEventListener("mouseup", removeListeners);
+      }
+      const mouseMove = (event) => {
+        const newWidth = Math.ceil(event.clientX - this.ui.canvas.getBoundingClientRect().left);
+        const newHeight = Math.ceil(event.clientY - this.ui.canvas.getBoundingClientRect().top);
+        this.resizeCanvas(newWidth, newHeight);
+      }
 
-      this.ui.resizeAnchor.addEventListener("mousedown", (event) => {
-        isResizing = true;
-        event.preventDefault();
-      });
-
-      document.addEventListener("mousemove", (event) => {
-        if (isResizing) {
-          const newWidth = event.clientX - this.ui.canvas.getBoundingClientRect().left;
-          const newHeight = event.clientY - this.ui.canvas.getBoundingClientRect().top;
-          this.resizeCanvas(newWidth, newHeight);
-        }
-      });
-
-      document.addEventListener("mouseup", () => {
-        isResizing = false;
-      });
+      this.ui.resizeAnchor.addEventListener("mousedown", addListeners);
     }
 
     initMatrixControls() {
@@ -388,7 +398,7 @@ y = y + 1;
       const y = Math.floor(event.clientY - rect.top);
       this.isDrawing = true;
       this.lastMousePosition = { x, y };
-      if (this.brushSettings.pointShape === 'segment') {
+      if (this.brush.pointShape === 'segment') {
         this.startPoint = { x, y }; // Enregistrer le point de départ
       } else {
         this.drawAt(x, y);
@@ -399,7 +409,7 @@ y = y + 1;
     }
 
     handleMouseMove = (event) => {
-      if (this.isDrawing && this.drawOnDrag && this.brushSettings.pointShape !== 'segment') {
+      if (this.isDrawing && this.drawOnDrag && this.brush.pointShape !== 'segment') {
         const rect = this.ui.canvas.getBoundingClientRect();
         const x = Math.floor(event.clientX - rect.left);
         const y = Math.floor(event.clientY - rect.top);
@@ -408,12 +418,12 @@ y = y + 1;
     }
 
     handleMouseUp = (event) => {
-      if (this.isDrawing && this.brushSettings.pointShape === 'segment' && this.startPoint) {
+      if (this.isDrawing && this.brush.pointShape === 'segment' && this.startPoint) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const x = Math.floor(event.clientX - rect.left);
         const y = Math.floor(event.clientY - rect.top);
-        this.currentMatrix.updateMatrix(this.startPoint.x, this.startPoint.y, {
-          ...this.brushSettings, endX: x, endY: y
+        this.currentMatrix.paint(this.startPoint.x, this.startPoint.y, {
+          ...this.brush, endX: x, endY: y
         });
         this.startPoint = null;
       }
@@ -436,15 +446,22 @@ y = y + 1;
     }
 
     resizeCanvas(newWidth, newHeight) {
+      // Redimensionner le canevas
       this.ui.canvas.width = newWidth;
       this.ui.canvas.height = newHeight;
+
+      // Redimensionner la matrice courante
       this.currentMatrix.resize(newWidth, newHeight);
-      this.imageData = this.context.createImageData(this.currentMatrix.width, this.currentMatrix.height);
+
+      // Créer de nouveaux `imageData` basés sur la nouvelle taille du canevas
+      this.imageData = this.context.createImageData(newWidth, newHeight);
+
+      // Mettre à jour le canevas avec les nouvelles dimensions et les données de la matrice
       this.updateCanvas();
     }
 
     drawAt(x, y) {
-      this.currentMatrix.updateMatrix(x, y, this.brushSettings);
+      this.currentMatrix.paint(x, y, this.brush);
       this.updateCanvas();
     }
 
@@ -482,7 +499,7 @@ y = y + 1;
     drawOnDragInterval() {
       if (this.lastMousePosition) {
         const { x, y } = this.lastMousePosition;
-        this.currentMatrix.updateMatrix(x, y, this.brushSettings);
+        this.currentMatrix.paint(x, y, this.brush);
       }
     }
 
@@ -492,15 +509,15 @@ y = y + 1;
   }
 
   class TransformationManager {
-    constructor(ui) {
+    constructor(state, ui) {
+      this.state = state;
       this.ui = ui;
       this.transformationFunctions = {}; // Stocke les fonctions de transformation par matrice
       this.codes = {}; // Stocke le code de transformation par matrice
-      this.ui.transformationCodeInput.addEventListener('blur', () => this.transformationCodeChanged());
+      this.ui.transformationCodeInput.addEventListener('blur', () => this.transformationCodeChanged(this.state.currentMatrixIndex));
     }
 
-    transformationCodeChanged(matrixIndex) {
-      const code = this.ui.transformationCodeInput.value;
+    transformationCodeChanged(matrixIndex, code = this.ui.transformationCodeInput.value) {
       this.codes[matrixIndex] = code;
       this.createTransformationFunction(matrixIndex, code);
     }
@@ -521,19 +538,19 @@ y = y + 1;
       return this.transformationFunctions[matrixIndex] || ((x, y) => ({ x, y }));
     }
 
-    applyTransformation(grid, transformationFunction) {
-      const newMatrix = new Uint8ClampedArray(grid.width * grid.height * 4);
-      for (let y = 0; y < grid.height; y++) {
-        for (let x = 0; x < grid.width; x++) {
+    applyTransformation(matrix, transformationFunction) {
+      const newMatrix = new Uint8ClampedArray(matrix.width * matrix.height * 4);
+      for (let y = 0; y < matrix.height; y++) {
+        for (let x = 0; x < matrix.width; x++) {
           const { x: newX, y: newY } = transformationFunction(x, y);
-          const targetX = (newX + grid.width) % grid.width;
-          const targetY = (newY + grid.height) % grid.height;
-          const newIndex = (targetY * grid.width + targetX) * 4;
-          const oldIndex = (y * grid.width + x) * 4;
-          newMatrix.set(grid.matrix.slice(oldIndex, oldIndex + 4), newIndex);
+          const targetX = (newX + matrix.width) % matrix.width;
+          const targetY = (newY + matrix.height) % matrix.height;
+          const newIndex = (targetY * matrix.width + targetX) * 4;
+          const oldIndex = (y * matrix.width + x) * 4;
+          newMatrix.set(matrix.matrix.slice(oldIndex, oldIndex + 4), newIndex);
         }
       }
-      grid.matrix = newMatrix;
+      matrix.matrix = newMatrix;
     }
   }
 
@@ -589,9 +606,10 @@ y = y + 1;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const state = new State();
     const ui = new UI();
-    const transformationManager = new TransformationManager(ui);
-    const canvasManager = new CanvasManager(transformationManager, ui);
+    const transformationManager = new TransformationManager(state, ui);
+    const canvasManager = new CanvasManager(state, transformationManager, ui);
     new ControlPanel(canvasManager, transformationManager, ui);
   });
 </script>
