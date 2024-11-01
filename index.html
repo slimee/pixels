@@ -115,8 +115,6 @@ y = y + 1;
       this.matrix = new Uint8ClampedArray(width * height * 4); // Stockage RGBA
     }
 
-
-    // Mettre à jour les pixels et dessiner sur le offscreen canvas
     updateAndPaint(transformationFunction) {
       // Créer un tableau pour stocker les données transformées
       const newMatrix = new Uint8ClampedArray(this.width * this.height * 4);
@@ -125,31 +123,31 @@ y = y + 1;
       for (let y = 0; y < this.height; y++) {
         for (let x = 0; x < this.width; x++) {
           const index = (y * this.width + x) * 4;
-
-          // Récupérer les nouvelles coordonnées après transformation
           const { x: newX, y: newY } = transformationFunction(x, y);
           const wrappedX = ((newX % this.width) + this.width) % this.width;
           const wrappedY = ((newY % this.height) + this.height) % this.height;
           const newIndex = (wrappedY * this.width + wrappedX) * 4;
 
           // Copier les données de couleur dans la nouvelle position
-          newMatrix[newIndex] = this.matrix[index];       // Rouge
-          newMatrix[newIndex + 1] = this.matrix[index + 1]; // Vert
-          newMatrix[newIndex + 2] = this.matrix[index + 2]; // Bleu
-          newMatrix[newIndex + 3] = this.matrix[index + 3]; // Alpha
+          newMatrix[newIndex] = this.matrix[index];
+          newMatrix[newIndex + 1] = this.matrix[index + 1];
+          newMatrix[newIndex + 2] = this.matrix[index + 2];
+          newMatrix[newIndex + 3] = this.matrix[index + 3];
         }
       }
 
-      // Remplacez l'ancienne matrice par la nouvelle
+      // Mettre à jour la matrice actuelle
       this.matrix.set(newMatrix);
 
-      // Dessiner sur le offscreen canvas
-      const imageData = new ImageData(new Uint8ClampedArray(this.matrix), this.width, this.height);
+      // Créer et dessiner sur l'`offscreenCanvas`
+      const imageData = new ImageData(this.matrix, this.width, this.height);
+
       this.context.putImageData(imageData, 0, 0);
     }
 
+
     drawToMainCanvas(mainContext) {
-      mainContext.drawImage(this.offscreenCanvas, 0, 0);
+      mainContext.drawImage(this.offscreenCanvas, 0, 0); // Assurez-vous que cette ligne est exécutée
     }
 
     clear() {
@@ -507,11 +505,15 @@ y = y + 1;
     }
 
     updateCanvas() {
+      // Efface le contenu existant du canevas principal
       this.context.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
+
+      // Dessine chaque calque sur le canevas principal
       this.matrices.forEach(matrix => {
         matrix.drawToMainCanvas(this.context);
       });
     }
+
 
     updateMatrixSelector() {
       this.ui.matrixSelector.innerHTML = '';
