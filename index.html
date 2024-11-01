@@ -547,11 +547,16 @@ y = y + 1;
           const targetY = (newY + matrix.height) % matrix.height;
           const newIndex = (targetY * matrix.width + targetX) * 4;
           const oldIndex = (y * matrix.width + x) * 4;
-          newMatrix.set(matrix.matrix.slice(oldIndex, oldIndex + 4), newIndex);
+
+          // Copier uniquement si le pixel n'est pas transparent
+          if (matrix.matrix[oldIndex + 3] !== 0) {
+            newMatrix.set(matrix.matrix.slice(oldIndex, oldIndex + 4), newIndex);
+          }
         }
       }
       matrix.matrix = newMatrix;
     }
+
   }
 
   class ControlPanel {
