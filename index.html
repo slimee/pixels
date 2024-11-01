@@ -108,7 +108,48 @@ y = y + 1;
     constructor(width, height) {
       this.width = width;
       this.height = height;
-      this.matrix = new Uint8ClampedArray(width * height * 4); // Stockage RGBA pour chaque pixel
+      this.offscreenCanvas = document.createElement('canvas');
+      this.offscreenCanvas.width = width;
+      this.offscreenCanvas.height = height;
+      this.context = this.offscreenCanvas.getContext('2d');
+      this.matrix = new Uint8ClampedArray(width * height * 4); // Stockage RGBA
+    }
+
+
+    // Mettre à jour les pixels et dessiner sur le offscreen canvas
+    updateAndPaint(transformationFunction) {
+      // Créer un tableau pour stocker les données transformées
+      const newMatrix = new Uint8ClampedArray(this.width * this.height * 4);
+
+      // Appliquer la transformation pixel par pixel
+      for (let y = 0; y < this.height; y++) {
+        for (let x = 0; x < this.width; x++) {
+          const index = (y * this.width + x) * 4;
+
+          // Récupérer les nouvelles coordonnées après transformation
+          const { x: newX, y: newY } = transformationFunction(x, y);
+          const wrappedX = ((newX % this.width) + this.width) % this.width;
+          const wrappedY = ((newY % this.height) + this.height) % this.height;
+          const newIndex = (wrappedY * this.width + wrappedX) * 4;
+
+          // Copier les données de couleur dans la nouvelle position
+          newMatrix[newIndex] = this.matrix[index];       // Rouge
+          newMatrix[newIndex + 1] = this.matrix[index + 1]; // Vert
+          newMatrix[newIndex + 2] = this.matrix[index + 2]; // Bleu
+          newMatrix[newIndex + 3] = this.matrix[index + 3]; // Alpha
+        }
+      }
+
+      // Remplacez l'ancienne matrice par la nouvelle
+      this.matrix.set(newMatrix);
+
+      // Dessiner sur le offscreen canvas
+      const imageData = new ImageData(new Uint8ClampedArray(this.matrix), this.width, this.height);
+      this.context.putImageData(imageData, 0, 0);
+    }
+
+    drawToMainCanvas(mainContext) {
+      mainContext.drawImage(this.offscreenCanvas, 0, 0);
     }
 
     clear() {
@@ -466,21 +507,10 @@ y = y + 1;
     }
 
     updateCanvas() {
-      this.imageData.data.fill(0);
-
-      for (const matrix of this.matrices) {
-        for (let i = 0; i < matrix.matrix.length; i += 4) {
-          if (matrix.matrix[i + 3] !== 0) { // Canaux RGBA, [i+3] est l'alpha
-            this.imageData.data[i] = matrix.matrix[i];       // Rouge
-            this.imageData.data[i + 1] = matrix.matrix[i + 1]; // Vert
-            this.imageData.data[i + 2] = matrix.matrix[i + 2]; // Bleu
-            this.imageData.data[i + 3] = matrix.matrix[i + 3]; // Alpha
-          }
-        }
-      }
-
-      // Applique les données de l'imageData sur le canvas
-      this.context.putImageData(this.imageData, 0, 0);
+      this.context.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
+      this.matrices.forEach(matrix => {
+        matrix.drawToMainCanvas(this.context);
+      });
     }
 
     updateMatrixSelector() {
@@ -595,19 +625,27 @@ y = y + 1;
     }
 
     startInterval() {
-      this.intervalId = setInterval(() => {
-        this.canvasManager.matrices.forEach((matrix, index) => {
-          const transformationFunction = this.transformationManager.getTransformationFunction(index);
-          this.transformationManager.applyTransformation(matrix, transformationFunction);
-        });
+      let lastTime = 0;
+      const frameInterval = 1000 / this.intervalMs; // Par exemple, 40 ms pour 25 FPS
 
-        if (this.canvasManager.drawOnDrag && this.canvasManager.isDrawing) {
-          this.canvasManager.drawOnDragInterval();
+      const animate = (time) => {
+        if (time - lastTime >= frameInterval) {
+          lastTime = time;
+          this.canvasManager.matrices.forEach((matrix, index) => {
+            const transformationFunction = this.transformationManager.getTransformationFunction(index);
+            matrix.updateAndPaint(transformationFunction);
+          });
+          this.canvasManager.updateCanvas();
         }
+        if (this.isPlaying) {
+          requestAnimationFrame(animate);
+        }
+      };
 
-        this.canvasManager.updateCanvas();
-      }, this.intervalMs);
+      this.isPlaying = true;
+      requestAnimationFrame(animate);
     }
+
   }
 
   document.addEventListener('DOMContentLoaded', () => {
