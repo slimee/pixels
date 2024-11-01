@@ -63,7 +63,7 @@
         <option value="triangle">Triangle</option>
         <option value="segment">Segment</option>
     </select>
-    <label for="intervalSpeed">Vitesse (IPS):</label>
+    <label for="intervalSpeedInput">Vitesse (IPS):</label>
     <input type="range" id="intervalSpeedInput" min="0.1" max="100" step="0.1" value="25">
     <span id="intervalSpeedValue">25 IPS</span>
     <label for="drawOnDrag">Dessin continu</label>
@@ -95,7 +95,6 @@ y = y + 1;
       this.playPauseButton = document.getElementById('playPauseButton');
       this.intervalSpeedInput = document.getElementById('intervalSpeedInput');
       this.intervalSpeedValue = document.getElementById('intervalSpeedValue');
-
     }
   }
 
@@ -264,7 +263,7 @@ y = y + 1;
       this.initBrushSettings();
       this.initDrawOnDragCheckbox();
       this.initCanvasMouseEvents();
-      this.initializeResize();
+      this.initResize();
       this.initMatrixControls();
     }
 
@@ -283,8 +282,8 @@ y = y + 1;
     initEraserButton() {
       this.ui.eraserButton.addEventListener('click', () => {
         const isEraserActive = this.ui.eraserButton.classList.toggle("active");
-        this.brushSettings.pointColor = isEraserActive ? null : this.ui.pointColorInput.value; // Null si gomme active, sinon couleur
-        this.ui.pointColorInput.classList.toggle("disabled", isEraserActive); // Barre la couleur si gomme active
+        this.brushSettings.pointColor = isEraserActive ? null : this.ui.pointColorInput.value;
+        this.ui.pointColorInput.classList.toggle("disabled", isEraserActive);
       });
 
       // Désactive la gomme en rétablissant la couleur lorsque l’utilisateur clique sur le sélecteur de couleur
@@ -343,7 +342,7 @@ y = y + 1;
       });
     }
 
-    initializeResize() {
+    initResize() {
       let isResizing = false;
 
       this.ui.resizeAnchor.addEventListener("mousedown", (event) => {
@@ -497,10 +496,10 @@ y = y + 1;
       this.ui = ui;
       this.transformationFunctions = {}; // Stocke les fonctions de transformation par matrice
       this.codes = {}; // Stocke le code de transformation par matrice
-      this.ui.transformationCodeInput.addEventListener('blur', () => this.saveTransformationCode());
+      this.ui.transformationCodeInput.addEventListener('blur', () => this.transformationCodeChanged());
     }
 
-    saveTransformationCode(matrixIndex) {
+    transformationCodeChanged(matrixIndex) {
       const code = this.ui.transformationCodeInput.value;
       this.codes[matrixIndex] = code;
       this.createTransformationFunction(matrixIndex, code);
