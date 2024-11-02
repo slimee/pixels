@@ -115,7 +115,7 @@ y = y + 1;
       this.matrix = new Uint8ClampedArray(width * height * 4); // Stockage RGBA
     }
 
-    updateAndPaint(transformationFunction) {
+    transform(transformationFunction) {
       // Créer un tableau pour stocker les données transformées
       const newMatrix = new Uint8ClampedArray(this.width * this.height * 4);
 
@@ -613,40 +613,42 @@ y = y + 1;
 
       if (this.isPlaying) {
         clearInterval(this.intervalId);
-        this.startInterval();
+        this.play();
       }
     }
 
     togglePlayPause() {
       this.isPlaying
-        ? clearInterval(this.intervalId)
-        : this.startInterval();
+        ? this.pause()
+        : this.play();
 
-      this.isPlaying = !this.isPlaying;
       this.ui.playPauseButton.textContent = this.isPlaying ? 'Pause' : 'Play';
     }
 
-    startInterval() {
-      let lastTime = 0;
-      const frameInterval = 1000 / this.intervalMs; // Par exemple, 40 ms pour 25 FPS
+    pause(){
+      this.isPlaying = false;
+      clearInterval(this.intervalId);
+    }
 
-      const animate = (time) => {
-        if (time - lastTime >= frameInterval) {
-          lastTime = time;
-          this.canvasManager.matrices.forEach((matrix, index) => {
-            const transformationFunction = this.transformationManager.getTransformationFunction(index);
-            matrix.updateAndPaint(transformationFunction);
-          });
-          this.canvasManager.updateCanvas();
-        }
+    play() {
+      this.isPlaying = true;
+
+      const frame = () => {
+        console.log("frame");
+        // to factorize
+        this.canvasManager.matrices.forEach((matrix, index) => {
+          const transformationFunction = this.transformationManager.getTransformationFunction(index);
+          matrix.transform(transformationFunction);
+        });
+        this.canvasManager.updateCanvas(); // Met à jour le canvas après chaque transformation
         if (this.isPlaying) {
-          requestAnimationFrame(animate);
+          requestAnimationFrame(frame);
         }
       };
 
-      this.isPlaying = true;
-      requestAnimationFrame(animate);
+      requestAnimationFrame(frame); // Lancement de l'animation en continu
     }
+
 
   }
 
