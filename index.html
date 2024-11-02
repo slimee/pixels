@@ -294,7 +294,6 @@ y = y + 1;
       this.matrices.push(newMatrix);
       this.currentMatrixIndex = this.matrices.length - 1;
 
-      // Initialiser la fonction de transformation pour le nouveau calque
       const initialCode = this.transformationManager.getCode(this.currentMatrixIndex);
       this.transformationManager.transformationCodeChanged(this.currentMatrixIndex, initialCode);
 
