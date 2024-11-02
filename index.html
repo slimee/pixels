@@ -279,6 +279,10 @@ y = y + 1;
       this.addNewMatrix();
     }
 
+    get currentMatrix() {
+      return this.matrices[this.currentMatrixIndex];
+    }
+
     get currentMatrixIndex() {
       return this.state.currentMatrixIndex;
     }
@@ -307,10 +311,6 @@ y = y + 1;
       this.initCanvasMouseEvents();
       this.initResize();
       this.initMatrixControls();
-    }
-
-    get currentMatrix() {
-      return this.matrices[this.currentMatrixIndex];
     }
 
     initClearButton() {
@@ -449,21 +449,6 @@ y = y + 1;
       this.updateCanvas();
     }
 
-    resizeCanvas(newWidth, newHeight) {
-      // Redimensionner le canevas
-      this.ui.canvas.width = newWidth;
-      this.ui.canvas.height = newHeight;
-
-      // Redimensionner la matrice courante
-      this.currentMatrix.resize(newWidth, newHeight);
-
-      // Créer de nouveaux `imageData` basés sur la nouvelle taille du canevas
-      this.imageData = this.context.createImageData(newWidth, newHeight);
-
-      // Mettre à jour le canevas avec les nouvelles dimensions et les données de la matrice
-      this.updateCanvas();
-    }
-
     drawAt(x, y) {
       this.currentMatrix.paint(x, y, this.brush);
       this.updateCanvas();
@@ -479,6 +464,17 @@ y = y + 1;
       });
     }
 
+    resizeCanvas(newWidth, newHeight) {
+      // Redimensionner le canevas
+      this.ui.canvas.width = newWidth;
+      this.ui.canvas.height = newHeight;
+
+      // Redimensionner la matrice courante
+      this.currentMatrix.resize(newWidth, newHeight);
+
+      // Mettre à jour le canevas avec les nouvelles dimensions et les données de la matrice
+      this.updateCanvas();
+    }
 
     updateMatrixSelector() {
       this.ui.matrixSelector.innerHTML = '';
