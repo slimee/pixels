@@ -272,7 +272,6 @@ y = y + 1;
 
       this.imageData = this.context.createImageData(this.ui.canvas.width, this.ui.canvas.height);
       this.brush = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
-      this.isDrawing = false;
       this.startPoint = null;
       this.matrices = [];
 
@@ -290,8 +289,8 @@ y = y + 1;
       this.state.currentMatrixIndex = index;
     }
 
-    addNewMatrix(matrice = null) {
-      const newMatrix = matrice || new Matrix(this.ui.canvas.width, this.ui.canvas.height);
+    addNewMatrix() {
+      const newMatrix = new Matrix(this.ui.canvas.width, this.ui.canvas.height);
       this.matrices.push(newMatrix);
       this.currentMatrixIndex = this.matrices.length - 1;
 
@@ -300,7 +299,6 @@ y = y + 1;
       this.transformationManager.transformationCodeChanged(this.currentMatrixIndex, initialCode);
 
       this.updateMatrixSelector();
-      this.updateCanvas();
     }
 
     initializeControls() {
@@ -406,7 +404,6 @@ y = y + 1;
       const rect = this.ui.canvas.getBoundingClientRect();
       const x = Math.floor(event.clientX - rect.left);
       const y = Math.floor(event.clientY - rect.top);
-      this.isDrawing = true;
       this.lastMousePosition = { x, y };
       if (this.brush.pointShape === 'segment') {
         this.startPoint = { x, y }; // Enregistrer le point de départ
@@ -419,7 +416,7 @@ y = y + 1;
     }
 
     handleMouseMove = (event) => {
-      if (this.isDrawing && this.drawOnDrag && this.brush.pointShape !== 'segment') {
+      if (this.drawOnDrag && this.brush.pointShape !== 'segment') {
         const rect = this.ui.canvas.getBoundingClientRect();
         const x = Math.floor(event.clientX - rect.left);
         const y = Math.floor(event.clientY - rect.top);
@@ -428,7 +425,7 @@ y = y + 1;
     }
 
     handleMouseUp = (event) => {
-      if (this.isDrawing && this.brush.pointShape === 'segment' && this.startPoint) {
+      if (this.brush.pointShape === 'segment' && this.startPoint) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const x = Math.floor(event.clientX - rect.left);
         const y = Math.floor(event.clientY - rect.top);
@@ -438,8 +435,6 @@ y = y + 1;
         this.startPoint = null;
       }
       this.lastMousePosition = null;
-      this.isDrawing = false;
-      this.updateCanvas();
 
       // Supprimer les écouteurs globaux
       document.removeEventListener('mousemove', this.handleMouseMove);
@@ -501,7 +496,7 @@ y = y + 1;
     }
 
     drawOnDragInterval() {
-      if (this.lastMousePosition) {
+      if (this.drawOnDrag && this.lastMousePosition) {
         const { x, y } = this.lastMousePosition;
         this.currentMatrix.paint(x, y, this.brush);
       }
