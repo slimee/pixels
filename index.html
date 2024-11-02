@@ -362,31 +362,7 @@ y = y + 1;
     }
 
     initCanvasMouseEvents() {
-      this.ui.canvas.addEventListener('mousedown', (event) => this.handleMouseDown(event));
-
-      this.ui.canvas.addEventListener('mousemove', (event) => {
-        if (this.isDrawing && this.drawOnDrag && this.brush.pointShape !== 'segment') {
-          const rect = this.ui.canvas.getBoundingClientRect();
-          const x = Math.floor(event.clientX - rect.left);
-          const y = Math.floor(event.clientY - rect.top);
-          this.lastMousePosition = { x, y };
-          this.drawAt(x, y);
-        }
-      });
-
-      this.ui.canvas.addEventListener('mouseup', (event) => {
-        if (this.isDrawing && this.brush.pointShape === 'segment' && this.startPoint) {
-          const rect = this.ui.canvas.getBoundingClientRect();
-          const x = Math.floor(event.clientX - rect.left);
-          const y = Math.floor(event.clientY - rect.top);
-          this.currentMatrix.paint(this.startPoint.x, this.startPoint.y, {
-            ...this.brush, endX: x, endY: y
-          });
-          this.startPoint = null;
-        }
-        this.isDrawing = false;
-        this.updateCanvas();
-      });
+      this.ui.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
     }
 
     initResize() {
@@ -461,6 +437,7 @@ y = y + 1;
         });
         this.startPoint = null;
       }
+      this.lastMousePosition = null;
       this.isDrawing = false;
       this.updateCanvas();
 
@@ -614,13 +591,12 @@ y = y + 1;
       this.isPlaying = true;
 
       const frame = () => {
-        console.log("frame");
-        // to factorize
         this.canvasManager.matrices.forEach((matrix, index) => {
           const transformationFunction = this.transformationManager.getTransformationFunction(index);
           matrix.transform(transformationFunction);
         });
-        this.canvasManager.updateCanvas(); // Met à jour le canvas après chaque transformation
+        this.canvasManager.updateCanvas();
+        this.canvasManager.drawOnDragInterval();
         if (this.isPlaying) {
           requestAnimationFrame(frame);
         }
