@@ -37,7 +37,6 @@
     </style>
 </head>
 <body>
-<h1>Canvas avec Transformation Paramétrable et Calque Sans Bord</h1>
 
 <div class="canvas-container">
     <canvas id="myCanvas" width="500" height="500"></canvas>
@@ -270,7 +269,6 @@ y = y + 1;
       this.context = this.ui.canvas.getContext('2d');
       this.transformationManager = transformationManager;
 
-      this.imageData = this.context.createImageData(this.ui.canvas.width, this.ui.canvas.height);
       this.brush = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
       this.startPoint = null;
       this.matrices = [];
@@ -358,10 +356,6 @@ y = y + 1;
       });
     }
 
-    initCanvasMouseEvents() {
-      this.ui.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
-    }
-
     initResize() {
       const addListeners = () => {
         document.addEventListener("mousemove", mouseMove);
@@ -399,13 +393,17 @@ y = y + 1;
       });
     }
 
+    initCanvasMouseEvents() {
+      this.ui.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    }
+
     handleMouseDown(event) {
       const rect = this.ui.canvas.getBoundingClientRect();
       const x = Math.floor(event.clientX - rect.left);
       const y = Math.floor(event.clientY - rect.top);
       this.lastMousePosition = { x, y };
       if (this.brush.pointShape === 'segment') {
-        this.startPoint = { x, y }; // Enregistrer le point de départ
+        this.startPoint = { x, y };
       } else {
         this.drawAt(x, y);
       }
@@ -536,26 +534,6 @@ y = y + 1;
     getTransformationFunction(matrixIndex) {
       return this.transformationFunctions[matrixIndex] || ((x, y) => ({ x, y }));
     }
-
-    applyTransformation(matrix, transformationFunction) {
-      const newMatrix = new Uint8ClampedArray(matrix.width * matrix.height * 4);
-      for (let y = 0; y < matrix.height; y++) {
-        for (let x = 0; x < matrix.width; x++) {
-          const { x: newX, y: newY } = transformationFunction(x, y);
-          const targetX = (newX + matrix.width) % matrix.width;
-          const targetY = (newY + matrix.height) % matrix.height;
-          const newIndex = (targetY * matrix.width + targetX) * 4;
-          const oldIndex = (y * matrix.width + x) * 4;
-
-          // Copier uniquement si le pixel n'est pas transparent
-          if (matrix.matrix[oldIndex + 3] !== 0) {
-            newMatrix.set(matrix.matrix.slice(oldIndex, oldIndex + 4), newIndex);
-          }
-        }
-      }
-      matrix.matrix = newMatrix;
-    }
-
   }
 
   class ControlPanel {
@@ -563,10 +541,7 @@ y = y + 1;
       this.canvasManager = canvasManager;
       this.transformationManager = transformationManager;
       this.ui = ui;
-
       this.isPlaying = false;
-      this.intervalId = null;
-
       this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     }
 
@@ -586,21 +561,19 @@ y = y + 1;
       this.isPlaying = true;
 
       const frame = () => {
+        this.canvasManager.drawOnDragInterval();
         this.canvasManager.matrices.forEach((matrix, index) => {
           const transformationFunction = this.transformationManager.getTransformationFunction(index);
           matrix.transform(transformationFunction);
         });
         this.canvasManager.updateCanvas();
-        this.canvasManager.drawOnDragInterval();
         if (this.isPlaying) {
           requestAnimationFrame(frame);
         }
       };
 
-      requestAnimationFrame(frame); // Lancement de l'animation en continu
+      requestAnimationFrame(frame);
     }
-
-
   }
 
   document.addEventListener('DOMContentLoaded', () => {
