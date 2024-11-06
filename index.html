@@ -179,6 +179,9 @@ y = y + 1;
       } else if (brush.shape === 'triangle') {
         this.paintTriangle(x, y, halfSize, color);
       }
+
+      const imageData = new ImageData(this.matrix, this.width, this.height);
+      this.offscreenCanvasContext.putImageData(imageData, 0, 0);
     }
 
     paintCircle(x, y, halfSize, color) {
