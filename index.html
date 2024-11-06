@@ -36,7 +36,7 @@
             color: white;
         }
 
-        #pointColor.disabled {
+        #color.disabled {
             background-image: linear-gradient(45deg, #888 25%, transparent 25%, transparent 50%, #888 50%, #888 75%, transparent 75%);
             background-size: 4px 4px;
             opacity: 0.5;
@@ -58,13 +58,13 @@
     <button id="removeMatrixButton">Supprimer</button>
     <select id="matrixSelector" class="matrix-selector"></select>
     <button id="playPauseButton">Play</button>
-    <label for="pointSize">Taille du pinceau:</label>
-    <input type="range" id="pointSize" min="5" max="50" value="15">
-    <label for="pointColor">Couleur du pinceau:</label>
+    <label for="size">Taille du pinceau:</label>
+    <input type="range" id="size" min="5" max="500" value="15">
+    <label for="color">Couleur du pinceau:</label>
     <button id="eraserButton">🧽 Gomme</button>
-    <input type="color" id="pointColor" value="#ff0000">
-    <label for="pointShape">Forme du pinceau:</label>
-    <select id="pointShape">
+    <input type="color" id="color" value="#ff0000">
+    <label for="shape">Forme du pinceau:</label>
+    <select id="shape">
         <option value="circle">Cercle</option>
         <option value="square">Carré</option>
         <option value="triangle">Triangle</option>
@@ -85,10 +85,10 @@ y = y + 1;
       this.clearButton = document.getElementById('clearButton');
       this.clearAllButton = document.getElementById('clearAllButton');
       this.eraserButton = document.getElementById('eraserButton');
-      this.pointColorInput = document.getElementById('pointColor');
-      this.pointSizeInput = document.getElementById('pointSize');
-      this.pointColorInput = document.getElementById('pointColor');
-      this.pointShapeInput = document.getElementById('pointShape');
+      this.pointColorInput = document.getElementById('color');
+      this.pointSizeInput = document.getElementById('size');
+      this.pointColorInput = document.getElementById('color');
+      this.pointShapeInput = document.getElementById('shape');
       this.drawOnDragCheckbox = document.getElementById('drawOnDrag');
       this.canvas = document.getElementById('myCanvas');
       this.resizeAnchor = document.getElementById("resizeAnchor");
@@ -166,21 +166,21 @@ y = y + 1;
     }
 
     paint(x, y, brush) {
-      const isEraser = brush.pointColor === null;
+      const isEraser = brush.color === null;
       const color = isEraser
         ? { r: 0, g: 0, b: 0, a: 0 }  // Couleur transparente pour la gomme
-        : this.hexToRGBA(brush.pointColor);
+        : this.hexToRGBA(brush.color);
 
-      const halfSize = Math.floor(brush.pointSize / 2);
+      const halfSize = Math.floor(brush.size / 2);
 
       // Utilise la forme du pinceau sélectionnée
-      if (brush.pointShape === 'segment' && brush.endX !== undefined && brush.endY !== undefined) {
-        this.paintSegment(x, y, brush.endX, brush.endY, color, brush.pointSize);
-      } else if (brush.pointShape === 'circle') {
+      if (brush.shape === 'segment' && brush.endX !== undefined && brush.endY !== undefined) {
+        this.paintSegment(x, y, brush.endX, brush.endY, color, brush.size);
+      } else if (brush.shape === 'circle') {
         this.paintCircle(x, y, halfSize, color);
-      } else if (brush.pointShape === 'square') {
+      } else if (brush.shape === 'square') {
         this.paintSquare(x, y, halfSize, color);
-      } else if (brush.pointShape === 'triangle') {
+      } else if (brush.shape === 'triangle') {
         this.paintTriangle(x, y, halfSize, color);
       }
     }
@@ -275,7 +275,7 @@ y = y + 1;
       this.ui = ui;
       this.context = this.ui.canvas.getContext('2d');
       this.transformationManager = transformationManager;
-      this.brush = { pointSize: 15, pointColor: '#ff0000', pointShape: 'circle' };
+      this.brush = { size: 15, color: '#ff0000', shape: 'circle' };
       this.startPoint = null;
       this.matrices = [];
 
@@ -338,7 +338,7 @@ y = y + 1;
     initEraserButton() {
       this.ui.eraserButton.addEventListener('click', () => {
         const isEraserActive = this.ui.eraserButton.classList.toggle("active");
-        this.brush.pointColor = isEraserActive ? null : this.ui.pointColorInput.value;
+        this.brush.color = isEraserActive ? null : this.ui.pointColorInput.value;
         this.ui.pointColorInput.classList.toggle("disabled", isEraserActive);
       });
 
@@ -346,21 +346,21 @@ y = y + 1;
       this.ui.pointColorInput.addEventListener('click', () => {
         this.ui.eraserButton.classList.remove("active");
         this.ui.pointColorInput.classList.remove("disabled");
-        this.brush.pointColor = this.ui.pointColorInput.value; // Rétablit la couleur
+        this.brush.color = this.ui.pointColorInput.value; // Rétablit la couleur
       });
     }
 
     initBrushSettings() {
       this.ui.pointSizeInput.addEventListener('input', () => {
-        this.brush.pointSize = parseInt(this.ui.pointSizeInput.value, 10);
+        this.brush.size = parseInt(this.ui.pointSizeInput.value, 10);
       });
 
       this.ui.pointColorInput.addEventListener('input', () => {
-        this.brush.pointColor = this.ui.pointColorInput.value;
+        this.brush.color = this.ui.pointColorInput.value;
       });
 
       this.ui.pointShapeInput.addEventListener('change', () => {
-        this.brush.pointShape = this.ui.pointShapeInput.value;
+        this.brush.shape = this.ui.pointShapeInput.value;
       });
     }
 
@@ -409,7 +409,7 @@ y = y + 1;
       const x = Math.floor(event.clientX - rect.left);
       const y = Math.floor(event.clientY - rect.top);
       this.lastMousePosition = { x, y };
-      if (this.brush.pointShape === 'segment') {
+      if (this.brush.shape === 'segment') {
         this.startPoint = { x, y };
       } else {
         this.drawAt(x, y, this.brush);
@@ -420,7 +420,7 @@ y = y + 1;
     }
 
     handleMouseMove = (event) => {
-      if (this.drawOnDrag && this.brush.pointShape !== 'segment') {
+      if (this.drawOnDrag && this.brush.shape !== 'segment') {
         const rect = this.ui.canvas.getBoundingClientRect();
         const x = Math.floor(event.clientX - rect.left);
         const y = Math.floor(event.clientY - rect.top);
@@ -430,7 +430,7 @@ y = y + 1;
     }
 
     handleMouseUp = (event) => {
-      if (this.brush.pointShape === 'segment' && this.startPoint) {
+      if (this.brush.shape === 'segment' && this.startPoint) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const x = Math.floor(event.clientX - rect.left);
         const y = Math.floor(event.clientY - rect.top);
@@ -457,6 +457,7 @@ y = y + 1;
     }
 
     drawAt(x, y, brush) {
+      console.log(x, y, brush);
       this.currentMatrix.paint(x, y, brush);
       this.updateCanvas();
     }
