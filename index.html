@@ -169,7 +169,6 @@ y = y + 1;
 
       const halfSize = Math.floor(brush.size / 2);
 
-      // Utilise la forme du pinceau sélectionnée
       if (brush.shape === 'segment' && brush.endX !== undefined && brush.endY !== undefined) {
         this.paintSegment(x, y, brush.endX, brush.endY, color, brush.size);
       } else if (brush.shape === 'circle') {
