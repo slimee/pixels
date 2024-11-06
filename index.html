@@ -87,7 +87,6 @@ y = y + 1;
       this.eraserButton = document.getElementById('eraserButton');
       this.pointColorInput = document.getElementById('color');
       this.pointSizeInput = document.getElementById('size');
-      this.pointColorInput = document.getElementById('color');
       this.pointShapeInput = document.getElementById('shape');
       this.drawOnDragCheckbox = document.getElementById('drawOnDrag');
       this.canvas = document.getElementById('myCanvas');
@@ -114,14 +113,12 @@ y = y + 1;
       this.offscreenCanvas.width = width;
       this.offscreenCanvas.height = height;
       this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
-      this.matrix = new Uint8ClampedArray(width * height * 4); // Stockage RGBA
+      this.imageData = this.offscreenCanvasContext.createImageData(this.width, this.height);
     }
 
     transform(transformationFunction) {
-      // Créer un tableau pour stocker les données transformées
-      const newMatrix = new Uint8ClampedArray(this.width * this.height * 4);
+      const newData = new Uint8ClampedArray(this.imageData.data.length);
 
-      // Appliquer la transformation pixel par pixel
       for (let y = 0; y < this.height; y++) {
         for (let x = 0; x < this.width; x++) {
           const index = (y * this.width + x) * 4;
@@ -130,17 +127,17 @@ y = y + 1;
           const wrappedY = ((newY % this.height) + this.height) % this.height;
           const newIndex = (wrappedY * this.width + wrappedX) * 4;
 
-          // Copier les données de couleur dans la nouvelle position
-          newMatrix[newIndex] = this.matrix[index];
-          newMatrix[newIndex + 1] = this.matrix[index + 1];
-          newMatrix[newIndex + 2] = this.matrix[index + 2];
-          newMatrix[newIndex + 3] = this.matrix[index + 3];
+          // Copy pixel data to new position
+          newData[newIndex] = this.imageData.data[index];
+          newData[newIndex + 1] = this.imageData.data[index + 1];
+          newData[newIndex + 2] = this.imageData.data[index + 2];
+          newData[newIndex + 3] = this.imageData.data[index + 3];
         }
       }
 
-      this.matrix.set(newMatrix);
-      const imageData = new ImageData(this.matrix, this.width, this.height);
-      this.offscreenCanvasContext.putImageData(imageData, 0, 0);
+      // Update the imageData with the transformed data
+      this.imageData.data.set(newData);
+      this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
     }
 
     drawTo(canvasContext) {
@@ -148,7 +145,9 @@ y = y + 1;
     }
 
     clear() {
-      this.matrix.fill(0);
+      // Clear the imageData by setting all pixels to transparent
+      this.imageData.data.fill(0);
+      this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
     }
 
     hexToRGBA(hex) {
@@ -157,20 +156,20 @@ y = y + 1;
         r: (bigint >> 16) & 255,
         g: (bigint >> 8) & 255,
         b: bigint & 255,
-        a: 255 // Opacité complète
+        a: 255 // Full opacity
       };
     }
 
     paint(x, y, brush) {
       const isEraser = brush.color === null;
       const color = isEraser
-        ? { r: 0, g: 0, b: 0, a: 0 }  // Couleur transparente pour la gomme
+        ? { r: 0, g: 0, b: 0, a: 0 }  // Transparent color for eraser
         : this.hexToRGBA(brush.color);
 
       const halfSize = Math.floor(brush.size / 2);
 
       if (brush.shape === 'segment' && brush.endX !== undefined && brush.endY !== undefined) {
-        this.paintSegment(x, y, brush.endX, brush.endY, color, brush.size);
+        this.paintSegment(brush.startX, brush.startY, brush.endX, brush.endY, color, brush.size);
       } else if (brush.shape === 'circle') {
         this.paintCircle(x, y, halfSize, color);
       } else if (brush.shape === 'square') {
@@ -179,8 +178,8 @@ y = y + 1;
         this.paintTriangle(x, y, halfSize, color);
       }
 
-      const imageData = new ImageData(this.matrix, this.width, this.height);
-      this.offscreenCanvasContext.putImageData(imageData, 0, 0);
+      // Update the offscreen canvas
+      this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
     }
 
     paintCircle(x, y, halfSize, color) {
@@ -244,26 +243,35 @@ y = y + 1;
       const x = this.wrapCoordinate(rawX, this.width);
       const y = this.wrapCoordinate(rawY, this.height);
       const index = (y * this.width + x) * 4;
-      this.matrix[index] = color.r;
-      this.matrix[index + 1] = color.g;
-      this.matrix[index + 2] = color.b;
-      this.matrix[index + 3] = color.a;
+
+      // Update imageData.data directly
+      this.imageData.data[index] = color.r;
+      this.imageData.data[index + 1] = color.g;
+      this.imageData.data[index + 2] = color.b;
+      this.imageData.data[index + 3] = color.a;
     }
 
     resize(width, height) {
-      const newMatrix = new Uint8ClampedArray(width * height * 4);
+      const newImageData = this.offscreenCanvasContext.createImageData(width, height);
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
+          const newIndex = (y * width + x) * 4;
           const oldX = x % this.width;
           const oldY = y % this.height;
-          const newIndex = (y * width + x) * 4;
           const oldIndex = (oldY * this.width + oldX) * 4;
-          newMatrix.set(this.matrix.slice(oldIndex, oldIndex + 4), newIndex);
+
+          newImageData.data[newIndex] = this.imageData.data[oldIndex];
+          newImageData.data[newIndex + 1] = this.imageData.data[oldIndex + 1];
+          newImageData.data[newIndex + 2] = this.imageData.data[oldIndex + 2];
+          newImageData.data[newIndex + 3] = this.imageData.data[oldIndex + 3];
         }
       }
       this.width = width;
       this.height = height;
-      this.matrix = newMatrix;
+      this.imageData = newImageData;
+      this.offscreenCanvas.width = width;
+      this.offscreenCanvas.height = height;
+      this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
     }
   }
 
@@ -280,6 +288,8 @@ y = y + 1;
       this.initializeControls();
       this.updateMatrixSelector();
       this.addNewMatrix();
+
+      this.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
     }
 
     get currentMatrix() {
@@ -418,28 +428,36 @@ y = y + 1;
     }
 
     handleMouseMove = (event) => {
+      const rect = this.ui.canvas.getBoundingClientRect();
+      const x = Math.floor(event.clientX - rect.left);
+      const y = Math.floor(event.clientY - rect.top);
       if (this.drawOnDrag && this.brush.shape !== 'segment') {
-        const rect = this.ui.canvas.getBoundingClientRect();
-        const x = Math.floor(event.clientX - rect.left);
-        const y = Math.floor(event.clientY - rect.top);
         this.lastMousePosition = { x, y };
         this.drawAt(x, y, this.brush);
+      } else {
+        // For segment drawing, update the end point
+        if (this.brush.shape === 'segment' && this.startPoint) {
+          this.lastMousePosition = { x, y };
+        }
       }
     }
 
     handleMouseUp = (event) => {
+      const rect = this.ui.canvas.getBoundingClientRect();
+      const x = Math.floor(event.clientX - rect.left);
+      const y = Math.floor(event.clientY - rect.top);
+
       if (this.brush.shape === 'segment' && this.startPoint) {
-        const rect = this.ui.canvas.getBoundingClientRect();
-        const x = Math.floor(event.clientX - rect.left);
-        const y = Math.floor(event.clientY - rect.top);
+        this.brush.startX = this.startPoint.x;
+        this.brush.startY = this.startPoint.y;
         this.brush.endX = x;
         this.brush.endY = y;
-        this.drawAt(x, y, { ...this.brush, endX: x, endY: y });
+        this.drawAt(x, y, { ...this.brush });
         this.startPoint = null;
       }
       this.lastMousePosition = null;
 
-      // Supprimer les écouteurs globaux
+      // Remove global listeners
       document.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseup', this.handleMouseUp);
     }
@@ -467,7 +485,7 @@ y = y + 1;
     resizeCanvas(newWidth, newHeight) {
       this.ui.canvas.width = newWidth;
       this.ui.canvas.height = newHeight;
-      this.currentMatrix.resize(newWidth, newHeight);
+      this.matrices.forEach(matrix => matrix.resize(newWidth, newHeight));
       this.updateCanvas();
     }
 
@@ -500,8 +518,8 @@ y = y + 1;
     constructor(state, ui) {
       this.state = state;
       this.ui = ui;
-      this.transformationFunctions = {}; // Stocke les fonctions de transformation par matrice
-      this.codes = {}; // Stocke le code de transformation par matrice
+      this.transformationFunctions = {}; // Store transformation functions per matrix
+      this.codes = {}; // Store transformation code per matrix
       this.ui.transformationCodeInput.addEventListener('blur', () => this.transformationCodeChanged(this.state.currentMatrixIndex));
     }
 
