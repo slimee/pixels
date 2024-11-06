@@ -72,6 +72,10 @@
     </select>
     <label for="drawOnDrag">Dessin continu</label>
     <input type="checkbox" id="drawOnDrag">
+    <label for="transformationSelector">Fonctions de transformation prédéfinies:</label>
+    <select id="transformationSelector">
+        <option value="">--Sélectionner une fonction--</option>
+    </select>
     <div id="errorDisplay" style="color: red; margin-top: 10px;"></div>
 </div>
 
@@ -81,6 +85,91 @@ y = y + 1;
 </textarea>
 
 <script>
+  // Liste des transformations prédéfinies
+  const predefinedTransformations = [
+    {
+      name: 'Déformation sinus',
+      code: `x = x + 3 * Math.sin(2 * Math.PI * y / 100);
+y = y + 3 * Math.cos(2 * Math.PI * x / 100);`
+    },
+    {
+      name: 'Déplacement',
+      code: `x = x + 1;
+y = y + 1;`
+    },
+    {
+      name: 'effet de vibration',
+      code: 'x = x + Math.sin(Date.now() / 100) * 5;' +
+        'y = y + Math.cos(Date.now() / 100) * 5;'
+    },
+    {
+      name: 'Vagues sinusoïdales',
+      code: `x = x + Math.sin(y / 10);
+y = y + Math.cos(x / 10);`
+    },
+    {
+      name: 'Tourbillon',
+      code: `var centerX = width / 2;
+var centerY = height / 2;
+var angle = Math.PI / 180;
+var dx = x - centerX;
+var dy = y - centerY;
+x = centerX + dx * Math.cos(angle) - dy * Math.sin(angle);
+y = centerY + dx * Math.sin(angle) + dy * Math.cos(angle);`
+    },
+    {
+      name: 'Jitter aléatoire',
+      code: `x = x + (Math.random() - 0.5) * 10;
+y = y + (Math.random() - 0.5) * 10;`
+    },
+    {
+      name: 'Effet miroir',
+      code: `x = width - x;
+y = y;`
+    },
+    {
+      name: 'Zoom progressif',
+      code: `x = x * 1.01;
+y = y * 1.01;`
+    },
+    {
+      name: 'Ondes circulaires',
+      code: `var dx = x - width / 2;
+var dy = y - height / 2;
+var distance = Math.sqrt(dx * dx + dy * dy);
+x = x + Math.sin(distance / 10) * 5;
+y = y + Math.cos(distance / 10) * 5;`
+    },
+    {
+      name: 'Rotation',
+      code: `var angle = Math.PI / 180;
+var newX = Math.cos(angle) * x - Math.sin(angle) * y;
+var newY = Math.sin(angle) * x + Math.cos(angle) * y;
+x = newX;
+y = newY;`
+    },
+    {
+      name: 'Déformation en spirale',
+      code: `var angle = Math.atan2(y - height / 2, x - width / 2);
+var radius = Math.hypot(x - width / 2, y - height / 2);
+angle += radius / 100;
+x = width / 2 + radius * Math.cos(angle);
+y = height / 2 + radius * Math.sin(angle);`
+    },
+    {
+      name: 'Déplacement vertical',
+      code: `x = x;
+y = y + Math.sin(x / 20) * 10;`
+    },
+    {
+      name: 'Éclatement',
+      code: `var centerX = width / 2;
+var centerY = height / 2;
+x = x + (x - centerX) * 0.01;
+y = y + (y - centerY) * 0.01;`
+    }
+  ];
+
   class UI {
     constructor() {
       this.clearButton = document.getElementById('clearButton');
@@ -97,6 +186,8 @@ y = y + 1;
       this.matrixSelector = document.getElementById("matrixSelector");
       this.transformationCodeInput = document.getElementById("transformationCode");
       this.playPauseButton = document.getElementById('playPauseButton');
+      this.errorDisplay = document.getElementById('errorDisplay');
+      this.transformationSelector = document.getElementById('transformationSelector');
     }
   }
 
@@ -125,8 +216,8 @@ y = y + 1;
           const index = (y * this.width + x) * 4;
           const { x: newX, y: newY } = transformationFunction(x, y);
 
-          const intNewX = Math.round(newX);
-          const intNewY = Math.round(newY);
+          const intNewX = Math.floor(newX);
+          const intNewY = Math.floor(newY);
 
           const wrappedX = ((intNewX % this.width) + this.width) % this.width;
           const wrappedY = ((intNewY % this.height) + this.height) % this.height;
@@ -310,9 +401,11 @@ y = y + 1;
     }
 
     addNewMatrix() {
-      this.matrices.push(new Matrix(this.ui.canvas.width, this.ui.canvas.height));
-      const initialCode = this.transformationManager.getCode(this.currentMatrixIndex);
+      const newMatrix = new Matrix(this.ui.canvas.width, this.ui.canvas.height);
+      this.matrices.push(newMatrix);
       this.currentMatrixIndex = this.matrices.length - 1;
+
+      const initialCode = this.transformationManager.getCode(this.currentMatrixIndex);
       this.transformationManager.transformationCodeChanged(this.currentMatrixIndex, initialCode);
 
       this.updateMatrixSelector();
@@ -503,6 +596,7 @@ y = y + 1;
       });
 
       this.updateTransformationCodeInput();
+      this.ui.errorDisplay.textContent = '';
     }
 
     drawOnDragInterval() {
@@ -514,6 +608,7 @@ y = y + 1;
 
     updateTransformationCodeInput() {
       this.ui.transformationCodeInput.value = this.transformationManager.getCode(this.currentMatrixIndex);
+      this.ui.errorDisplay.textContent = '';
     }
   }
 
@@ -537,14 +632,29 @@ y = y + 1;
 
     createTransformationFunction(matrixIndex, code) {
       try {
-        this.transformationFunctions[matrixIndex] = new Function('x', 'y', `${code} return { x, y };`);
+        // Provide width and height to the function
+        this.transformationFunctions[matrixIndex] = new Function('x', 'y', 'width', 'height', `${code} return { x, y };`);
+        this.ui.errorDisplay.textContent = '';
       } catch (error) {
+        this.ui.errorDisplay.textContent = `Erreur dans la fonction de transformation : ${error.message}`;
         console.error("Erreur dans la fonction de transformation : ", error);
+        this.transformationFunctions[matrixIndex] = (x, y) => ({ x, y });
       }
     }
 
     getTransformationFunction(matrixIndex) {
-      return this.transformationFunctions[matrixIndex] || ((x, y) => ({ x, y }));
+      const transformationFunction = this.transformationFunctions[matrixIndex] || ((x, y) => ({ x, y }));
+      const width = this.ui.canvas.width;
+      const height = this.ui.canvas.height;
+      return (x, y) => {
+        try {
+          return transformationFunction(x, y, width, height);
+        } catch (error) {
+          this.ui.errorDisplay.textContent = `Erreur pendant l'exécution : ${error.message}`;
+          console.error("Erreur pendant l'exécution : ", error);
+          return { x, y };
+        }
+      };
     }
   }
 
@@ -594,6 +704,24 @@ y = y + 1;
     const transformationManager = new TransformationManager(state, ui);
     const canvasManager = new CanvasManager(state, transformationManager, ui);
     new ControlPanel(canvasManager, transformationManager, ui);
+
+    // Remplir la liste déroulante des transformations
+    predefinedTransformations.forEach((transformation, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = transformation.name;
+      ui.transformationSelector.appendChild(option);
+    });
+
+    // Gérer la sélection d'une transformation
+    ui.transformationSelector.addEventListener('change', (event) => {
+      const selectedIndex = event.target.value;
+      if (selectedIndex !== '') {
+        const selectedTransformation = predefinedTransformations[selectedIndex];
+        ui.transformationCodeInput.value = selectedTransformation.code;
+        transformationManager.transformationCodeChanged(canvasManager.currentMatrixIndex);
+      }
+    });
   });
 </script>
 </body>
