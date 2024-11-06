@@ -113,7 +113,7 @@ y = y + 1;
       this.offscreenCanvas = document.createElement('canvas');
       this.offscreenCanvas.width = width;
       this.offscreenCanvas.height = height;
-      this.context = this.offscreenCanvas.getContext('2d');
+      this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
       this.matrix = new Uint8ClampedArray(width * height * 4); // Stockage RGBA
     }
 
@@ -138,17 +138,13 @@ y = y + 1;
         }
       }
 
-      // Mettre à jour la matrice actuelle
       this.matrix.set(newMatrix);
-
-      // Créer et dessiner sur l'`offscreenCanvas`
       const imageData = new ImageData(this.matrix, this.width, this.height);
-
-      this.context.putImageData(imageData, 0, 0);
+      this.offscreenCanvasContext.putImageData(imageData, 0, 0);
     }
 
-    drawToMainCanvas(mainContext) {
-      mainContext.drawImage(this.offscreenCanvas, 0, 0); // Assurez-vous que cette ligne est exécutée
+    drawTo(canvasContext) {
+      canvasContext.drawImage(this.offscreenCanvas, 0, 0);
     }
 
     clear() {
@@ -273,7 +269,7 @@ y = y + 1;
     constructor(state, transformationManager, ui) {
       this.state = state;
       this.ui = ui;
-      this.context = this.ui.canvas.getContext('2d');
+      this.canvasContext = this.ui.canvas.getContext('2d');
       this.transformationManager = transformationManager;
       this.brush = { size: 15, color: '#ff0000', shape: 'circle' };
       this.startPoint = null;
@@ -457,14 +453,13 @@ y = y + 1;
     }
 
     drawAt(x, y, brush) {
-      console.log(x, y, brush);
       this.currentMatrix.paint(x, y, brush);
       this.updateCanvas();
     }
 
     updateCanvas() {
-      this.context.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-      this.matrices.forEach(matrix => matrix.drawToMainCanvas(this.context));
+      this.canvasContext.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
+      this.matrices.forEach(matrix => matrix.drawTo(this.canvasContext));
     }
 
     resizeCanvas(newWidth, newHeight) {
