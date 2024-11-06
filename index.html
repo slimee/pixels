@@ -16,6 +16,10 @@
             margin-top: 10px;
         }
 
+        .transformation-box {
+            width: 600px;
+        }
+
         .resize-anchor {
             width: 10px;
             height: 10px;
@@ -79,7 +83,7 @@
     <div id="errorDisplay" style="color: red; margin-top: 10px;"></div>
 </div>
 
-<textarea id="transformationCode" class="transformation-box" rows="4">
+<textarea id="transformationCode" class="transformation-box" rows="8">
 x = x + 1;
 y = y + 1;
 </textarea>
@@ -87,6 +91,30 @@ y = y + 1;
 <script>
   // Liste des transformations prédéfinies
   const predefinedTransformations = [
+    {
+      name: 'aide',
+      code: `
+var index = (y * width + x) * 4;
+var otherMatrixIndex = 1; // Indice de la matrice avec laquelle fusionner
+var otherRed = matrices[otherMatrixIndex].data[index];
+var otherGreen = matrices[otherMatrixIndex].data[index + 1];
+var otherBlue = matrices[otherMatrixIndex].data[index + 2];
+
+// Fusion des couleurs
+var factor = 0.5; // Facteur de mélange
+var currentRed = matrices[0].data[index];
+matrices[0].data[index] = currentRed * (1 - factor) + otherRed * factor;
+
+
+var index = (y * width + x) * 4;
+var displacementMatrixIndex = 1; // Indice de la matrice de déplacement
+var displacement = matrices[displacementMatrixIndex].data[index] / 255;
+
+x = x + displacement * 10;
+y = y + displacement * 10;
+
+      `
+    },
     {
       name: 'Déformation sinus',
       code: `x = x + 3 * Math.sin(2 * Math.PI * y / 100);
@@ -210,20 +238,19 @@ y = y + (y - centerY) * 0.01;`
 
     transform(transformationFunction) {
       const newData = new Uint8ClampedArray(this.imageData.data.length);
+      const width = this.width;
+      const height = this.height;
 
-      for (let y = 0; y < this.height; y++) {
-        for (let x = 0; x < this.width; x++) {
-          const index = (y * this.width + x) * 4;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const index = (y * width + x) * 4;
           const { x: newX, y: newY } = transformationFunction(x, y);
-
           const intNewX = Math.floor(newX);
           const intNewY = Math.floor(newY);
+          const wrappedX = ((intNewX % width) + width) % width;
+          const wrappedY = ((intNewY % height) + height) % height;
+          const newIndex = (wrappedY * width + wrappedX) * 4;
 
-          const wrappedX = ((intNewX % this.width) + this.width) % this.width;
-          const wrappedY = ((intNewY % this.height) + this.height) % this.height;
-          const newIndex = (wrappedY * this.width + wrappedX) * 4;
-
-          // Copy pixel data to new position
           newData[newIndex] = this.imageData.data[index];
           newData[newIndex + 1] = this.imageData.data[index + 1];
           newData[newIndex + 2] = this.imageData.data[index + 2];
@@ -231,7 +258,6 @@ y = y + (y - centerY) * 0.01;`
         }
       }
 
-      // Update the imageData with the transformed data
       this.imageData.data.set(newData);
       this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
     }
@@ -632,8 +658,7 @@ y = y + (y - centerY) * 0.01;`
 
     createTransformationFunction(matrixIndex, code) {
       try {
-        // Provide width and height to the function
-        this.transformationFunctions[matrixIndex] = new Function('x', 'y', 'width', 'height', `${code} return { x, y };`);
+        this.transformationFunctions[matrixIndex] = new Function('x', 'y', 'width', 'height', 'matrices', `${code} return { x, y };`);
         this.ui.errorDisplay.textContent = '';
       } catch (error) {
         this.ui.errorDisplay.textContent = `Erreur dans la fonction de transformation : ${error.message}`;
@@ -643,18 +668,7 @@ y = y + (y - centerY) * 0.01;`
     }
 
     getTransformationFunction(matrixIndex) {
-      const transformationFunction = this.transformationFunctions[matrixIndex] || ((x, y) => ({ x, y }));
-      const width = this.ui.canvas.width;
-      const height = this.ui.canvas.height;
-      return (x, y) => {
-        try {
-          return transformationFunction(x, y, width, height);
-        } catch (error) {
-          this.ui.errorDisplay.textContent = `Erreur pendant l'exécution : ${error.message}`;
-          console.error("Erreur pendant l'exécution : ", error);
-          return { x, y };
-        }
-      };
+      return this.transformationFunctions[matrixIndex] || ((x, y, _width, _height, _matrices) => ({ x, y }));
     }
   }
 
@@ -687,15 +701,31 @@ y = y + (y - centerY) * 0.01;`
 
     frame() {
       this.canvasManager.drawOnDragInterval();
+
+      const matricesData = this.canvasManager.matrices.map(matrix => matrix.imageData);
+
       this.canvasManager.matrices.forEach((matrix, index) => {
         const transformationFunction = this.transformationManager.getTransformationFunction(index);
-        matrix.transform(transformationFunction);
+        const width = matrix.width;
+        const height = matrix.height;
+        const wrappedTransformationFunction = (x, y) => {
+          try {
+            return transformationFunction(x, y, width, height, matricesData);
+          } catch (error) {
+            this.ui.errorDisplay.textContent = `Erreur pendant l'exécution : ${error.message}`;
+            console.error("Erreur pendant l'exécution : ", error);
+            return { x, y };
+          }
+        };
+        matrix.transform(wrappedTransformationFunction);
       });
+
       this.canvasManager.updateCanvas();
+
       if (this.isPlaying) {
         requestAnimationFrame(this.frame);
       }
-    };
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
