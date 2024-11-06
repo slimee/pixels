@@ -72,6 +72,7 @@
     </select>
     <label for="drawOnDrag">Dessin continu</label>
     <input type="checkbox" id="drawOnDrag">
+    <div id="errorDisplay" style="color: red; margin-top: 10px;"></div>
 </div>
 
 <textarea id="transformationCode" class="transformation-box" rows="4">
@@ -123,8 +124,12 @@ y = y + 1;
         for (let x = 0; x < this.width; x++) {
           const index = (y * this.width + x) * 4;
           const { x: newX, y: newY } = transformationFunction(x, y);
-          const wrappedX = ((newX % this.width) + this.width) % this.width;
-          const wrappedY = ((newY % this.height) + this.height) % this.height;
+
+          const intNewX = Math.round(newX);
+          const intNewY = Math.round(newY);
+
+          const wrappedX = ((intNewX % this.width) + this.width) % this.width;
+          const wrappedY = ((intNewY % this.height) + this.height) % this.height;
           const newIndex = (wrappedY * this.width + wrappedX) * 4;
 
           // Copy pixel data to new position
@@ -305,11 +310,9 @@ y = y + 1;
     }
 
     addNewMatrix() {
-      const newMatrix = new Matrix(this.ui.canvas.width, this.ui.canvas.height);
-      this.matrices.push(newMatrix);
-      this.currentMatrixIndex = this.matrices.length - 1;
-
+      this.matrices.push(new Matrix(this.ui.canvas.width, this.ui.canvas.height));
       const initialCode = this.transformationManager.getCode(this.currentMatrixIndex);
+      this.currentMatrixIndex = this.matrices.length - 1;
       this.transformationManager.transformationCodeChanged(this.currentMatrixIndex, initialCode);
 
       this.updateMatrixSelector();
