@@ -1,0 +1,128 @@
+/* Styles généraux */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Barre de menu */
+.menu-bar {
+    background-color: #eee;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.menu-category {
+    margin-right: 20px;
+}
+
+.menu-category button,
+.menu-category label,
+.menu-category input,
+.menu-category select {
+    margin-right: 10px;
+}
+
+/* Canvas et palettes */
+.main-container {
+    display: flex;
+}
+
+.canvas-container {
+    position: relative;
+    flex-grow: 1;
+}
+
+.resize-anchor {
+    width: 10px;
+    height: 10px;
+    background-color: grey;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize;
+}
+
+/* Palette des calques */
+.layers-palette {
+    width: 200px;
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-left: 1px solid #ccc;
+}
+
+.layers-palette h2 {
+    margin-top: 0;
+}
+
+.layers-palette button {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.layer-item input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.layer-item span {
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.layer-item button {
+    margin-left: 5px;
+}
+
+/* Palette des commandes */
+.controls-palette {
+    width: 300px;
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-left: 1px solid #ccc;
+}
+
+.controls-palette h2 {
+    margin-top: 0;
+}
+
+.controls-palette button,
+.controls-palette select,
+.controls-palette textarea {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.transformation-box {
+    width: 100%;
+}
+
+/* Zone d'affichage des erreurs */
+#errorDisplay {
+    color: red;
+    margin-top: 10px;
+}
+
+/* Styles pour le canvas */
+canvas {
+    border: 1px solid black;
+    display: block;
+    margin: 10px;
+}
+
+/* Styles pour le bouton gomme */
+#eraserButton.active {
+    background-color: #888;
+    color: white;
+}
+
+#color.disabled {
+    background-image: linear-gradient(45deg, #888 25%, transparent 25%, transparent 50%, #888 50%, #888 75%, transparent 75%);
+    background-size: 4px 4px;
+    opacity: 0.5;
+}
