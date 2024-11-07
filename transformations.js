@@ -1,13 +1,41 @@
 export const predefinedTransformations = [
   {
+    name: 'aide',
+    code: `
+var index = (y * width + x) * 4;
+var otherMatrixIndex = 1; // Indice de la matrice avec laquelle fusionner
+var otherRed = matrices[otherMatrixIndex].data[index];
+var otherGreen = matrices[otherMatrixIndex].data[index + 1];
+var otherBlue = matrices[otherMatrixIndex].data[index + 2];
+
+// Fusion des couleurs
+var factor = 0.5; // Facteur de mélange
+var currentRed = matrices[0].data[index];
+matrices[0].data[index] = currentRed * (1 - factor) + otherRed * factor;
+
+
+var index = (y * width + x) * 4;
+var displacementMatrixIndex = 1; // Indice de la matrice de déplacement
+var displacement = matrices[displacementMatrixIndex].data[index] / 255;
+
+x = x + displacement * 10;
+y = y + displacement * 10;
+      `
+  },
+  {
+    name: 'Déformation sinus',
+    code: `x = x + 3 * Math.sin(2 * Math.PI * y / 100);
+y = y + 3 * Math.cos(2 * Math.PI * x / 100);`
+  },
+  {
     name: 'Déplacement',
     code: `x = x + 1;
-    y = y + 1;`
+y = y + 1;`
   },
   {
     name: 'Vagues sinusoïdales',
     code: `x = x + Math.sin(y / 10);
-    y = y + Math.cos(x / 10);`
+y = y + Math.cos(x / 10);`
   },
   {
     name: 'Tourbillon',

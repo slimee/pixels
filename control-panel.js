@@ -52,4 +52,22 @@ export default class ControlPanel {
       requestAnimationFrame(this.frame);
     }
   }
+
+  initializeTransformations(predefinedTransformations) {
+    predefinedTransformations.forEach((transformation, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = transformation.name;
+      this.ui.transformationSelector.appendChild(option);
+    });
+
+    this.ui.transformationSelector.addEventListener('change', (event) => {
+      const selectedIndex = event.target.value;
+      if (selectedIndex !== '') {
+        const selectedTransformation = predefinedTransformations[selectedIndex];
+        this.ui.transformationCodeInput.value = selectedTransformation.code;
+        this.transformationManager.transformationCodeChanged(canvasManager.currentMatrixIndex);
+      }
+    });
+  }
 }
