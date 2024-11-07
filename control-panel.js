@@ -66,7 +66,7 @@ export default class ControlPanel {
       if (selectedIndex !== '') {
         const selectedTransformation = predefinedTransformations[selectedIndex];
         this.ui.transformationCodeInput.value = selectedTransformation.code;
-        this.transformationManager.transformationCodeChanged(canvasManager.currentMatrixIndex);
+        this.transformationManager.transformationCodeChanged(this.canvasManager.currentMatrixIndex);
       }
     });
   }
