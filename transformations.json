@@ -5,7 +5,7 @@
   },
   {
     "name": "Déformation sinus",
-    "code": "x = x + 3 * Math.sin(2 * Math.PI * y / 100);\ny = y + 3 * Math.cos(2 * Math.PI * x / 100);"
+    "code": "x = x + 3 * Math.sin(y / 50);\ny = y + 3 * Math.cos(x / 50);"
   },
   {
     "name": "Déplacement",
