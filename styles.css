@@ -1,94 +1,95 @@
-/* Styles généraux */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
-
-/* Barre de menu */
-.menu-bar {
-    background-color: #eee;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-}
-
-.menu-category {
-    margin-right: 20px;
-}
-
-.menu-category button,
-.menu-category label,
-.menu-category input,
-.menu-category select {
-    margin-right: 10px;
-}
-
-/* Canvas et palettes */
-.main-container {
-    display: flex;
-}
-
-.canvas-container {
-    position: relative;
-    flex-grow: 1;
-}
-
-.resize-anchor {
-    width: 10px;
-    height: 10px;
-    background-color: grey;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    cursor: nwse-resize;
-}
-
 /* Palette des calques */
 .layers-palette {
-    width: 200px;
-    background-color: #f5f5f5;
+    width: 180px;
+    background-color: #323232;
+    color: #ffffff;
     padding: 10px;
-    border-left: 1px solid #ccc;
+    border-left: 1px solid #444;
+    overflow-y: auto; /* Pour rendre la palette scrollable */
+    max-height: 80vh; /* Limite la hauteur pour permettre le défilement */
 }
 
 .layers-palette h2 {
     margin-top: 0;
+    font-size: 16px;
+    font-weight: normal;
+    color: #d0d0d0;
 }
 
-.layers-palette button {
+.layers-palette button#addLayerButton {
     width: 100%;
     margin-bottom: 10px;
+    background-color: #4d4d4d;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px 0;
 }
 
 .layer-item {
     display: flex;
     align-items: center;
     margin-bottom: 5px;
-}
-
-.layer-item input[type="checkbox"] {
-    margin-right: 5px;
-}
-
-.layer-item span {
-    flex-grow: 1;
+    background-color: #424242;
+    padding: 5px;
     cursor: pointer;
 }
 
-.layer-item button {
-    margin-left: 5px;
+.layer-item:hover {
+    background-color: #535353;
 }
 
-/* Palette des commandes */
+.layer-item .layer-eye,
+.layer-item .layer-delete {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.layer-item .layer-name {
+    flex-grow: 1;
+    color: #dcdcdc;
+}
+
+.layer-item.active .layer-name {
+    font-weight: bold;
+}
+
+.layer-item .layer-delete {
+    margin-left: auto;
+}
+
+.layers-palette::-webkit-scrollbar {
+    width: 8px;
+}
+
+.layers-palette::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+.layers-palette::-webkit-scrollbar-track {
+    background: #333;
+}
+
+/* Ajustements pour le reste des palettes */
 .controls-palette {
-    width: 300px;
-    background-color: #f5f5f5;
+    width: 220px;
+    background-color: #323232;
+    color: #ffffff;
     padding: 10px;
-    border-left: 1px solid #ccc;
+    border-left: 1px solid #444;
+    overflow-y: auto;
+    max-height: 80vh;
 }
 
 .controls-palette h2 {
     margin-top: 0;
+    font-size: 16px;
+    font-weight: normal;
+    color: #d0d0d0;
 }
 
 .controls-palette button,
@@ -96,33 +97,85 @@ body {
 .controls-palette textarea {
     width: 100%;
     margin-bottom: 10px;
+    background-color: #4d4d4d;
+    color: #ffffff;
+    border: none;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.controls-palette label {
+    display: block;
+    margin-bottom: 5px;
+    color: #dcdcdc;
 }
 
 .transformation-box {
     width: 100%;
+    background-color: #4d4d4d;
+    color: #ffffff;
+    border: none;
+    padding: 5px;
+    box-sizing: border-box;
 }
 
-/* Zone d'affichage des erreurs */
-#errorDisplay {
-    color: red;
-    margin-top: 10px;
+/* Ajustements pour la barre de menu */
+.menu-bar {
+    background-color: #3c3c3c;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    color: #ffffff;
 }
 
-/* Styles pour le canvas */
-canvas {
-    border: 1px solid black;
-    display: block;
-    margin: 10px;
+.menu-category label {
+    color: #dcdcdc;
 }
 
-/* Styles pour le bouton gomme */
+.menu-category input,
+.menu-category select,
+.menu-category button {
+    background-color: #4d4d4d;
+    color: #ffffff;
+    border: none;
+    padding: 3px;
+}
+
+.menu-category button {
+    cursor: pointer;
+}
+
 #eraserButton.active {
-    background-color: #888;
-    color: white;
+    background-color: #ff6a00;
 }
 
 #color.disabled {
     background-image: linear-gradient(45deg, #888 25%, transparent 25%, transparent 50%, #888 50%, #888 75%, transparent 75%);
     background-size: 4px 4px;
     opacity: 0.5;
+}
+
+/* Styles pour le canvas */
+canvas {
+    border: 1px solid #555;
+    display: block;
+    margin: 10px;
+    background-color: #ffffff;
+}
+
+.layer-eye,
+.layer-delete {
+    font-size: 16px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.layer-delete {
+    margin-left: auto;
+}
+
+.layer-item .layer-name {
+    flex-grow: 1;
+    color: #dcdcdc;
+    user-select: none;
 }

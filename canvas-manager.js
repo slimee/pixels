@@ -166,11 +166,12 @@ export default class CanvasManager {
       const layerItem = document.createElement('div');
       layerItem.className = 'layer-item';
 
-      const visibilityCheckbox = document.createElement('input');
-      visibilityCheckbox.type = 'checkbox';
-      visibilityCheckbox.checked = this.layerVisibility[index];
-      visibilityCheckbox.addEventListener('change', () => {
-        this.layerVisibility[index] = visibilityCheckbox.checked;
+      const eyeIcon = document.createElement('span');
+      eyeIcon.textContent = this.layerVisibility[index] ? '👁️' : '👓';
+      eyeIcon.className = 'layer-eye';
+      eyeIcon.addEventListener('click', () => {
+        this.layerVisibility[index] = !this.layerVisibility[index];
+        eyeIcon.textContent = this.layerVisibility[index] ? '👁️' : '👓';
         this.updateCanvas();
       });
 
@@ -186,9 +187,10 @@ export default class CanvasManager {
         layerName.style.fontWeight = 'bold';
       }
 
-      const deleteButton = document.createElement('button');
-      deleteButton.textContent = '🗑️';
-      deleteButton.addEventListener('click', () => {
+      const deleteIcon = document.createElement('span');
+      deleteIcon.textContent = '🗑️';
+      deleteIcon.className = 'layer-delete';
+      deleteIcon.addEventListener('click', () => {
         if (this.matrices.length > 1) {
           this.matrices.splice(index, 1);
           this.layerVisibility.splice(index, 1);
@@ -200,9 +202,9 @@ export default class CanvasManager {
         }
       });
 
-      layerItem.appendChild(visibilityCheckbox);
+      layerItem.appendChild(eyeIcon);
       layerItem.appendChild(layerName);
-      layerItem.appendChild(deleteButton);
+      layerItem.appendChild(deleteIcon);
       this.ui.layersList.appendChild(layerItem);
     });
   }
