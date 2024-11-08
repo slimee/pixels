@@ -190,7 +190,7 @@ export default class CanvasManager {
   }
 
   initLayerControls() {
-    this.ui.addLayerButton.addEventListener("click", () => this.addNewLayer());
+    this.ui.addLayerButton.addEventListener("click", this.addNewLayer.bind(this));
     this.ui.deleteLayerButton.addEventListener("click", () => this.deleteCurrentLayer());
   }
 
