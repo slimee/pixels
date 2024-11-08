@@ -9,7 +9,8 @@
   },
   {
     "name": "Déplacement",
-    "code": "x = x + 1;\ny = y + 1;"
+    "code": "x = x + 1;\ny = y + 1;",
+    "selected": true
   },
   {
     "name": "Vagues sinusoïdales",

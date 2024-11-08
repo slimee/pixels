@@ -1,4 +1,4 @@
-import Matrix from './matrix.js';
+import Layer from './layer.js';
 
 export default class CanvasManager {
   constructor(state, transformationManager, ui) {
@@ -8,35 +8,36 @@ export default class CanvasManager {
     this.transformationManager = transformationManager;
     this.brush = { size: 15, color: '#ff0000', shape: 'circle' };
     this.startPoint = null;
-    this.matrices = [];
+    this.layers = [];
     this.layerVisibility = [];
 
+    this.initLayerControls();
     this.initializeControls();
-    this.addNewMatrix();
+    this.addNewLayer();
 
     this.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
   }
 
-  get currentMatrix() {
-    return this.matrices[this.currentMatrixIndex];
+  get currentLayer() {
+    return this.layers[this.currentLayerIndex];
   }
 
-  get currentMatrixIndex() {
-    return this.state.currentMatrixIndex;
+  get currentLayerIndex() {
+    return this.state.currentLayerIndex;
   }
 
-  set currentMatrixIndex(index) {
-    this.state.currentMatrixIndex = index;
+  set currentLayerIndex(index) {
+    this.state.currentLayerIndex = index;
   }
 
-  addNewMatrix() {
-    const newMatrix = new Matrix(this.ui.canvas.width, this.ui.canvas.height);
-    this.matrices.push(newMatrix);
+  addNewLayer() {
+    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height);
+    this.layers.push(newLayer);
     this.layerVisibility.push(true);
-    this.currentMatrixIndex = this.matrices.length - 1;
+    this.currentLayerIndex = this.layers.length - 1;
 
-    const initialCode = this.transformationManager.getCode(this.currentMatrixIndex);
-    this.transformationManager.transformationCodeChanged(this.currentMatrixIndex, initialCode);
+    const initialCode = this.transformationManager.getCode(this.currentLayerIndex);
+    this.transformationManager.transformationCodeChanged(this.currentLayerIndex, initialCode);
 
     this.updateLayersList();
     this.updateCanvas();
@@ -156,82 +157,78 @@ export default class CanvasManager {
     this.ui.resizeAnchor.addEventListener("mousedown", addListeners);
   }
 
-  initLayerControls() {
-    this.ui.addLayerButton.addEventListener("click", () => this.addNewMatrix());
-  }
-
   updateLayersList() {
     this.ui.layersList.innerHTML = '';
-    this.matrices.forEach((_, index) => {
+    this.layers.forEach((_, index) => {
       const layerItem = document.createElement('div');
       layerItem.className = 'layer-item';
 
-      const eyeIcon = document.createElement('span');
-      eyeIcon.textContent = this.layerVisibility[index] ? '👁️' : '👓';
-      eyeIcon.className = 'layer-eye';
+      const eyeIcon = document.createElement('div');
+      eyeIcon.className = 'eye-icon';
       eyeIcon.addEventListener('click', () => {
         this.layerVisibility[index] = !this.layerVisibility[index];
-        eyeIcon.textContent = this.layerVisibility[index] ? '👁️' : '👓';
+        eyeIcon.classList.toggle('hidden', !this.layerVisibility[index]);
         this.updateCanvas();
       });
 
       const layerName = document.createElement('span');
       layerName.textContent = `Calque ${index + 1}`;
       layerName.addEventListener('click', () => {
-        this.currentMatrixIndex = index;
+        this.currentLayerIndex = index;
         this.updateLayersList();
         this.updateTransformationCodeInput();
       });
 
-      if (index === this.currentMatrixIndex) {
+      if (index === this.currentLayerIndex) {
         layerName.style.fontWeight = 'bold';
       }
 
-      const deleteIcon = document.createElement('span');
-      deleteIcon.textContent = '🗑️';
-      deleteIcon.className = 'layer-delete';
-      deleteIcon.addEventListener('click', () => {
-        if (this.matrices.length > 1) {
-          this.matrices.splice(index, 1);
-          this.layerVisibility.splice(index, 1);
-          if (this.currentMatrixIndex >= this.matrices.length) {
-            this.currentMatrixIndex = this.matrices.length - 1;
-          }
-          this.updateLayersList();
-          this.updateCanvas();
-        }
-      });
-
       layerItem.appendChild(eyeIcon);
       layerItem.appendChild(layerName);
-      layerItem.appendChild(deleteIcon);
       this.ui.layersList.appendChild(layerItem);
     });
   }
 
-  initTransformationControls() {
-    this.ui.clearButton.addEventListener('click', () => this.clearCurrentMatrix());
-    this.ui.clearAllButton.addEventListener('click', () => this.clearAllMatrices());
+  initLayerControls() {
+    this.ui.addLayerButton.addEventListener("click", () => this.addNewLayer());
+    this.ui.deleteLayerButton.addEventListener("click", () => this.deleteCurrentLayer());
   }
 
-  clearCurrentMatrix() {
-    this.currentMatrix.clear();
+  deleteCurrentLayer() {
+    if (this.layers.length > 1) {
+      this.layers.splice(this.currentLayerIndex, 1);
+      this.layerVisibility.splice(this.currentLayerIndex, 1);
+      if (this.currentLayerIndex >= this.layers.length) {
+        this.currentLayerIndex = this.layers.length - 1;
+      }
+      this.updateLayersList();
+      this.updateCanvas();
+    }
+  }
+
+  initTransformationControls() {
+    this.ui.clearButton.addEventListener('click', () => this.clearCurrentLayer());
+    this.ui.clearAllButton.addEventListener('click', () => this.clearAllLayers());
+  }
+
+  clearCurrentLayer() {
+    this.currentLayer.clear();
     this.updateCanvas();
   }
 
-  clearAllMatrices() {
-    this.matrices.forEach(matrix => matrix.clear());
+  clearAllLayers() {
+    this.layers.forEach(matrix => matrix.clear());
     this.updateCanvas();
   }
 
   drawAt(x, y, brush) {
-    this.currentMatrix.paint(x, y, brush);
+    this.currentLayer.paint(x, y, brush);
     this.updateCanvas();
   }
 
   updateCanvas() {
     this.canvasContext.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    this.matrices.forEach((matrix, index) => {
+    this.layers.forEach((matrix, index) => {
       if (this.layerVisibility[index]) {
         matrix.drawTo(this.canvasContext);
       }
@@ -241,19 +238,19 @@ export default class CanvasManager {
   resizeCanvas(newWidth, newHeight) {
     this.ui.canvas.width = newWidth;
     this.ui.canvas.height = newHeight;
-    this.matrices.forEach(matrix => matrix.resize(newWidth, newHeight));
+    this.layers.forEach(matrix => matrix.resize(newWidth, newHeight));
     this.updateCanvas();
   }
 
   drawOnDragInterval() {
     if (this.drawOnDrag && this.lastMousePosition) {
       const { x, y } = this.lastMousePosition;
-      this.currentMatrix.paint(x, y, this.brush);
+      this.currentLayer.paint(x, y, this.brush);
     }
   }
 
   updateTransformationCodeInput() {
-    this.ui.transformationCodeInput.value = this.transformationManager.getCode(this.currentMatrixIndex);
+    this.ui.transformationCodeInput.value = this.transformationManager.getCode(this.currentLayerIndex);
     this.ui.errorDisplay.textContent = '';
   }
 }

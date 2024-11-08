@@ -1,4 +1,4 @@
-export default class Matrix {
+export default class Layer {
   constructor(width, height) {
     this.width = width;
     this.height = height;

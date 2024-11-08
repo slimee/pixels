@@ -1,30 +1,63 @@
-/* Palette des calques */
-.layers-palette {
-    width: 180px;
-    background-color: #323232;
-    color: #ffffff;
-    padding: 10px;
-    border-left: 1px solid #444;
-    overflow-y: auto; /* Pour rendre la palette scrollable */
-    max-height: 80vh; /* Limite la hauteur pour permettre le défilement */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
 }
 
-.layers-palette h2 {
-    margin-top: 0;
-    font-size: 16px;
-    font-weight: normal;
-    color: #d0d0d0;
+.hidden {
+    display: none;
 }
 
-.layers-palette button#addLayerButton {
-    width: 100%;
-    margin-bottom: 10px;
-    background-color: #4d4d4d;
-    color: #ffffff;
-    border: none;
+.palette-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 250px;
+    max-height: 100%;
+    background-color: #f0f0f0;
+    border-left: 1px solid #ccc;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    resize: horizontal;
+}
+
+.palette-tabs {
+    display: flex;
+    background-color: #ddd;
+}
+
+.palette-tab {
+    flex: 1;
+    padding: 5px;
     cursor: pointer;
-    font-size: 18px;
-    padding: 5px 0;
+    text-align: center;
+    border-right: 1px solid #ccc;
+}
+
+.palette-tab:last-child {
+    border-right: none;
+}
+
+.palette-tab.active {
+    background-color: #fff;
+    font-weight: bold;
+}
+
+.palette-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.palette-panel {
+    padding: 10px;
+}
+
+.palette-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-top: 1px solid #ccc;
+    background-color: #ddd;
 }
 
 .layer-item {
@@ -34,6 +67,30 @@
     background-color: #424242;
     padding: 5px;
     cursor: pointer;
+}
+
+.layer-item input[type="checkbox"] {
+    margin-right: 5px;
+    display: none;
+}
+
+
+.layer-item span {
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.layer-item button {
+    margin-left: 5px;
+}
+
+.eye-icon {
+    width: 16px;
+    height: 16px;
+    background-image: url('icons/eye-icon.png');
+    background-size: contain;
+    cursor: pointer;
+    margin-right: 5px;
 }
 
 .layer-item:hover {
@@ -74,7 +131,6 @@
     background: #333;
 }
 
-/* Ajustements pour le reste des palettes */
 .controls-palette {
     width: 220px;
     background-color: #323232;
@@ -119,7 +175,6 @@
     box-sizing: border-box;
 }
 
-/* Ajustements pour la barre de menu */
 .menu-bar {
     background-color: #3c3c3c;
     padding: 5px 10px;
@@ -157,10 +212,9 @@
 
 /* Styles pour le canvas */
 canvas {
-    border: 1px solid #555;
+    border: 1px solid black;
     display: block;
     margin: 10px;
-    background-color: #ffffff;
 }
 
 .layer-eye,

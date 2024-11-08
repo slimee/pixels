@@ -1,5 +1,5 @@
 export default class State {
   constructor() {
-    this.currentMatrixIndex = 0;
+    this.currentLayerIndex = 0;
   }
 }

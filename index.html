@@ -42,30 +42,37 @@
         <div class="resize-anchor" id="resizeAnchor"></div>
     </div>
 
-    <!-- Palette des calques -->
-    <div class="layers-palette" id="layersPalette">
-        <h2>Calques</h2>
-        <button id="addLayerButton">+</button>
-        <div id="layersList">
-            <!-- Les calques seront ajoutés ici -->
+    <div class="palette-container" id="paletteContainer">
+        <div class="palette-tabs">
+            <button class="palette-tab active" data-target="#layersPalette">Calques</button>
+            <button class="palette-tab" data-target="#controlsPalette">Transformation</button>
         </div>
-    </div>
-
-    <!-- Palette des commandes -->
-    <div class="controls-palette">
-        <h2>Commandes</h2>
-        <button id="playPauseButton">Play</button>
-        <button id="clearButton">Effacer le calque</button>
-        <button id="clearAllButton">Tout effacer</button>
-        <label for="transformationSelector">Transformations prédéfinies:</label>
-        <select id="transformationSelector">
-            <option value="">--Sélectionner une fonction--</option>
-        </select>
-        <textarea id="transformationCode" class="transformation-box" rows="10">
-x = x + 1;
-y = y + 1;
-        </textarea>
-        <div id="errorDisplay"></div>
+        <div class="palette-content">
+            <!-- Palette des calques -->
+            <div class="palette-panel" id="layersPalette">
+                <div id="layersList">
+                    <!-- Les calques seront ajoutés ici -->
+                </div>
+                <div class="palette-footer">
+                    <button id="addLayerButton">➕</button>
+                    <button id="clearButton">Effacer le calque</button>
+                    <button id="clearAllButton">Tout effacer</button>
+                    <button id="deleteLayerButton">🗑️</button>
+                </div>
+            </div>
+            <!-- Palette des commandes -->
+            <div class="palette-panel hidden" id="controlsPalette">
+                <select id="transformationSelector">
+                    <option value="">--Sélectionner une fonction--</option>
+                </select>
+                <textarea id="transformationCode" class="transformation-box" rows="10">
+                </textarea>
+                <div id="errorDisplay"></div>
+                <div class="palette-footer">
+                    <button id="playPauseButton">Play</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

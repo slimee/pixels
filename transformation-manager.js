@@ -4,7 +4,7 @@ export default class TransformationManager {
     this.ui = ui;
     this.transformationFunctions = {};
     this.codes = {};
-    this.ui.transformationCodeInput.addEventListener('blur', () => this.transformationCodeChanged(this.state.currentMatrixIndex));
+    this.ui.transformationCodeInput.addEventListener('blur', () => this.transformationCodeChanged(this.state.currentLayerIndex));
   }
 
   transformationCodeChanged(matrixIndex, code = this.ui.transformationCodeInput.value) {

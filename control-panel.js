@@ -28,9 +28,9 @@ export default class ControlPanel {
   frame() {
     this.canvasManager.drawOnDragInterval();
 
-    const matricesData = this.canvasManager.matrices.map(matrix => matrix.imageData);
+    const matricesData = this.canvasManager.layers.map(matrix => matrix.imageData);
 
-    this.canvasManager.matrices.forEach((matrix, index) => {
+    this.canvasManager.layers.forEach((matrix, index) => {
       const transformationFunction = this.transformationManager.getTransformationFunction(index);
       const width = matrix.width;
       const height = matrix.height;
@@ -58,6 +58,7 @@ export default class ControlPanel {
       const option = document.createElement('option');
       option.value = index;
       option.textContent = transformation.name;
+      option.selected = transformation.selected
       this.ui.transformationSelector.appendChild(option);
     });
 
@@ -66,8 +67,10 @@ export default class ControlPanel {
       if (selectedIndex !== '') {
         const selectedTransformation = predefinedTransformations[selectedIndex];
         this.ui.transformationCodeInput.value = selectedTransformation.code;
-        this.transformationManager.transformationCodeChanged(this.canvasManager.currentMatrixIndex);
+        this.transformationManager.transformationCodeChanged(this.canvasManager.currentLayerIndex);
       }
     });
+
+    this.ui.transformationSelector.dispatchEvent(new Event('change'));
   }
 }
