@@ -60,11 +60,20 @@ body {
     background-color: #ddd;
 }
 
+.eye-icon {
+    width: 16px;
+    height: 16px;
+    background-image: url('icons/eye-icon.png');
+    background-size: contain;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
 .layer-item {
     display: flex;
     align-items: center;
     margin-bottom: 5px;
-    background-color: #424242;
+    background-color: #e3e3e3;
     padding: 5px;
     cursor: pointer;
 }
@@ -84,17 +93,8 @@ body {
     margin-left: 5px;
 }
 
-.eye-icon {
-    width: 16px;
-    height: 16px;
-    background-image: url('icons/eye-icon.png');
-    background-size: contain;
-    cursor: pointer;
-    margin-right: 5px;
-}
-
 .layer-item:hover {
-    background-color: #535353;
+    background-color: rgba(126, 211, 75, 0.66);
 }
 
 .layer-item .layer-eye,
