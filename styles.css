@@ -3,6 +3,60 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.main-container {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 50px); /* Ajustez si nécessaire en fonction de la hauteur de votre barre de menu */
+}
+
+/* Canvas qui prend tout l'espace disponible */
+.canvas-container {
+    flex: 1;
+    position: relative;
+}
+
+/* Palette sur la droite avec une largeur fixe */
+.palette-container {
+    width: 300px; /* Ajustez la largeur selon vos besoins */
+    background-color: #f0f0f0;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+/* Style du bouton de repli */
+.toggle-palette-button {
+    position: absolute;
+    top: 60px; /* Ajustez en fonction de votre layout */
+    right: 310px; /* La largeur de la palette plus 10px de marge */
+    z-index: 1000;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+/* Styles lorsque la palette est repliée */
+.palette-container.collapsed {
+    width: 0;
+    padding: 0;
+}
+
+.palette-container.collapsed .palette-content {
+    display: none;
+}
+
+/* Ajustement du bouton lorsque la palette est repliée */
+.palette-collapsed .toggle-palette-button {
+    right: 10px;
+}
+
+/* Le canvas occupe tout l'espace lorsque la palette est repliée */
+.palette-collapsed .canvas-container {
+    flex: 1 1 100%;
+}
+
+
 .hidden {
     display: none;
 }
@@ -22,8 +76,7 @@ body {
 }
 
 .palette-tabs {
-    display: flex;
-    background-color: #ddd;
+    display: none;
 }
 
 .palette-tab {
@@ -60,15 +113,6 @@ body {
     background-color: #ddd;
 }
 
-.eye-icon {
-    width: 16px;
-    height: 16px;
-    background-image: url('icons/eye-icon.png');
-    background-size: contain;
-    cursor: pointer;
-    margin-right: 5px;
-}
-
 .layer-item {
     display: flex;
     align-items: center;
@@ -76,6 +120,11 @@ body {
     background-color: #e3e3e3;
     padding: 5px;
     cursor: pointer;
+}
+
+.layer-item.selected {
+    background-color: green;
+    color: white; /* Facultatif : pour rendre le texte lisible */
 }
 
 .layer-item input[type="checkbox"] {
@@ -105,6 +154,31 @@ body {
     cursor: pointer;
 }
 
+.eye-icon {
+    display: inline-block;
+    width: 24px;
+    text-align: center;
+    padding-right: 10px;
+}
+
+.eye-icon input[type="checkbox"] {
+    display: none;
+}
+
+.eye-icon label {
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.eye-icon label::before {
+    content: '👁️';
+}
+
+.eye-icon input[type="checkbox"]:not(:checked) + label::before {
+    content: '🚫';
+}
+
+
 .layer-item .layer-name {
     flex-grow: 1;
     color: #dcdcdc;
@@ -116,6 +190,20 @@ body {
 
 .layer-item .layer-delete {
     margin-left: auto;
+}
+
+.layers-section,
+.transformations-section {
+    margin-bottom: 20px; /* Espacement entre les sections */
+}
+
+/* Optionnel : Styles spécifiques pour chaque section */
+.layers-section {
+    /* Styles pour la section des calques */
+}
+
+.transformations-section {
+    /* Styles pour la section des transformations */
 }
 
 .layers-palette::-webkit-scrollbar {
@@ -217,13 +305,6 @@ canvas {
     margin: 10px;
 }
 
-.layer-eye,
-.layer-delete {
-    font-size: 16px;
-    margin-right: 5px;
-    cursor: pointer;
-}
-
 .layer-delete {
     margin-left: auto;
 }
@@ -232,4 +313,47 @@ canvas {
     flex-grow: 1;
     color: #dcdcdc;
     user-select: none;
+}
+
+.layer-item {
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    position: relative;
+}
+
+.layer-item .transform-toggle-button {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.transformation-area {
+    padding: 5px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #ccc;
+}
+
+.transformation-code {
+    width: 100%;
+    resize: vertical;
+}
+
+.transformation-selector {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.transformation-footer {
+    margin-top: 5px;
+    text-align: right;
+}
+
+.error-display {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
 }

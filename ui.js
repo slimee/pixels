@@ -24,26 +24,37 @@ export default class UI {
     this.transformationCodeInput = document.getElementById('transformationCode');
     this.errorDisplay = document.getElementById('errorDisplay');
 
-    this.paletteTabs = document.querySelectorAll('.palette-tab');
-    this.palettePanels = document.querySelectorAll('.palette-panel');
-    this.paletteContainer = document.getElementById('paletteContainer');
+    this.transformationSelector = document.getElementById('transformationSelector');
+    this.transformationCodeInput = document.getElementById('transformationCode');
+    this.errorDisplay = document.getElementById('errorDisplay');
 
-    // Initialize palette tabs
-    this.initPaletteTabs();
+    // Bouton de repli
+    this.togglePaletteButton = document.getElementById('togglePaletteButton');
+    this.paletteContainer = document.getElementById('paletteContainer');
+    this.mainContainer = document.querySelector('.main-container');
+
+    // Initialiser le repli de la palette
+    this.initPaletteToggle();
   }
 
-  initPaletteTabs() {
-    this.paletteTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        // Remove active class from all tabs
-        this.paletteTabs.forEach(t => t.classList.remove('active'));
-        // Hide all panels
-        this.palettePanels.forEach(panel => panel.classList.add('hidden'));
-        // Activate the clicked tab and show its panel
-        tab.classList.add('active');
-        const targetPanel = document.querySelector(tab.dataset.target);
-        targetPanel.classList.remove('hidden');
-      });
+  initPaletteToggle() {
+    // Définir l'icône initiale
+    if (this.paletteContainer.classList.contains('collapsed')) {
+      this.togglePaletteButton.textContent = '→';
+    } else {
+      this.togglePaletteButton.textContent = '←';
+    }
+
+    this.togglePaletteButton.addEventListener('click', () => {
+      this.paletteContainer.classList.toggle('collapsed');
+      this.mainContainer.classList.toggle('palette-collapsed');
+
+      // Mettre à jour l'icône du bouton
+      if (this.paletteContainer.classList.contains('collapsed')) {
+        this.togglePaletteButton.textContent = '→'; // Icône lorsque replié
+      } else {
+        this.togglePaletteButton.textContent = '←'; // Icône lorsque déplié
+      }
     });
   }
 }

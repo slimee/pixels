@@ -42,14 +42,11 @@
         <div class="resize-anchor" id="resizeAnchor"></div>
     </div>
 
+    <button id="togglePaletteButton" class="toggle-palette-button">☰</button>
+    
     <div class="palette-container" id="paletteContainer">
-        <div class="palette-tabs">
-            <button class="palette-tab active" data-target="#layersPalette">Calques</button>
-            <button class="palette-tab" data-target="#controlsPalette">Transformation</button>
-        </div>
         <div class="palette-content">
-            <!-- Palette des calques -->
-            <div class="palette-panel" id="layersPalette">
+            <div class="layers-section">
                 <div id="layersList">
                     <!-- Les calques seront ajoutés ici -->
                 </div>
@@ -60,13 +57,11 @@
                     <button id="deleteLayerButton">🗑️</button>
                 </div>
             </div>
-            <!-- Palette des commandes -->
-            <div class="palette-panel hidden" id="controlsPalette">
+            <div class="transformations-section">
                 <select id="transformationSelector">
                     <option value="">--Sélectionner une fonction--</option>
                 </select>
-                <textarea id="transformationCode" class="transformation-box" rows="10">
-                </textarea>
+                <textarea id="transformationCode" class="transformation-box" rows="10"></textarea>
                 <div id="errorDisplay"></div>
                 <div class="palette-footer">
                     <button id="playPauseButton">Play</button>
@@ -74,6 +69,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 </body>

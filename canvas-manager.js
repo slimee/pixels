@@ -11,7 +11,6 @@ export default class CanvasManager {
     this.layers = [];
     this.layerVisibility = [];
 
-    this.initLayerControls();
     this.initializeControls();
     this.addNewLayer();
 
@@ -163,31 +162,123 @@ export default class CanvasManager {
       const layerItem = document.createElement('div');
       layerItem.className = 'layer-item';
 
+      // Icône de visibilité (œil)
       const eyeIcon = document.createElement('div');
       eyeIcon.className = 'eye-icon';
-      eyeIcon.addEventListener('click', () => {
-        this.layerVisibility[index] = !this.layerVisibility[index];
-        eyeIcon.classList.toggle('hidden', !this.layerVisibility[index]);
+      const eyeCheckbox = document.createElement('input');
+      eyeCheckbox.type = 'checkbox';
+      eyeCheckbox.id = `eyeCheckbox-${index}`;
+      eyeCheckbox.checked = this.layerVisibility[index];
+      eyeCheckbox.addEventListener('change', () => {
+        this.layerVisibility[index] = eyeCheckbox.checked;
         this.updateCanvas();
       });
+      const eyeLabel = document.createElement('label');
+      eyeLabel.htmlFor = `eyeCheckbox-${index}`;
+      eyeIcon.appendChild(eyeCheckbox);
+      eyeIcon.appendChild(eyeLabel);
 
+      // Nom du calque
       const layerName = document.createElement('span');
       layerName.textContent = `Calque ${index + 1}`;
       layerName.addEventListener('click', () => {
         this.currentLayerIndex = index;
         this.updateLayersList();
-        this.updateTransformationCodeInput();
       });
 
-      if (index === this.currentLayerIndex) {
-        layerName.style.fontWeight = 'bold';
-      }
+      // Bouton de transformation
+      const transformToggleButton = document.createElement('button');
+      transformToggleButton.className = 'transform-toggle-button';
+      transformToggleButton.textContent = this.state.activeTransformationLayerIndex === index ? '▼' : '◀';
+      transformToggleButton.addEventListener('click', () => {
+        if (this.state.activeTransformationLayerIndex === index) {
+          this.state.activeTransformationLayerIndex = null;
+        } else {
+          this.state.activeTransformationLayerIndex = index;
+        }
+        this.updateLayersList();
+      });
 
+      // Ajouter les éléments au calque
       layerItem.appendChild(eyeIcon);
       layerItem.appendChild(layerName);
+      layerItem.appendChild(transformToggleButton);
+
+      // Mettre en évidence le calque sélectionné
+      if (index === this.currentLayerIndex) {
+        layerItem.classList.add('selected');
+      }
+
       this.ui.layersList.appendChild(layerItem);
+
+      // Afficher la zone de transformation si nécessaire
+      if (this.state.activeTransformationLayerIndex === index) {
+        const transformationArea = this.createTransformationArea(index);
+        this.ui.layersList.appendChild(transformationArea);
+      }
     });
   }
+
+  createTransformationArea(index) {
+    const transformationArea = document.createElement('div');
+    transformationArea.className = 'transformation-area';
+
+    // Zone de code de transformation
+    const transformationCodeInput = document.createElement('textarea');
+    transformationCodeInput.className = 'transformation-code';
+    transformationCodeInput.rows = 5;
+    transformationCodeInput.value = this.transformationManager.getCode(index);
+    transformationCodeInput.addEventListener('input', () => {
+      const code = transformationCodeInput.value;
+      this.transformationManager.transformationCodeChanged(index, code);
+    });
+
+    // Affichage des erreurs
+    const errorDisplay = document.createElement('div');
+    errorDisplay.className = 'error-display';
+    // Mettre à jour errorDisplay selon les besoins
+
+    // Liste déroulante de sélection de transformation
+    const transformationSelector = document.createElement('select');
+    transformationSelector.className = 'transformation-selector';
+    // Ajouter les options nécessaires
+    transformationSelector.addEventListener('change', () => {
+      // Gérer le changement de sélection
+    });
+
+    // Pied de page des contrôles de transformation
+    const transformationFooter = document.createElement('div');
+    transformationFooter.className = 'transformation-footer';
+
+    // Bouton Play
+    const playPauseButton = document.createElement('button');
+    playPauseButton.id = `playPauseButton-${index}`;
+    playPauseButton.textContent = 'Play';
+    playPauseButton.addEventListener('click', () => {
+      // Gérer le play/pause pour ce calque
+    });
+
+    // Bouton Effacer le calque
+    const clearButton = document.createElement('button');
+    clearButton.textContent = 'Effacer le calque';
+    clearButton.addEventListener('click', () => {
+      this.layers[index].clear();
+      this.updateCanvas();
+    });
+
+    // Ajouter les boutons au pied de page
+    transformationFooter.appendChild(clearButton);
+    transformationFooter.appendChild(playPauseButton);
+
+    // Ajouter les éléments à la zone de transformation
+    transformationArea.appendChild(transformationCodeInput);
+    transformationArea.appendChild(errorDisplay);
+    transformationArea.appendChild(transformationSelector);
+    transformationArea.appendChild(transformationFooter);
+
+    return transformationArea;
+  }
+
 
   initLayerControls() {
     this.ui.addLayerButton.addEventListener("click", this.addNewLayer.bind(this));
