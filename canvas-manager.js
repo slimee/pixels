@@ -73,7 +73,7 @@ export default class CanvasManager {
     // Ajouter les écouteurs d'événements
     transformationCodeInput.addEventListener('blur', () => {
       const code = transformationCodeInput.value;
-      this.transformationManager.transformationCodeChanged(newLayerIndex, code);
+      this.transformationManager.setTransformationCode(newLayerIndex, code);
     });
 
     playPauseButton.addEventListener('click', () => {
@@ -266,10 +266,10 @@ export default class CanvasManager {
     const transformationCodeInput = document.createElement('textarea');
     transformationCodeInput.className = 'transformation-code';
     transformationCodeInput.rows = 5;
-    transformationCodeInput.value = this.transformationManager.getCode(index);
+    transformationCodeInput.value = this.transformationManager.getTransformationCode(index);
     transformationCodeInput.addEventListener('input', () => {
       const code = transformationCodeInput.value;
-      this.transformationManager.transformationCodeChanged(index, code);
+      this.transformationManager.setTransformationCode(index, code);
     });
 
     // Affichage des erreurs
@@ -352,7 +352,6 @@ export default class CanvasManager {
   }
 
   drawAt(x, y, brush) {
-    console.log('Drawing at', x, y, brush);
     this.currentLayer.paint(x, y, brush);
     this.updateCanvas();
   }
@@ -381,7 +380,7 @@ export default class CanvasManager {
   }
 
   updateTransformationCodeInput() {
-    this.ui.transformationCodeInput.value = this.transformationManager.getCode(this.currentLayerIndex);
+    this.ui.transformationCodeInput.value = this.transformationManager.getTransformationCode(this.currentLayerIndex);
     this.ui.errorDisplay.textContent = '';
   }
 }

@@ -91,7 +91,7 @@ export default class ControlPanel {
     //   if (selectedIndex !== '') {
     //     const selectedTransformation = predefinedTransformations[selectedIndex];
     //     this.ui.transformationCodeInput.value = selectedTransformation.code;
-    //     this.transformationManager.transformationCodeChanged(this.canvasManager.currentLayerIndex);
+    //     this.transformationManager.setTransformationCode(this.canvasManager.currentLayerIndex);
     //   }
     // });
     //

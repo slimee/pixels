@@ -6,12 +6,12 @@ export default class TransformationManager {
     this.codes = {};
   }
 
-  transformationCodeChanged(layerIndex, code) {
+  setTransformationCode(layerIndex, code) {
     this.codes[layerIndex] = code;
     this.createTransformationFunction(layerIndex, code);
   }
 
-  getCode(layerIndex) {
+  getTransformationCode(layerIndex) {
     return this.codes[layerIndex] || '';
   }
 
