@@ -8,13 +8,15 @@ export default class CanvasManager {
     this.transformationManager = transformationManager;
     this.brush = { size: 15, color: '#ff0000', shape: 'circle' };
     this.startPoint = null;
-    this.layers = [];
-    this.layerVisibility = [];
 
     this.initializeControls();
     this.addNewLayer();
 
     this.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
+  }
+
+  get layers() {
+    return this.state.layers;
   }
 
   get currentLayer() {
@@ -31,9 +33,8 @@ export default class CanvasManager {
 
   addNewLayer() {
     const newLayerIndex = this.layers.length;
-    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height);
+    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height, this.state.isPlaying);
     this.layers.push(newLayer);
-    this.layerVisibility.push(true);
 
     // Créer les éléments UI pour le calque
     const layerItem = document.createElement('div');
@@ -77,7 +78,13 @@ export default class CanvasManager {
     });
 
     playPauseButton.addEventListener('click', () => {
-      this.controlPanel.togglePlayPauseForLayer(newLayerIndex);
+      newLayer.isPlaying = !newLayer.isPlaying;
+      this.ui.layerPlayPauseButtons[newLayerIndex].textContent = 'Play';
+      this.ui.layerPlayPauseButtons[newLayerIndex].textContent = 'Pause';
+
+      if (!this.state.isPlaying) {
+        // this.controlPanel.play();
+      }
     });
   }
 
@@ -197,7 +204,7 @@ export default class CanvasManager {
 
   updateLayersList() {
     this.ui.layersList.innerHTML = '';
-    this.layers.forEach((_, index) => {
+    this.layers.forEach((layer, index) => {
       const layerItem = document.createElement('div');
       layerItem.className = 'layer-item';
 
@@ -207,9 +214,9 @@ export default class CanvasManager {
       const eyeCheckbox = document.createElement('input');
       eyeCheckbox.type = 'checkbox';
       eyeCheckbox.id = `eyeCheckbox-${index}`;
-      eyeCheckbox.checked = this.layerVisibility[index];
+      eyeCheckbox.checked = layer.visible;
       eyeCheckbox.addEventListener('change', () => {
-        this.layerVisibility[index] = eyeCheckbox.checked;
+        layer.visible = eyeCheckbox.checked;
         this.updateCanvas();
       });
       const eyeLabel = document.createElement('label');
@@ -327,7 +334,6 @@ export default class CanvasManager {
   deleteCurrentLayer() {
     if (this.layers.length > 1) {
       this.layers.splice(this.currentLayerIndex, 1);
-      this.layerVisibility.splice(this.currentLayerIndex, 1);
       if (this.currentLayerIndex >= this.layers.length) {
         this.currentLayerIndex = this.layers.length - 1;
       }
@@ -358,10 +364,8 @@ export default class CanvasManager {
 
   updateCanvas() {
     this.canvasContext.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    this.layers.forEach((matrix, index) => {
-      if (this.layerVisibility[index]) {
-        matrix.drawTo(this.canvasContext);
-      }
+    this.layers.forEach((layer) => {
+      if (layer.visible) layer.drawTo(this.canvasContext);
     });
   }
 

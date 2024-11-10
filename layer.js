@@ -1,5 +1,5 @@
 export default class Layer {
-  constructor(width, height) {
+  constructor(width, height, isPlaying) {
     this.width = width;
     this.height = height;
     this.offscreenCanvas = document.createElement('canvas');
@@ -7,6 +7,8 @@ export default class Layer {
     this.offscreenCanvas.height = height;
     this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
     this.imageData = this.offscreenCanvasContext.createImageData(this.width, this.height);
+    this.visible = true;
+    this.isPlaying = isPlaying;
   }
 
   transform(transformationFunction) {
