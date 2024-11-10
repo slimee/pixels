@@ -4,31 +4,30 @@ export default class TransformationManager {
     this.ui = ui;
     this.transformationFunctions = {};
     this.codes = {};
-    this.ui.transformationCodeInput.addEventListener('blur', () => this.transformationCodeChanged(this.state.currentLayerIndex));
   }
 
-  transformationCodeChanged(matrixIndex, code = this.ui.transformationCodeInput.value) {
-    this.codes[matrixIndex] = code;
-    this.createTransformationFunction(matrixIndex, code);
+  transformationCodeChanged(layerIndex, code) {
+    this.codes[layerIndex] = code;
+    this.createTransformationFunction(layerIndex, code);
   }
 
-  getCode(matrixIndex) {
-    return this.codes[matrixIndex] || 'x = x + 1;\ny = y + 1;';
+  getCode(layerIndex) {
+    return this.codes[layerIndex] || '';
   }
 
-  createTransformationFunction(matrixIndex, code) {
+  createTransformationFunction(layerIndex, code) {
     try {
-      this.transformationFunctions[matrixIndex] = new Function('x', 'y', 'width', 'height', 'matrices', `${code} return { x, y };`);
-      this.ui.errorDisplay.textContent = '';
+      this.transformationFunctions[layerIndex] = new Function('x', 'y', 'width', 'height', 'matrices', `${code} return { x, y };`);
+      this.ui.clearErrorDisplay(layerIndex);
     } catch (error) {
-      this.ui.errorDisplay.textContent = `Erreur dans la fonction de transformation : ${error.message}`;
+      this.ui.showError(layerIndex, `Erreur dans la fonction de transformation : ${error.message}`);
       console.error("Erreur dans la fonction de transformation : ", error);
-      this.transformationFunctions[matrixIndex] = (x, y) => ({ x, y });
+      this.transformationFunctions[layerIndex] = (x, y) => ({ x, y });
     }
   }
 
-  getTransformationFunction(matrixIndex) {
-    return this.transformationFunctions[matrixIndex] || ((x, y, _width, _height, _matrices) => ({
+  getTransformationFunction(layerIndex) {
+    return this.transformationFunctions[layerIndex] || ((x, y, _width, _height, _matrices) => ({
       x,
       y
     }));

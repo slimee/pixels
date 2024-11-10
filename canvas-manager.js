@@ -30,16 +30,55 @@ export default class CanvasManager {
   }
 
   addNewLayer() {
+    const newLayerIndex = this.layers.length;
     const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height);
     this.layers.push(newLayer);
     this.layerVisibility.push(true);
-    this.currentLayerIndex = this.layers.length - 1;
 
-    const initialCode = this.transformationManager.getCode(this.currentLayerIndex);
-    this.transformationManager.transformationCodeChanged(this.currentLayerIndex, initialCode);
+    // Créer les éléments UI pour le calque
+    const layerItem = document.createElement('div');
+    layerItem.classList.add('layer-item');
+    layerItem.dataset.layerIndex = newLayerIndex;
 
-    this.updateLayersList();
-    this.updateCanvas();
+    // Nom du calque
+    const layerName = document.createElement('span');
+    layerName.textContent = `Calque ${newLayerIndex + 1}`;
+    layerItem.appendChild(layerName);
+
+    // Zone de code de transformation
+    const transformationCodeInput = document.createElement('textarea');
+    transformationCodeInput.classList.add('transformation-code-input');
+    transformationCodeInput.rows = 5;
+    layerItem.appendChild(transformationCodeInput);
+
+    // Affichage des erreurs
+    const errorDisplay = document.createElement('div');
+    errorDisplay.classList.add('error-display');
+    layerItem.appendChild(errorDisplay);
+
+    // Bouton Play/Pause
+    const playPauseButton = document.createElement('button');
+    playPauseButton.textContent = 'Play';
+    playPauseButton.classList.add('play-pause-button');
+    layerItem.appendChild(playPauseButton);
+
+    // Ajouter le calque à la liste des calques
+    this.ui.layersList.appendChild(layerItem);
+
+    // Stocker les références
+    this.ui.layerTransformationInputs[newLayerIndex] = transformationCodeInput;
+    this.ui.layerPlayPauseButtons[newLayerIndex] = playPauseButton;
+    this.ui.layerErrorDisplays[newLayerIndex] = errorDisplay;
+
+    // Ajouter les écouteurs d'événements
+    transformationCodeInput.addEventListener('blur', () => {
+      const code = transformationCodeInput.value;
+      this.transformationManager.transformationCodeChanged(newLayerIndex, code);
+    });
+
+    playPauseButton.addEventListener('click', () => {
+      this.controlPanel.togglePlayPauseForLayer(newLayerIndex);
+    });
   }
 
   initializeControls() {
@@ -87,10 +126,10 @@ export default class CanvasManager {
   }
 
   initCanvasMouseEvents() {
-    this.ui.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    this.ui.canvas.addEventListener('mousedown', this.handleCanvasMouseDown.bind(this));
   }
 
-  handleMouseDown(event) {
+  handleCanvasMouseDown(event) {
     const rect = this.ui.canvas.getBoundingClientRect();
     const x = Math.floor(event.clientX - rect.left);
     const y = Math.floor(event.clientY - rect.top);
@@ -313,6 +352,7 @@ export default class CanvasManager {
   }
 
   drawAt(x, y, brush) {
+    console.log('Drawing at', x, y, brush);
     this.currentLayer.paint(x, y, brush);
     this.updateCanvas();
   }

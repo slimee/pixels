@@ -357,3 +357,25 @@ canvas {
     font-size: 12px;
     margin-top: 5px;
 }
+
+.layer-item {
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    position: relative;
+}
+
+.transformation-code-input {
+    width: 100%;
+    resize: vertical;
+    margin-top: 5px;
+}
+
+.play-pause-button {
+    margin-top: 5px;
+}
+
+.error-display {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}

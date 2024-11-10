@@ -20,13 +20,10 @@ export default class UI {
     this.playPauseButton = document.getElementById('playPauseButton');
     this.clearButton = document.getElementById('clearButton');
     this.clearAllButton = document.getElementById('clearAllButton');
-    this.transformationSelector = document.getElementById('transformationSelector');
-    this.transformationCodeInput = document.getElementById('transformationCode');
-    this.errorDisplay = document.getElementById('errorDisplay');
 
-    this.transformationSelector = document.getElementById('transformationSelector');
-    this.transformationCodeInput = document.getElementById('transformationCode');
-    this.errorDisplay = document.getElementById('errorDisplay');
+    this.layerTransformationInputs = {};
+    this.layerPlayPauseButtons = {};
+    this.layerErrorDisplays = {};
 
     // Bouton de repli
     this.togglePaletteButton = document.getElementById('togglePaletteButton');
@@ -35,6 +32,18 @@ export default class UI {
 
     // Initialiser le repli de la palette
     this.initPaletteToggle();
+  }
+
+  showError(layerIndex, message) {
+    if (this.layerErrorDisplays[layerIndex]) {
+      this.layerErrorDisplays[layerIndex].textContent = message;
+    }
+  }
+
+  clearErrorDisplay(layerIndex) {
+    if (this.layerErrorDisplays[layerIndex]) {
+      this.layerErrorDisplays[layerIndex].textContent = '';
+    }
   }
 
   initPaletteToggle() {

@@ -43,28 +43,19 @@
     </div>
 
     <button id="togglePaletteButton" class="toggle-palette-button">☰</button>
-    
+
     <div class="palette-container" id="paletteContainer">
         <div class="palette-content">
             <div class="layers-section">
                 <div id="layersList">
-                    <!-- Les calques seront ajoutés ici -->
+                    <!-- Les calques seront ajoutés ici dynamiquement -->
                 </div>
                 <div class="palette-footer">
+                    <button id="playPauseButton">Play</button>
                     <button id="addLayerButton">➕</button>
                     <button id="clearButton">Effacer le calque</button>
                     <button id="clearAllButton">Tout effacer</button>
                     <button id="deleteLayerButton">🗑️</button>
-                </div>
-            </div>
-            <div class="transformations-section">
-                <select id="transformationSelector">
-                    <option value="">--Sélectionner une fonction--</option>
-                </select>
-                <textarea id="transformationCode" class="transformation-box" rows="10"></textarea>
-                <div id="errorDisplay"></div>
-                <div class="palette-footer">
-                    <button id="playPauseButton">Play</button>
                 </div>
             </div>
         </div>
