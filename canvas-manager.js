@@ -1,10 +1,9 @@
 import Layer from './layer.js';
 
 export default class CanvasManager {
-  constructor(state, ui, transformationManager) {
+  constructor(state, ui) {
     this.state = state;
     this.ui = ui;
-    this.transformationManager = transformationManager;
 
     this.canvasContext = this.ui.canvas.getContext('2d');
     this.brush = { size: 15, color: '#ff0000', shape: 'circle' };
@@ -32,7 +31,7 @@ export default class CanvasManager {
   }
 
   addNewLayer() {
-    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height, this.state.isPlaying);
+    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height);
     this.layers.push(newLayer);
     this.updateLayersList();
   }
@@ -43,7 +42,6 @@ export default class CanvasManager {
     this.initDrawOnDragCheckbox();
     this.initCanvasMouseEvents();
     this.initResize();
-    this.initLayerControls();
     this.initTransformationControls();
     this.addNewLayer();
   }
@@ -209,13 +207,13 @@ export default class CanvasManager {
 
       // Afficher la zone de transformation si nécessaire
       if (this.state.activeTransformationLayerIndex === index) {
-        const transformationArea = this.createTransformationArea(index);
+        const transformationArea = this.createTransformationArea(layer, index);
         this.ui.layersList.appendChild(transformationArea);
       }
     });
   }
 
-  createTransformationArea(index) {
+  createTransformationArea(layer, index) {
     const transformationArea = document.createElement('div');
     transformationArea.className = 'transformation-area';
 
@@ -223,10 +221,9 @@ export default class CanvasManager {
     const transformationCodeInput = document.createElement('textarea');
     transformationCodeInput.className = 'transformation-code';
     transformationCodeInput.rows = 5;
-    transformationCodeInput.value = this.transformationManager.getTransformationCode(index);
+    transformationCodeInput.value = layer.code;
     transformationCodeInput.addEventListener('input', () => {
-      const code = transformationCodeInput.value;
-      this.transformationManager.setTransformationCode(index, code);
+      layer.code = transformationCodeInput.value;
     });
 
     // Affichage des erreurs
@@ -273,12 +270,6 @@ export default class CanvasManager {
     transformationArea.appendChild(transformationFooter);
 
     return transformationArea;
-  }
-
-
-  initLayerControls() {
-    this.ui.addLayerButton.addEventListener("click", this.addNewLayer.bind(this));
-    this.ui.deleteLayerButton.addEventListener("click", () => this.deleteCurrentLayer());
   }
 
   deleteCurrentLayer() {
@@ -331,10 +322,5 @@ export default class CanvasManager {
       const { x, y } = this.lastMousePosition;
       this.currentLayer.paint(x, y, this.brush);
     }
-  }
-
-  updateTransformationCodeInput() {
-    this.ui.transformationCodeInput.value = this.transformationManager.getTransformationCode(this.currentLayerIndex);
-    this.ui.errorDisplay.textContent = '';
   }
 }

@@ -1,5 +1,5 @@
 export default class Layer {
-  constructor(width, height, isPlaying) {
+  constructor(width, height) {
     this.width = width;
     this.height = height;
     this.offscreenCanvas = document.createElement('canvas');
@@ -8,10 +8,25 @@ export default class Layer {
     this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
     this.imageData = this.offscreenCanvasContext.createImageData(this.width, this.height);
     this.visible = true;
-    this.isPlaying = isPlaying;
+    this.isPlaying = true;
+    this.transformationFunction = null;
+    this.code = 'x += 1;\ny += 1;';
   }
 
-  transform(transformationFunction) {
+  get code() {
+    return this._code;
+  }
+
+  set code(newCode) {
+    this._code = newCode;
+    this.updateTransformationFunction();
+  }
+
+  updateTransformationFunction() {
+    this.transformationFunction = new Function('x', 'y', 'width', 'height', 'matrices', `${this.code} return { x, y };`);
+  }
+
+  transform(layersImageData) {
     const newData = new Uint8ClampedArray(this.imageData.data.length);
     const width = this.width;
     const height = this.height;
@@ -19,7 +34,10 @@ export default class Layer {
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const index = (y * width + x) * 4;
-        const { x: newX, y: newY } = transformationFunction(x, y);
+        const {
+          x: newX,
+          y: newY
+        } = this.transformationFunction(x, y, width, height, layersImageData);
         const intNewX = Math.floor(newX);
         const intNewY = Math.floor(newY);
         const wrappedX = ((intNewX % width) + width) % width;

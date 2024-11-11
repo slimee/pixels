@@ -1,5 +1,6 @@
 export default class State {
-  constructor() {
+  constructor(transformations) {
+    this.transformations = transformations;
     this.isPlaying = false;
     this.currentLayerIndex = 0;
     this.activeTransformationLayerIndex = null;

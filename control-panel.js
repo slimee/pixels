@@ -1,11 +1,17 @@
 export default class ControlPanel {
-  constructor(state, ui, transformationManager, canvasManager) {
+  constructor(state, ui, canvasManager, layerService) {
     this.state = state;
     this.ui = ui;
-    this.transformationManager = transformationManager;
     this.canvasManager = canvasManager;
+    this.layerService = layerService;
     this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     this.frame = this.frame.bind(this);
+    this.initLayerControls();
+  }
+
+  initLayerControls() {
+    this.ui.addLayerButton.addEventListener("click", () => this.layerService.addNewLayer());
+    this.ui.deleteLayerButton.addEventListener("click", () => this.layerService.deleteCurrentLayer());
   }
 
   togglePlayPause() {
@@ -27,25 +33,13 @@ export default class ControlPanel {
 
   frame() {
     this.canvasManager.drawOnDragInterval();
-    const matricesData = this.state.layers.map(layer => layer.imageData);
+    const layersImageData = this.state.layers.map(layer => layer.imageData);
 
-    this.state.playingLayers.forEach((visibleLayer, layerIndex) => {
-      const transformationFunction = this.transformationManager.getTransformationFunction(layerIndex);
-      const wrappedTransformationFunction = (x, y) => {
-        try {
-          return transformationFunction(x, y, visibleLayer.width, visibleLayer.height, matricesData);
-        } catch (error) {
-          this.ui.showError(layerIndex, `Erreur pendant l'exécution : ${error.message}`);
-          console.error("Erreur pendant l'exécution : ", error);
-          return { x, y };
-        }
-      };
-      visibleLayer.transform(wrappedTransformationFunction);
-    });
+    this.state.playingLayers.forEach(visibleLayer => visibleLayer.transform(layersImageData));
 
     this.canvasManager.updateCanvas();
 
-    requestAnimationFrame(this.frame);
+    if (this.state.isPlaying) requestAnimationFrame(this.frame);
   }
 
   initializeTransformations(predefinedTransformations) {
