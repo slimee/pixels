@@ -6,10 +6,6 @@ export default class State {
     this.layers = [];
   }
 
-  get visibleLayers() {
-    return this.layers.filter(({ visible }) => visible);
-  }
-
   get playingLayers() {
     return this.layers.filter(({ isPlaying }) => isPlaying);
   }

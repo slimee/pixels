@@ -1,11 +1,12 @@
 import Layer from './layer.js';
 
 export default class CanvasManager {
-  constructor(state, transformationManager, ui) {
+  constructor(state, ui, transformationManager) {
     this.state = state;
     this.ui = ui;
-    this.canvasContext = this.ui.canvas.getContext('2d');
     this.transformationManager = transformationManager;
+
+    this.canvasContext = this.ui.canvas.getContext('2d');
     this.brush = { size: 15, color: '#ff0000', shape: 'circle' };
     this.startPoint = null;
 

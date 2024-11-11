@@ -1,9 +1,9 @@
 export default class ControlPanel {
-  constructor(state, canvasManager, transformationManager, ui) {
+  constructor(state, ui, transformationManager, canvasManager) {
     this.state = state;
-    this.canvasManager = canvasManager;
-    this.transformationManager = transformationManager;
     this.ui = ui;
+    this.transformationManager = transformationManager;
+    this.canvasManager = canvasManager;
     this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     this.frame = this.frame.bind(this);
   }
@@ -29,7 +29,7 @@ export default class ControlPanel {
     this.canvasManager.drawOnDragInterval();
     const matricesData = this.state.layers.map(layer => layer.imageData);
 
-    this.state.visibleLayers.forEach((visibleLayer, layerIndex) => {
+    this.state.playingLayers.forEach((visibleLayer, layerIndex) => {
       const transformationFunction = this.transformationManager.getTransformationFunction(layerIndex);
       const wrappedTransformationFunction = (x, y) => {
         try {
@@ -45,11 +45,7 @@ export default class ControlPanel {
 
     this.canvasManager.updateCanvas();
 
-    if (this.state.playingLayers.size > 0) {
-      requestAnimationFrame(this.frame);
-    } else {
-      this.state.isPlaying = false;
-    }
+    requestAnimationFrame(this.frame);
   }
 
   initializeTransformations(predefinedTransformations) {

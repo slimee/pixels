@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const state = new State();
   const ui = new UI();
   const transformationManager = new TransformationManager(state, ui);
-  const canvasManager = new CanvasManager(state, transformationManager, ui);
-  const controlPanel = new ControlPanel(canvasManager, transformationManager, ui);
+  const canvasManager = new CanvasManager(state, ui, transformationManager);
+  const controlPanel = new ControlPanel(state, ui, transformationManager, canvasManager);
 
   fetch('./transformations.json')
     .then(response => response.json())

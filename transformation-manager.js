@@ -2,6 +2,7 @@ export default class TransformationManager {
   constructor(state, ui) {
     this.state = state;
     this.ui = ui;
+
     this.transformationFunctions = {};
     this.codes = {};
   }
