@@ -23,40 +23,6 @@ body {
     transition: width 0.3s ease;
 }
 
-/* Style du bouton de repli */
-.toggle-palette-button {
-    position: absolute;
-    top: 60px; /* Ajustez en fonction de votre layout */
-    right: 310px; /* La largeur de la palette plus 10px de marge */
-    z-index: 1000;
-    background-color: #ffffff;
-    border: 1px solid #cccccc;
-    border-radius: 4px;
-    padding: 5px;
-    cursor: pointer;
-}
-
-/* Styles lorsque la palette est repliée */
-.palette-container.collapsed {
-    width: 0;
-    padding: 0;
-}
-
-.palette-container.collapsed .palette-content {
-    display: none;
-}
-
-/* Ajustement du bouton lorsque la palette est repliée */
-.palette-collapsed .toggle-palette-button {
-    right: 10px;
-}
-
-/* Le canvas occupe tout l'espace lorsque la palette est repliée */
-.palette-collapsed .canvas-container {
-    flex: 1 1 100%;
-}
-
-
 .hidden {
     display: none;
 }

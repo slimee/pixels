@@ -11,7 +11,6 @@ export default class CanvasManager {
     this.startPoint = null;
 
     this.initializeControls();
-    this.addNewLayer();
 
     this.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
   }
@@ -33,60 +32,9 @@ export default class CanvasManager {
   }
 
   addNewLayer() {
-    const newLayerIndex = this.layers.length;
     const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height, this.state.isPlaying);
     this.layers.push(newLayer);
-
-    // Créer les éléments UI pour le calque
-    const layerItem = document.createElement('div');
-    layerItem.classList.add('layer-item');
-    layerItem.dataset.layerIndex = newLayerIndex;
-
-    // Nom du calque
-    const layerName = document.createElement('span');
-    layerName.textContent = `Calque ${newLayerIndex + 1}`;
-    layerItem.appendChild(layerName);
-
-    // Zone de code de transformation
-    const transformationCodeInput = document.createElement('textarea');
-    transformationCodeInput.classList.add('transformation-code-input');
-    transformationCodeInput.rows = 5;
-    layerItem.appendChild(transformationCodeInput);
-
-    // Affichage des erreurs
-    const errorDisplay = document.createElement('div');
-    errorDisplay.classList.add('error-display');
-    layerItem.appendChild(errorDisplay);
-
-    // Bouton Play/Pause
-    const playPauseButton = document.createElement('button');
-    playPauseButton.textContent = 'Play';
-    playPauseButton.classList.add('play-pause-button');
-    layerItem.appendChild(playPauseButton);
-
-    // Ajouter le calque à la liste des calques
-    this.ui.layersList.appendChild(layerItem);
-
-    // Stocker les références
-    this.ui.layerTransformationInputs[newLayerIndex] = transformationCodeInput;
-    this.ui.layerPlayPauseButtons[newLayerIndex] = playPauseButton;
-    this.ui.layerErrorDisplays[newLayerIndex] = errorDisplay;
-
-    // Ajouter les écouteurs d'événements
-    transformationCodeInput.addEventListener('blur', () => {
-      const code = transformationCodeInput.value;
-      this.transformationManager.setTransformationCode(newLayerIndex, code);
-    });
-
-    playPauseButton.addEventListener('click', () => {
-      newLayer.isPlaying = !newLayer.isPlaying;
-      this.ui.layerPlayPauseButtons[newLayerIndex].textContent = 'Play';
-      this.ui.layerPlayPauseButtons[newLayerIndex].textContent = 'Pause';
-
-      if (!this.state.isPlaying) {
-        // this.controlPanel.play();
-      }
-    });
+    this.updateLayersList();
   }
 
   initializeControls() {
@@ -97,6 +45,7 @@ export default class CanvasManager {
     this.initResize();
     this.initLayerControls();
     this.initTransformationControls();
+    this.addNewLayer();
   }
 
   initBrushSettings() {

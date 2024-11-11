@@ -24,14 +24,6 @@ export default class UI {
     this.layerTransformationInputs = {};
     this.layerPlayPauseButtons = {};
     this.layerErrorDisplays = {};
-
-    // Bouton de repli
-    this.togglePaletteButton = document.getElementById('togglePaletteButton');
-    this.paletteContainer = document.getElementById('paletteContainer');
-    this.mainContainer = document.querySelector('.main-container');
-
-    // Initialiser le repli de la palette
-    this.initPaletteToggle();
   }
 
   showError(layerIndex, message) {
@@ -44,26 +36,5 @@ export default class UI {
     if (this.layerErrorDisplays[layerIndex]) {
       this.layerErrorDisplays[layerIndex].textContent = '';
     }
-  }
-
-  initPaletteToggle() {
-    // Définir l'icône initiale
-    if (this.paletteContainer.classList.contains('collapsed')) {
-      this.togglePaletteButton.textContent = '→';
-    } else {
-      this.togglePaletteButton.textContent = '←';
-    }
-
-    this.togglePaletteButton.addEventListener('click', () => {
-      this.paletteContainer.classList.toggle('collapsed');
-      this.mainContainer.classList.toggle('palette-collapsed');
-
-      // Mettre à jour l'icône du bouton
-      if (this.paletteContainer.classList.contains('collapsed')) {
-        this.togglePaletteButton.textContent = '→'; // Icône lorsque replié
-      } else {
-        this.togglePaletteButton.textContent = '←'; // Icône lorsque déplié
-      }
-    });
   }
 }
