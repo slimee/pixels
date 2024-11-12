@@ -1,10 +1,10 @@
 export default class UI {
   constructor() {
     // Menu bar
-    this.pointSizeInput = document.getElementById('size');
-    this.pointColorInput = document.getElementById('color');
+    this.brushSizeInput = document.getElementById('size');
+    this.brushColorInput = document.getElementById('color');
     this.eraserButton = document.getElementById('eraserButton');
-    this.pointShapeInput = document.getElementById('shape');
+    this.brushShapeInput = document.getElementById('shape');
     this.drawOnDragCheckbox = document.getElementById('drawOnDrag');
 
     // Canvas

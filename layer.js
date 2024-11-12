@@ -75,8 +75,7 @@ export default class Layer {
   }
 
   paint(x, y, brush) {
-    const isEraser = brush.color === null;
-    const color = isEraser
+    const color = brush.erase
       ? { r: 0, g: 0, b: 0, a: 0 }  // Transparent color for eraser
       : this.hexToRGBA(brush.color);
 

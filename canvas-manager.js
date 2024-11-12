@@ -6,12 +6,15 @@ export default class CanvasManager {
     this.ui = ui;
 
     this.canvasContext = this.ui.canvas.getContext('2d');
-    this.brush = { size: 15, color: '#ff0000', shape: 'circle' };
     this.startPoint = null;
 
     this.initializeControls();
 
     this.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
+  }
+
+  get brush() {
+    return this.state.brush;
   }
 
   get layers() {
@@ -37,41 +40,11 @@ export default class CanvasManager {
   }
 
   initializeControls() {
-    this.initBrushSettings();
-    this.initEraserButton();
     this.initDrawOnDragCheckbox();
     this.initCanvasMouseEvents();
     this.initResize();
     this.initTransformationControls();
     this.addNewLayer();
-  }
-
-  initBrushSettings() {
-    this.ui.pointSizeInput.addEventListener('input', () => {
-      this.brush.size = parseInt(this.ui.pointSizeInput.value, 10);
-    });
-
-    this.ui.pointColorInput.addEventListener('input', () => {
-      this.brush.color = this.ui.pointColorInput.value;
-    });
-
-    this.ui.pointShapeInput.addEventListener('change', () => {
-      this.brush.shape = this.ui.pointShapeInput.value;
-    });
-  }
-
-  initEraserButton() {
-    this.ui.eraserButton.addEventListener('click', () => {
-      const isEraserActive = this.ui.eraserButton.classList.toggle("active");
-      this.brush.color = isEraserActive ? null : this.ui.pointColorInput.value;
-      this.ui.pointColorInput.classList.toggle("disabled", isEraserActive);
-    });
-
-    this.ui.pointColorInput.addEventListener('click', () => {
-      this.ui.eraserButton.classList.remove("active");
-      this.ui.pointColorInput.classList.remove("disabled");
-      this.brush.color = this.ui.pointColorInput.value;
-    });
   }
 
   initDrawOnDragCheckbox() {
@@ -234,9 +207,12 @@ export default class CanvasManager {
     // Liste déroulante de sélection de transformation
     const transformationSelector = document.createElement('select');
     transformationSelector.className = 'transformation-selector';
+    this.state.transformations.forEach(({ name, code, selected }) => {
+      transformationSelector.add(new Option(name, code, selected, selected));
+    });
     // Ajouter les options nécessaires
-    transformationSelector.addEventListener('change', () => {
-      // Gérer le changement de sélection
+    transformationSelector.addEventListener('change', (event) => {
+      this.state.currentLayer.code = event.target.value;
     });
 
     // Pied de page des contrôles de transformation

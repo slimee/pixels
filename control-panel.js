@@ -7,11 +7,45 @@ export default class ControlPanel {
     this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     this.frame = this.frame.bind(this);
     this.initLayerControls();
+    this.bindBrush();
+    this.bindEraserButton();
   }
 
   initLayerControls() {
     this.ui.addLayerButton.addEventListener("click", () => this.layerService.addNewLayer());
     this.ui.deleteLayerButton.addEventListener("click", () => this.layerService.deleteCurrentLayer());
+  }
+
+  bindBrush() {
+    this.ui.brushSizeInput.addEventListener('input', () => {
+      this.state.brush.size = parseInt(this.ui.brushSizeInput.value, 10);
+    });
+
+    this.ui.brushColorInput.addEventListener('input', () => {
+      this.state.brush.color = this.ui.brushColorInput.value;
+      this.state.brush.erase = false;
+      if (this.state.brush.erase) {
+        this.ui.eraserButton.classList.add("active");
+      } else {
+        this.ui.eraserButton.classList.remove("active");
+      }
+    });
+
+    this.ui.brushShapeInput.addEventListener('change', () => {
+      this.state.brush.shape = this.ui.brushShapeInput.value;
+    });
+  }
+
+  bindEraserButton() {
+    this.ui.eraserButton.addEventListener('click', () => {
+      this.state.brush.erase = !this.state.brush.erase;
+      if (this.state.brush.erase) {
+        this.ui.eraserButton.classList.add("active");
+      } else {
+        this.ui.eraserButton.classList.remove("active");
+      }
+      this.ui.brushColorInput.classList.toggle("disabled", this.state.brush.erase);
+    });
   }
 
   togglePlayPause() {
