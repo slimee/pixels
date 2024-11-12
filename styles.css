@@ -9,20 +9,6 @@ body {
     height: calc(100vh - 50px); /* Ajustez si nécessaire en fonction de la hauteur de votre barre de menu */
 }
 
-/* Canvas qui prend tout l'espace disponible */
-.canvas-container {
-    flex: 1;
-    position: relative;
-}
-
-/* Palette sur la droite avec une largeur fixe */
-.palette-container {
-    width: 300px; /* Ajustez la largeur selon vos besoins */
-    background-color: #f0f0f0;
-    overflow: hidden;
-    transition: width 0.3s ease;
-}
-
 .hidden {
     display: none;
 }
@@ -229,14 +215,6 @@ body {
     box-sizing: border-box;
 }
 
-.menu-bar {
-    background-color: #3c3c3c;
-    padding: 5px 10px;
-    display: flex;
-    align-items: center;
-    color: #ffffff;
-}
-
 .menu-category label {
     color: #dcdcdc;
 }
@@ -262,13 +240,6 @@ body {
     background-image: linear-gradient(45deg, #888 25%, transparent 25%, transparent 50%, #888 50%, #888 75%, transparent 75%);
     background-size: 4px 4px;
     opacity: 0.5;
-}
-
-/* Styles pour le canvas */
-canvas {
-    border: 1px solid black;
-    display: block;
-    margin: 10px;
 }
 
 .layer-delete {
@@ -344,4 +315,111 @@ canvas {
     color: red;
     font-size: 12px;
     margin-top: 5px;
+}
+
+/* Canvas qui prend tout l'espace disponible */
+.canvas-container {
+    padding: 1px;
+    flex: 1;
+    /*position: relative;*/
+}
+
+.redimensionnable {
+    resize: both;
+    overflow: scroll;
+    border: 1px solid black;
+    width: 500px;
+    height: 500px;
+}
+
+
+/* Style général du corps */
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Barre de menu */
+.menu-bar {
+    background-color: #F8F8F8;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    height: 22px; /* Hauteur similaire à la barre de menu macOS */
+    align-items: center;
+    border-bottom: 1px solid #D1D1D1;
+}
+
+/* Menu principal */
+.menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.menu-item {
+    position: relative;
+}
+
+.menu-item > a {
+    display: block;
+    padding: 0 10px;
+    color: #000;
+    text-decoration: none;
+    line-height: 22px;
+    font-size: 13px;
+}
+
+.menu-item:hover > a {
+    background-color: #D8D8D8;
+}
+
+/* Sous-menu */
+.submenu {
+    display: none;
+    position: absolute;
+    top: 22px; /* Aligne le sous-menu sous la barre de menu */
+    left: 0;
+    background-color: #F8F8F8;
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+    border: 1px solid #D1D1D1;
+    min-width: 150px;
+}
+
+.middle {
+    width: 180px;
+}
+
+.large {
+    width: 230px;
+}
+
+.menu-item:hover .submenu {
+    display: block;
+}
+
+.submenu li a {
+    display: flex; /* Transforme le lien en conteneur flex */
+    align-items: center; /* Centre verticalement les éléments enfants */
+    padding: 5px 15px 5px 10px;
+    color: #000;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.submenu li a i {
+    margin-right: 5px;
+    font-size: 22px;
+    display: inline-block;
+}
+
+.submenu li a:hover {
+    background-color: #D8D8D8;
+}
+
+.submenu li:not(:last-child) {
+    border-bottom: 1px solid #E1E1E1;
 }

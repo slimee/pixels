@@ -4,43 +4,69 @@
     <meta charset="UTF-8">
     <title>Application de Dessin avec Transformations</title>
     <link rel="stylesheet" href="styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script type="module" src="index.js"></script>
 </head>
 <body>
 
-<!-- Barre de menu -->
 <div class="menu-bar">
-    <div class="menu-category">
-        <label for="size">Taille du pinceau:</label>
-        <input type="range" id="size" min="5" max="500" value="15">
-    </div>
-    <div class="menu-category">
-        <label for="color">Couleur du pinceau:</label>
-        <input type="color" id="color" value="#ff0000">
-        <button id="eraserButton">🧽 Gomme</button>
-    </div>
-    <div class="menu-category">
-        <label for="shape">Forme du pinceau:</label>
-        <select id="shape">
-            <option value="circle">Cercle</option>
-            <option value="square">Carré</option>
-            <option value="triangle">Triangle</option>
-            <option value="segment">Segment</option>
-        </select>
-    </div>
-    <div class="menu-category">
-        <label for="drawOnDrag">Dessin continu</label>
-        <input type="checkbox" id="drawOnDrag">
-    </div>
+    <ul class="menu">
+        <li class="menu-item">
+            <a href="#">Projet</a>
+            <ul class="submenu">
+                <li><a href="#" id="newProject">
+                    <i class='bx bx-file-blank'></i>Nouveau
+                </a></li>
+            </ul>
+        </li>
+        <li class="menu-item">
+            <a href="#">Calque</a>
+            <ul class="submenu middle">
+                <li><a href="#" id="newLayer"><i class='bx bx-layer-plus'></i>Créer</a></li>
+                <li><a href="#" id="eraseLayer"><i class='bx bxs-eraser'></i>Effacer</a></li>
+                <li><a href="#" id="eraseAllLayers"><i class='bx bx-eraser'></i>Effacer tout les calques</a></li>
+            </ul>
+        </li>
+        <li class="menu-item">
+            <a href="#">Pinceau</a>
+            <ul class="submenu large">
+                <li>
+                    <label for="size">Taille</label>
+                    <input type="range" id="size" min="5" max="500" value="15">
+                </li>
+                <li>
+                    <label for="color">Couleur</label>
+                    <input type="color" id="color" value="#ff0000">
+                </li>
+                <li>
+                    <button id="eraserButton"><i class='bx bxs-eraser'></i>Gomme</button>
+                </li>
+                <li>
+                    <label for="shape">Forme</label>
+                    <select id="shape">
+                        <option value="circle">Cercle</option>
+                        <option value="square">Carré</option>
+                        <option value="triangle">Triangle</option>
+                        <option value="segment">Segment</option>
+                    </select>
+                </li>
+                <li>
+                    <input type="checkbox" id="drawOnDrag">
+                    <label for="drawOnDrag">Dessin continu</label>
+                </li>
+            </ul>
+        </li>
+    </ul>
 </div>
 
-<!-- Conteneur principal -->
 <div class="main-container">
     <!-- Canvas -->
     <div class="canvas-container">
-        <canvas id="myCanvas" width="500" height="500"></canvas>
-        <div class="resize-anchor" id="resizeAnchor"></div>
+        <div id="canvas-redimensionnable" class="redimensionnable">
+            <canvas id="myCanvas"></canvas>
+        </div>
     </div>
+
 
     <div class="palette-container" id="paletteContainer">
         <div class="palette-content">
@@ -49,9 +75,8 @@
                     <!-- Les calques seront ajoutés ici dynamiquement -->
                 </div>
                 <div class="palette-footer">
-                    <button id="playPauseButton">Play</button>
+                    <button id="playPauseButton">▷</button>
                     <button id="addLayerButton">➕</button>
-                    <button id="clearButton">Effacer le calque</button>
                     <button id="clearAllButton">Tout effacer</button>
                     <button id="deleteLayerButton">🗑️</button>
                 </div>

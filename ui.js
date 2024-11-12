@@ -9,7 +9,7 @@ export default class UI {
 
     // Canvas
     this.canvas = document.getElementById('myCanvas');
-    this.resizeAnchor = document.getElementById('resizeAnchor');
+    this.canvasRedim = document.getElementById('canvas-redimensionnable');
 
     // Layers palette
     this.layersList = document.getElementById('layersList');
@@ -18,23 +18,6 @@ export default class UI {
 
     // Controls palette
     this.playPauseButton = document.getElementById('playPauseButton');
-    this.clearButton = document.getElementById('clearButton');
     this.clearAllButton = document.getElementById('clearAllButton');
-
-    this.layerTransformationInputs = {};
-    this.layerPlayPauseButtons = {};
-    this.layerErrorDisplays = {};
-  }
-
-  showError(layerIndex, message) {
-    if (this.layerErrorDisplays[layerIndex]) {
-      this.layerErrorDisplays[layerIndex].textContent = message;
-    }
-  }
-
-  clearErrorDisplay(layerIndex) {
-    if (this.layerErrorDisplays[layerIndex]) {
-      this.layerErrorDisplays[layerIndex].textContent = '';
-    }
   }
 }

@@ -1,19 +1,20 @@
 export default class ControlPanel {
-  constructor(state, ui, canvasManager, layerService) {
+  constructor(state, ui, canvasManager) {
     this.state = state;
     this.ui = ui;
     this.canvasManager = canvasManager;
-    this.layerService = layerService;
     this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     this.frame = this.frame.bind(this);
     this.initLayerControls();
     this.bindBrush();
     this.bindEraserButton();
+    this.bindResize();
+    this.bindClearAllButton();
   }
 
   initLayerControls() {
-    this.ui.addLayerButton.addEventListener("click", () => this.layerService.addNewLayer());
-    this.ui.deleteLayerButton.addEventListener("click", () => this.layerService.deleteCurrentLayer());
+    this.ui.addLayerButton.addEventListener("click", () => this.canvasManager.addNewLayer());
+    this.ui.deleteLayerButton.addEventListener("click", () => this.canvasManager.deleteCurrentLayer());
   }
 
   bindBrush() {
@@ -53,7 +54,7 @@ export default class ControlPanel {
       ? this.pause()
       : this.play();
 
-    this.ui.playPauseButton.textContent = this.state.isPlaying ? 'Pause' : 'Play';
+    this.ui.playPauseButton.textContent = this.state.isPlaying ? '⏸' : '▷';
   }
 
   pause() {
@@ -95,5 +96,19 @@ export default class ControlPanel {
     // });
     //
     // this.ui.transformationSelector.dispatchEvent(new Event('change'));
+  }
+
+  bindResize() {
+    const resizeObserver = new ResizeObserver(() => {
+      const newWidth = this.ui.canvasRedim.clientWidth;
+      const newHeight = this.ui.canvasRedim.clientHeight;
+      this.canvasManager.resizeCanvas(newWidth, newHeight);
+    });
+
+    resizeObserver.observe(this.ui.canvasRedim);
+  }
+
+  bindClearAllButton() {
+    this.ui.clearAllButton.addEventListener('click', () => this.canvasManager.clearAllLayers());
   }
 }

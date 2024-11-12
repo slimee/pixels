@@ -22,7 +22,7 @@ export default class CanvasManager {
   }
 
   get currentLayer() {
-    return this.layers[this.currentLayerIndex];
+    return this.state.currentLayer;
   }
 
   get currentLayerIndex() {
@@ -42,8 +42,6 @@ export default class CanvasManager {
   initializeControls() {
     this.initDrawOnDragCheckbox();
     this.initCanvasMouseEvents();
-    this.initResize();
-    this.initTransformationControls();
     this.addNewLayer();
   }
 
@@ -103,24 +101,6 @@ export default class CanvasManager {
 
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
-  }
-
-  initResize() {
-    const addListeners = () => {
-      document.addEventListener("mousemove", mouseMove);
-      document.addEventListener("mouseup", removeListeners);
-    }
-    const removeListeners = () => {
-      document.removeEventListener("mousemove", mouseMove);
-      document.removeEventListener("mouseup", removeListeners);
-    }
-    const mouseMove = (event) => {
-      const newWidth = Math.ceil(event.clientX - this.ui.canvas.getBoundingClientRect().left);
-      const newHeight = Math.ceil(event.clientY - this.ui.canvas.getBoundingClientRect().top);
-      this.resizeCanvas(newWidth, newHeight);
-    }
-
-    this.ui.resizeAnchor.addEventListener("mousedown", addListeners);
   }
 
   updateLayersList() {
@@ -225,17 +205,21 @@ export default class CanvasManager {
 
     // Bouton Play
     const playPauseButton = document.createElement('button');
+    playPauseButton.update = () => {
+      playPauseButton.textContent = layer.isPlaying ? '⏸' : '▷';
+    };
     playPauseButton.id = `playPauseButton-${index}`;
-    playPauseButton.textContent = 'Play';
+    playPauseButton.update();
     playPauseButton.addEventListener('click', () => {
-      // Gérer le play/pause pour ce calque
+      layer.isPlaying = !layer.isPlaying;
+      playPauseButton.update();
     });
 
     // Bouton Effacer le calque
     const clearButton = document.createElement('button');
     clearButton.textContent = 'Effacer le calque';
     clearButton.addEventListener('click', () => {
-      this.layers[index].clear();
+      this.currentLayer.clear();
       this.updateCanvas();
     });
 
@@ -261,16 +245,6 @@ export default class CanvasManager {
       this.updateLayersList();
       this.updateCanvas();
     }
-  }
-
-  initTransformationControls() {
-    this.ui.clearButton.addEventListener('click', () => this.clearCurrentLayer());
-    this.ui.clearAllButton.addEventListener('click', () => this.clearAllLayers());
-  }
-
-  clearCurrentLayer() {
-    this.currentLayer.clear();
-    this.updateCanvas();
   }
 
   clearAllLayers() {
