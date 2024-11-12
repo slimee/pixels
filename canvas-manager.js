@@ -212,7 +212,11 @@ export default class CanvasManager {
     });
     // Ajouter les options nécessaires
     transformationSelector.addEventListener('change', (event) => {
-      this.state.currentLayer.code = event.target.value;
+      transformationCodeInput.value = event.target.value;
+      transformationCodeInput.dispatchEvent(new Event('input', {
+        bubbles: true,
+        cancelable: true,
+      }));
     });
 
     // Pied de page des contrôles de transformation
