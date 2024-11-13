@@ -5,16 +5,34 @@ export default class ControlPanel {
     this.canvasManager = canvasManager;
     this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     this.frame = this.frame.bind(this);
-    this.initLayerControls();
+    this.bindAddDeleteLayerButtons();
+    this.bindClearButtons();
+    this.bindDrawOnDragCheckbox();
     this.bindBrush();
     this.bindEraserButton();
     this.bindResize();
-    this.bindClearAllButton();
   }
 
-  initLayerControls() {
+  bindAddDeleteLayerButtons() {
     this.ui.addLayerButton.addEventListener("click", () => this.canvasManager.addNewLayer());
     this.ui.deleteLayerButton.addEventListener("click", () => this.canvasManager.deleteCurrentLayer());
+    this.ui.deleteAllLayersButton.addEventListener("click", () => this.canvasManager.deleteAllLayers());
+  }
+
+  bindClearButtons() {
+    this.ui.clearButton.addEventListener('click', () => this.canvasManager.clearCurrentLayer());
+    this.ui.clearAllButton.addEventListener('click', () => this.canvasManager.clearAllLayers());
+  }
+
+  bindDrawOnDragCheckbox() {
+    this.updateDrawOnDragState();
+    this.ui.drawOnDragCheckbox.addEventListener('change', () => {
+      this.updateDrawOnDragState();
+    });
+  }
+
+  updateDrawOnDragState() {
+    this.state.brush.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
   }
 
   bindBrush() {
@@ -77,27 +95,6 @@ export default class ControlPanel {
     if (this.state.isPlaying) requestAnimationFrame(this.frame);
   }
 
-  initializeTransformations(predefinedTransformations) {
-    // predefinedTransformations.forEach((transformation, index) => {
-    //   const option = document.createElement('option');
-    //   option.value = index;
-    //   option.textContent = transformation.name;
-    //   option.selected = transformation.selected
-    //   this.ui.transformationSelector.appendChild(option);
-    // });
-    //
-    // this.ui.transformationSelector.addEventListener('change', (event) => {
-    //   const selectedIndex = event.target.value;
-    //   if (selectedIndex !== '') {
-    //     const selectedTransformation = predefinedTransformations[selectedIndex];
-    //     this.ui.transformationCodeInput.value = selectedTransformation.code;
-    //     this.transformationManager.setTransformationCode(this.canvasManager.currentLayerIndex);
-    //   }
-    // });
-    //
-    // this.ui.transformationSelector.dispatchEvent(new Event('change'));
-  }
-
   bindResize() {
     const resizeObserver = new ResizeObserver(() => {
       const newWidth = this.ui.canvasRedim.clientWidth;
@@ -106,9 +103,5 @@ export default class ControlPanel {
     });
 
     resizeObserver.observe(this.ui.canvasRedim);
-  }
-
-  bindClearAllButton() {
-    this.ui.clearAllButton.addEventListener('click', () => this.canvasManager.clearAllLayers());
   }
 }

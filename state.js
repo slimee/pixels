@@ -5,7 +5,7 @@ export default class State {
     this.isPlaying = false;
     this.transformations = transformations;
     this.activeTransformationLayerIndex = null;
-    this.brush = { size: 15, color: '#ff0000', shape: 'circle', erase: false };
+    this.brush = { size: 15, color: '#ff0000', shape: 'circle', erase: false, drawOnDrag: false };
   }
 
   get playingLayers() {

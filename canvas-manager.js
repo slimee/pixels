@@ -9,8 +9,6 @@ export default class CanvasManager {
     this.startPoint = null;
 
     this.initializeControls();
-
-    this.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
   }
 
   get brush() {
@@ -40,15 +38,8 @@ export default class CanvasManager {
   }
 
   initializeControls() {
-    this.initDrawOnDragCheckbox();
     this.initCanvasMouseEvents();
     this.addNewLayer();
-  }
-
-  initDrawOnDragCheckbox() {
-    this.ui.drawOnDragCheckbox.addEventListener('change', () => {
-      this.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
-    });
   }
 
   initCanvasMouseEvents() {
@@ -74,7 +65,7 @@ export default class CanvasManager {
     const rect = this.ui.canvas.getBoundingClientRect();
     const x = Math.floor(event.clientX - rect.left);
     const y = Math.floor(event.clientY - rect.top);
-    if (this.drawOnDrag && this.brush.shape !== 'segment') {
+    if (this.state.brush.drawOnDrag && this.brush.shape !== 'segment') {
       this.lastMousePosition = { x, y };
       this.drawAt(x, y, this.brush);
     } else {
@@ -215,14 +206,6 @@ export default class CanvasManager {
       playPauseButton.update();
     });
 
-    // Bouton Effacer le calque
-    const clearButton = document.createElement('button');
-    clearButton.textContent = 'Effacer le calque';
-    clearButton.addEventListener('click', () => {
-      this.currentLayer.clear();
-      this.updateCanvas();
-    });
-
     // Ajouter les boutons au pied de page
     transformationFooter.appendChild(clearButton);
     transformationFooter.appendChild(playPauseButton);
@@ -247,8 +230,24 @@ export default class CanvasManager {
     }
   }
 
+  deleteAllLayers() {
+    while (this.layers.length > 1) {
+      this.layers.splice(this.currentLayerIndex, 1);
+      if (this.currentLayerIndex >= this.layers.length) {
+        this.currentLayerIndex = this.layers.length - 1;
+      }
+    }
+    this.updateLayersList();
+    this.updateCanvas();
+  }
+
   clearAllLayers() {
     this.layers.forEach(matrix => matrix.clear());
+    this.updateCanvas();
+  }
+
+  clearCurrentLayer() {
+    this.currentLayer.clear();
     this.updateCanvas();
   }
 
@@ -272,7 +271,7 @@ export default class CanvasManager {
   }
 
   drawOnDragInterval() {
-    if (this.drawOnDrag && this.lastMousePosition) {
+    if (this.state.brush.drawOnDrag && this.lastMousePosition) {
       const { x, y } = this.lastMousePosition;
       this.currentLayer.paint(x, y, this.brush);
     }

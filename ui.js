@@ -15,9 +15,11 @@ export default class UI {
     this.layersList = document.getElementById('layersList');
     this.addLayerButton = document.getElementById('addLayerButton');
     this.deleteLayerButton = document.getElementById('deleteLayerButton');
+    this.deleteAllLayersButton = document.getElementById('deleteAllLayersButton');
 
     // Controls palette
     this.playPauseButton = document.getElementById('playPauseButton');
+    this.clearButton = document.getElementById('clearButton');
     this.clearAllButton = document.getElementById('clearAllButton');
   }
 }
