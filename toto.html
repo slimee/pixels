@@ -2,38 +2,93 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Fader Vertical avec Gestion du Tactile</title>
+    <title>Fader Vertical Fonctionnel</title>
     <style>
-        /* CSS pour le fader */
+        /* Conteneur principal du fader */
         .fader-container {
-            width: 50px;
-            height: 200px;
+            width: 60px;
+            height: 220px;
             padding: 10px;
             box-sizing: border-box;
-            border: 1px solid #ccc;
             margin: 20px;
+            background-color: #f5f5f5;
+            border-radius: 12px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+            position: relative; /* Pour positionner l'étiquette */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
+        /* Piste du fader */
         .fader-track {
             position: relative;
-            width: 10px;
+            width: 6px;
             height: 100%;
-            margin: 0 auto;
-            background-color: #ccc;
-            border-radius: 5px;
+            background-color: #c7c7c7;
+            border-radius: 3px;
+            cursor: pointer;
         }
 
+        /* Curseur du fader */
         .fader-thumb {
             position: absolute;
             left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 20px;
-            background-color: #444;
-            border-radius: 3px;
+            transform: translate(-50%, 0);
+            width: 24px;
+            height: 12px;
+            background: linear-gradient(to bottom, #ffffff, #e0e0e0);
+            border: 1px solid #b1b1b1;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             cursor: pointer;
-            touch-action: none; /* Empêche le comportement par défaut du tactile */
+            touch-action: none;
+            z-index: 2;
         }
+
+        /* Étiquette de la valeur actuelle */
+        .fader-label {
+            position: absolute;
+            left: 100%; /* Place l'étiquette à droite du curseur */
+            top: 50%;
+            transform: translate(5px, -50%); /* Ajuste la position pour centrer verticalement */
+            background-color: #fff;
+            padding: 2px 5px;
+            border: 1px solid #b1b1b1;
+            border-radius: 3px;
+            font-size: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            opacity: 0; /* L'étiquette est cachée par défaut */
+            transition: opacity 0.2s;
+            white-space: nowrap; /* Empêche le texte de se casser */
+        }
+
+        /* Afficher l'étiquette lors du glissement */
+        .fader-label.visible {
+            opacity: 1;
+        }
+
+        .fader-hover-label {
+            position: absolute;
+            left: 100%; /* Place l'étiquette à droite de la piste */
+            transform: translate(5px, -50%); /* Ajuste la position */
+            background-color: #fff;
+            padding: 2px 5px;
+            border: 1px solid #b1b1b1;
+            border-radius: 3px;
+            font-size: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .fader-hover-label.visible {
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
@@ -43,7 +98,6 @@
 
 <!-- Script JavaScript -->
 <script>
-  // Fonction createVerticalFader
   function createVerticalFader(options) {
     const { min = 0, max = 100, value = 50, state = {} } = options;
 
@@ -57,7 +111,15 @@
     const faderThumb = document.createElement('div');
     faderThumb.classList.add('fader-thumb');
 
+    const faderLabel = document.createElement('div');
+    faderLabel.classList.add('fader-label');
+
+    const faderHoverLabel = document.createElement('div');
+    faderHoverLabel.classList.add('fader-hover-label');
+    faderTrack.appendChild(faderHoverLabel);
+
     // Assembler les éléments
+    faderThumb.appendChild(faderLabel); // L'étiquette est un enfant du curseur
     faderTrack.appendChild(faderThumb);
     faderContainer.appendChild(faderTrack);
 
@@ -66,26 +128,37 @@
     state.max = max;
     state.value = value;
 
+    // Variables pour le glissement
+    let isDragging = false;
+    let isThumbHovered = false;
+    let dragOffsetY = 0;
+
     // Fonction pour mettre à jour la position du curseur
     const updateThumbPosition = () => {
       const percentage = (state.value - state.min) / (state.max - state.min);
-      const position = percentage * 100;
-      faderThumb.style.bottom = `${position}%`;
+      const trackHeight = faderTrack.clientHeight;
+      const thumbHeight = faderThumb.clientHeight;
+
+      // Calculer la position en pixels, en tenant compte de la hauteur du curseur
+      const position = (1 - percentage) * (trackHeight - thumbHeight);
+
+      // Mettre à jour la position du curseur
+      faderThumb.style.top = `${position}px`;
+
+      // Mettre à jour le texte de l'étiquette
+      faderLabel.textContent = Math.round(state.value);
     };
 
     updateThumbPosition();
 
-    // Variables pour le glissement
-    let isDragging = false;
-    let dragOffsetY = 0;
-
     // Gestion des événements de souris
     const onMouseDown = (event) => {
       isDragging = true;
+      faderLabel.classList.add('visible');
 
-      // Calculer le décalage entre le clic et le haut du curseur
+      // Calculer le décalage entre le clic et le centre du curseur
       const thumbRect = faderThumb.getBoundingClientRect();
-      dragOffsetY = event.clientY - thumbRect.height / 2 - thumbRect.top;
+      dragOffsetY = event.clientY - thumbRect.top;
 
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', onMouseUp);
@@ -94,18 +167,24 @@
 
     const onMouseMove = (event) => {
       if (!isDragging) return;
+      if (!isThumbHovered) {
+        faderLabel.classList.remove('visible');
+      }
 
       const trackRect = faderTrack.getBoundingClientRect();
       const trackHeight = trackRect.height;
+      const thumbHeight = faderThumb.clientHeight;
 
-      // Ajuster offsetY avec le décalage
-      const offsetY = event.clientY - trackRect.top - dragOffsetY + (faderThumb.clientHeight / 2);
+      // Calculer la position du curseur en tenant compte du décalage
+      let offsetY = event.clientY - trackRect.top - dragOffsetY;
 
-      let percentage = 1 - offsetY / trackHeight;
-      percentage = Math.min(Math.max(percentage, 0), 1);
+      // Limiter la position du curseur à la piste
+      offsetY = Math.max(0, Math.min(offsetY, trackHeight - thumbHeight));
+
+      // Inverser le calcul de percentage
+      const percentage = 1 - offsetY / (trackHeight - thumbHeight);
 
       state.value = state.min + percentage * (state.max - state.min);
-      state.value = Math.round(state.value);
 
       updateThumbPosition();
 
@@ -116,6 +195,7 @@
 
     const onMouseUp = () => {
       isDragging = false;
+      updateThumbPosition();
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
@@ -128,7 +208,7 @@
 
       const touch = event.touches[0];
       const thumbRect = faderThumb.getBoundingClientRect();
-      dragOffsetY = touch.clientY - thumbRect.top;
+      dragOffsetY = touch.clientY - thumbRect.top - thumbRect.height / 2;
 
       document.addEventListener('touchmove', onTouchMove);
       document.addEventListener('touchend', onTouchEnd);
@@ -141,14 +221,15 @@
       const touch = event.touches[0];
       const trackRect = faderTrack.getBoundingClientRect();
       const trackHeight = trackRect.height;
+      const thumbHeight = faderThumb.clientHeight;
 
-      const offsetY = touch.clientY - trackRect.top - dragOffsetY + (faderThumb.clientHeight / 2);
+      let offsetY = touch.clientY - trackRect.top - dragOffsetY;
 
-      let percentage = 1 - offsetY / trackHeight;
-      percentage = Math.min(Math.max(percentage, 0), 1);
+      offsetY = Math.max(0, Math.min(offsetY, trackHeight - thumbHeight));
+
+      const percentage = 1 - offsetY / (trackHeight - thumbHeight);
 
       state.value = state.min + percentage * (state.max - state.min);
-      state.value = Math.round(state.value);
 
       updateThumbPosition();
 
@@ -158,56 +239,90 @@
 
     const onTouchEnd = () => {
       isDragging = false;
+      updateThumbPosition();
       document.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('touchend', onTouchEnd);
     };
 
     faderThumb.addEventListener('touchstart', onTouchStart);
 
-    // Permettre le clic sur la piste pour déplacer le curseur
-    faderTrack.addEventListener('mousedown', (event) => {
-      // Empêcher l'interférence avec le glissement
-      if (isDragging) return;
+    faderThumb.addEventListener('mouseover', () => {
+      isThumbHovered = true;
+      faderLabel.classList.add('visible');
+    });
 
+    faderThumb.addEventListener('mouseout', () => {
+      isThumbHovered = false;
+      if (!isDragging) {
+        faderLabel.classList.remove('visible');
+      }
+    });
+
+    // Permettre le clic sur la piste pour déplacer le curseur (souris)
+    faderTrack.addEventListener('mousedown', (event) => {
       const trackRect = faderTrack.getBoundingClientRect();
       const trackHeight = trackRect.height;
-      const offsetY = event.clientY - trackRect.top;
+      const thumbHeight = faderThumb.clientHeight;
+      let offsetY = event.clientY - trackRect.top - thumbHeight / 2;
 
-      let percentage = 1 - offsetY / trackHeight;
-      percentage = Math.min(Math.max(percentage, 0), 1);
+      offsetY = Math.max(0, Math.min(offsetY, trackHeight - thumbHeight));
+
+      const percentage = 1 - offsetY / (trackHeight - thumbHeight);
 
       state.value = state.min + percentage * (state.max - state.min);
-      state.value = Math.round(state.value);
 
       updateThumbPosition();
 
-      // Émettre l'événement 'change'
       const changeEvent = new Event('change');
       faderContainer.dispatchEvent(changeEvent);
     });
 
     // Gestion du clic sur la piste en tactile
     faderTrack.addEventListener('touchstart', (event) => {
-      // Empêcher l'interférence avec le glissement
-      if (isDragging) return;
-
       const touch = event.touches[0];
       const trackRect = faderTrack.getBoundingClientRect();
       const trackHeight = trackRect.height;
-      const offsetY = touch.clientY - trackRect.top;
+      const thumbHeight = faderThumb.clientHeight;
+      let offsetY = touch.clientY - trackRect.top - thumbHeight / 2;
 
-      let percentage = 1 - offsetY / trackHeight;
-      percentage = Math.min(Math.max(percentage, 0), 1);
+      offsetY = Math.max(0, Math.min(offsetY, trackHeight - thumbHeight));
+
+      const percentage = 1 - offsetY / (trackHeight - thumbHeight);
 
       state.value = state.min + percentage * (state.max - state.min);
-      state.value = Math.round(state.value);
 
       updateThumbPosition();
 
-      // Émettre l'événement 'change'
       const changeEvent = new Event('change');
       faderContainer.dispatchEvent(changeEvent);
     });
+
+    // Afficher la valeur lors du survol de la piste
+    faderTrack.addEventListener('mousemove', (event) => {
+      if (event.target === faderThumb) {
+        faderHoverLabel.classList.remove('visible');
+        return;
+      }
+      const trackRect = faderTrack.getBoundingClientRect();
+      const trackHeight = trackRect.height;
+      let offsetY = event.clientY - trackRect.top;
+      offsetY = Math.max(0, Math.min(offsetY, trackHeight));
+
+      // Calculer la valeur correspondante
+      const percentage = 1 - offsetY / trackHeight;
+      const hoverValue = state.min + percentage * (state.max - state.min);
+
+      // Mettre à jour l'étiquette de survol
+      faderHoverLabel.textContent = Math.round(hoverValue);
+      faderHoverLabel.style.top = `${offsetY}px`;
+      faderHoverLabel.classList.add('visible');
+    });
+
+// Cacher l'étiquette de survol lorsque la souris quitte la piste
+    faderTrack.addEventListener('mouseleave', () => {
+      faderHoverLabel.classList.remove('visible');
+    });
+
 
     // Fonction pour mettre à jour la valeur depuis l'extérieur
     faderContainer.setValue = (newValue) => {
@@ -231,8 +346,8 @@
     const state = {};
 
     const fader = createVerticalFader({
-      min: 0,
-      max: 100,
+      min: 20,
+      max: 120,
       value: 50,
       state: state
     });
@@ -245,6 +360,7 @@
     // Ajouter le fader au conteneur
     document.getElementById('fader-container').appendChild(fader);
   });
+
 </script>
 </body>
 </html>
