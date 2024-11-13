@@ -72,7 +72,17 @@ export default class ControlPanel {
       ? this.pause()
       : this.play();
 
-    this.ui.playPauseButton.textContent = this.state.isPlaying ? '⏸' : '▷';
+    // Change le texte et l'icône
+    const playPauseIcon = document.getElementById("playPauseIcon");
+    const playPauseText = document.getElementById("playPauseText");
+
+    if (this.state.isPlaying) {
+      playPauseIcon.classList.replace("bx-play", "bx-pause");
+      playPauseText.textContent = "Pause";
+    } else {
+      playPauseIcon.classList.replace("bx-pause", "bx-play");
+      playPauseText.textContent = "Lecture";
+    }
   }
 
   pause() {

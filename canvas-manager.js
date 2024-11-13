@@ -34,6 +34,7 @@ export default class CanvasManager {
   addNewLayer() {
     const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height);
     this.layers.push(newLayer);
+    this.currentLayerIndex = this.layers.length - 1;
     this.updateLayersList();
   }
 
@@ -100,9 +101,12 @@ export default class CanvasManager {
       const layerItem = document.createElement('div');
       layerItem.className = 'layer-item';
 
-      // Icône de visibilité (œil)
-      const eyeIcon = document.createElement('div');
-      eyeIcon.className = 'eye-icon';
+// Crée le conteneur du label
+      const eyeCheckboxContainer = document.createElement('label');
+      eyeCheckboxContainer.className = 'eye-checkbox';
+      eyeCheckboxContainer.htmlFor = `eyeCheckbox-${index}`;
+
+      // Crée la case à cocher
       const eyeCheckbox = document.createElement('input');
       eyeCheckbox.type = 'checkbox';
       eyeCheckbox.id = `eyeCheckbox-${index}`;
@@ -111,10 +115,21 @@ export default class CanvasManager {
         layer.visible = eyeCheckbox.checked;
         this.updateCanvas();
       });
-      const eyeLabel = document.createElement('label');
-      eyeLabel.htmlFor = `eyeCheckbox-${index}`;
-      eyeIcon.appendChild(eyeCheckbox);
-      eyeIcon.appendChild(eyeLabel);
+
+      // Crée les icônes
+      const eyeIconShow = document.createElement('i');
+      eyeIconShow.className = 'bx bxs-show';
+
+      const eyeIconHide = document.createElement('i');
+      eyeIconHide.className = 'bx bxs-hide';
+
+      // Ajoute les éléments au conteneur
+      eyeCheckboxContainer.appendChild(eyeCheckbox);
+      eyeCheckboxContainer.appendChild(eyeIconShow);
+      eyeCheckboxContainer.appendChild(eyeIconHide);
+
+      // Ajoute le conteneur à votre élément parent (par exemple, un div)
+
 
       // Nom du calque
       const layerName = document.createElement('span');
@@ -138,7 +153,7 @@ export default class CanvasManager {
       });
 
       // Ajouter les éléments au calque
-      layerItem.appendChild(eyeIcon);
+      layerItem.appendChild(eyeCheckboxContainer);
       layerItem.appendChild(layerName);
       layerItem.appendChild(transformToggleButton);
 
@@ -190,10 +205,6 @@ export default class CanvasManager {
       }));
     });
 
-    // Pied de page des contrôles de transformation
-    const transformationFooter = document.createElement('div');
-    transformationFooter.className = 'transformation-footer';
-
     // Bouton Play
     const playPauseButton = document.createElement('button');
     playPauseButton.update = () => {
@@ -206,15 +217,10 @@ export default class CanvasManager {
       playPauseButton.update();
     });
 
-    // Ajouter les boutons au pied de page
-    transformationFooter.appendChild(clearButton);
-    transformationFooter.appendChild(playPauseButton);
-
     // Ajouter les éléments à la zone de transformation
     transformationArea.appendChild(transformationCodeInput);
     transformationArea.appendChild(errorDisplay);
     transformationArea.appendChild(transformationSelector);
-    transformationArea.appendChild(transformationFooter);
 
     return transformationArea;
   }
