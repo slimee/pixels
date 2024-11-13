@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Fader Vertical avec Gestion du Tactile</title>
+    <style>
+        /* CSS pour le fader */
+        .fader-container {
+            width: 50px;
+            height: 200px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            margin: 20px;
+        }
+
+        .fader-track {
+            position: relative;
+            width: 10px;
+            height: 100%;
+            margin: 0 auto;
+            background-color: #ccc;
+            border-radius: 5px;
+        }
+
+        .fader-thumb {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 20px;
+            background-color: #444;
+            border-radius: 3px;
+            cursor: pointer;
+            touch-action: none; /* Empêche le comportement par défaut du tactile */
+        }
+    </style>
+</head>
+<body>
+
+<!-- Conteneur pour le fader -->
+<div id="fader-container"></div>
+
+<!-- Script JavaScript -->
+<script>
+  // Fonction createVerticalFader
+  function createVerticalFader(options) {
+    const { min = 0, max = 100, value = 50, state = {} } = options;
+
+    // Créer les éléments HTML
+    const faderContainer = document.createElement('div');
+    faderContainer.classList.add('fader-container');
+
+    const faderTrack = document.createElement('div');
+    faderTrack.classList.add('fader-track');
+
+    const faderThumb = document.createElement('div');
+    faderThumb.classList.add('fader-thumb');
+
+    // Assembler les éléments
+    faderTrack.appendChild(faderThumb);
+    faderContainer.appendChild(faderTrack);
+
+    // Initialiser les valeurs
+    state.min = min;
+    state.max = max;
+    state.value = value;
+
+    // Fonction pour mettre à jour la position du curseur
+    const updateThumbPosition = () => {
+      const percentage = (state.value - state.min) / (state.max - state.min);
+      const position = percentage * 100;
+      faderThumb.style.bottom = `${position}%`;
+    };
+
+    updateThumbPosition();
+
+    // Variables pour le glissement
+    let isDragging = false;
+    let dragOffsetY = 0;
+
+    // Gestion des événements de souris
+    const onMouseDown = (event) => {
+      isDragging = true;
+
+      // Calculer le décalage entre le clic et le haut du curseur
+      const thumbRect = faderThumb.getBoundingClientRect();
+      dragOffsetY = event.clientY - thumbRect.height / 2 - thumbRect.top;
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      event.preventDefault();
+    };
+
+    const onMouseMove = (event) => {
+      if (!isDragging) return;
+
+      const trackRect = faderTrack.getBoundingClientRect();
+      const trackHeight = trackRect.height;
+
+      // Ajuster offsetY avec le décalage
+      const offsetY = event.clientY - trackRect.top - dragOffsetY + (faderThumb.clientHeight / 2);
+
+      let percentage = 1 - offsetY / trackHeight;
+      percentage = Math.min(Math.max(percentage, 0), 1);
+
+      state.value = state.min + percentage * (state.max - state.min);
+      state.value = Math.round(state.value);
+
+      updateThumbPosition();
+
+      // Émettre l'événement 'change'
+      const changeEvent = new Event('change');
+      faderContainer.dispatchEvent(changeEvent);
+    };
+
+    const onMouseUp = () => {
+      isDragging = false;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    faderThumb.addEventListener('mousedown', onMouseDown);
+
+    // Gestion des événements tactiles
+    const onTouchStart = (event) => {
+      isDragging = true;
+
+      const touch = event.touches[0];
+      const thumbRect = faderThumb.getBoundingClientRect();
+      dragOffsetY = touch.clientY - thumbRect.top;
+
+      document.addEventListener('touchmove', onTouchMove);
+      document.addEventListener('touchend', onTouchEnd);
+      event.preventDefault();
+    };
+
+    const onTouchMove = (event) => {
+      if (!isDragging) return;
+
+      const touch = event.touches[0];
+      const trackRect = faderTrack.getBoundingClientRect();
+      const trackHeight = trackRect.height;
+
+      const offsetY = touch.clientY - trackRect.top - dragOffsetY + (faderThumb.clientHeight / 2);
+
+      let percentage = 1 - offsetY / trackHeight;
+      percentage = Math.min(Math.max(percentage, 0), 1);
+
+      state.value = state.min + percentage * (state.max - state.min);
+      state.value = Math.round(state.value);
+
+      updateThumbPosition();
+
+      const changeEvent = new Event('change');
+      faderContainer.dispatchEvent(changeEvent);
+    };
+
+    const onTouchEnd = () => {
+      isDragging = false;
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+
+    faderThumb.addEventListener('touchstart', onTouchStart);
+
+    // Permettre le clic sur la piste pour déplacer le curseur
+    faderTrack.addEventListener('mousedown', (event) => {
+      // Empêcher l'interférence avec le glissement
+      if (isDragging) return;
+
+      const trackRect = faderTrack.getBoundingClientRect();
+      const trackHeight = trackRect.height;
+      const offsetY = event.clientY - trackRect.top;
+
+      let percentage = 1 - offsetY / trackHeight;
+      percentage = Math.min(Math.max(percentage, 0), 1);
+
+      state.value = state.min + percentage * (state.max - state.min);
+      state.value = Math.round(state.value);
+
+      updateThumbPosition();
+
+      // Émettre l'événement 'change'
+      const changeEvent = new Event('change');
+      faderContainer.dispatchEvent(changeEvent);
+    });
+
+    // Gestion du clic sur la piste en tactile
+    faderTrack.addEventListener('touchstart', (event) => {
+      // Empêcher l'interférence avec le glissement
+      if (isDragging) return;
+
+      const touch = event.touches[0];
+      const trackRect = faderTrack.getBoundingClientRect();
+      const trackHeight = trackRect.height;
+      const offsetY = touch.clientY - trackRect.top;
+
+      let percentage = 1 - offsetY / trackHeight;
+      percentage = Math.min(Math.max(percentage, 0), 1);
+
+      state.value = state.min + percentage * (state.max - state.min);
+      state.value = Math.round(state.value);
+
+      updateThumbPosition();
+
+      // Émettre l'événement 'change'
+      const changeEvent = new Event('change');
+      faderContainer.dispatchEvent(changeEvent);
+    });
+
+    // Fonction pour mettre à jour la valeur depuis l'extérieur
+    faderContainer.setValue = (newValue) => {
+      state.value = Math.min(Math.max(newValue, state.min), state.max);
+      updateThumbPosition();
+    };
+
+    // Fonction pour mettre à jour les min et max
+    faderContainer.setRange = (newMin, newMax) => {
+      state.min = newMin;
+      state.max = newMax;
+      state.value = Math.min(Math.max(state.value, state.min), state.max);
+      updateThumbPosition();
+    };
+
+    return faderContainer;
+  }
+
+  // Utilisation de la fonction et ajout au DOM
+  document.addEventListener('DOMContentLoaded', () => {
+    const state = {};
+
+    const fader = createVerticalFader({
+      min: 0,
+      max: 100,
+      value: 50,
+      state: state
+    });
+
+    // Écouter l'événement 'change'
+    fader.addEventListener('change', () => {
+      console.log(`La nouvelle valeur est : ${state.value}`);
+    });
+
+    // Ajouter le fader au conteneur
+    document.getElementById('fader-container').appendChild(fader);
+  });
+</script>
+</body>
+</html>
