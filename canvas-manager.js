@@ -181,9 +181,8 @@ export default class CanvasManager {
     transformationCodeInput.className = 'transformation-code';
     transformationCodeInput.rows = 5;
     transformationCodeInput.value = layer.code;
-    transformationCodeInput.addEventListener('input', () => {
-      layer.code = transformationCodeInput.value;
-    });
+    transformationCodeInput.update = () => layer.code = transformationCodeInput.value;
+    transformationCodeInput.addEventListener('blur', transformationCodeInput.update);
 
     // Affichage des erreurs
     const errorDisplay = document.createElement('div');
@@ -199,10 +198,7 @@ export default class CanvasManager {
     // Ajouter les options nécessaires
     transformationSelector.addEventListener('change', (event) => {
       transformationCodeInput.value = event.target.value;
-      transformationCodeInput.dispatchEvent(new Event('input', {
-        bubbles: true,
-        cancelable: true,
-      }));
+      transformationCodeInput.update();
     });
 
     // Bouton Play
