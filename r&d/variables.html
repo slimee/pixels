@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Préfixer les variables dans le code utilisateur</title>
+    <!-- Inclure Acorn depuis unpkg -->
+    <script src="https://unpkg.com/acorn@8.8.1/dist/acorn.js"></script>
+    <!-- Inclure Acorn-walk depuis unpkg -->
+    <script src="https://unpkg.com/acorn-walk@8.2.0/dist/walk.js"></script>
+    <!-- Inclure Astring depuis unpkg -->
+    <script src="https://unpkg.com/astring@1.10.0/dist/astring.min.js"></script>
+</head>
+<body>
+<h1>Transformation du code utilisateur</h1>
+<textarea id="userCode" rows="10" cols="50">
+function calculer() {
+    return Math.PI * rayon * rayon;
+}
+const perimetre = 2 * (rayon * Math.PI);
+    </textarea>
+<br>
+<label for="variables">Variables (séparées par des virgules) :</label>
+<input type="text" id="variables" value="rayon, Math">
+<br>
+<button onclick="transformCode()">Transformer le code</button>
+<h2>Code transformé :</h2>
+<pre id="result"></pre>
+
+<script>
+  function validateVariableNames(variableNames) {
+    // Liste des mots-clés réservés et des objets intégrés
+    const reservedWords = new Set([
+      // Mots-clés réservés
+      'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default',
+      'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function',
+      'if', 'import', 'in', 'instanceof', 'let', 'new', 'return', 'super', 'switch',
+      'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield',
+      // Objets intégrés
+      'Array', 'Boolean', 'Date', 'Error', 'Function', 'JSON', 'Math', 'Number',
+      'Object', 'RegExp', 'String', 'Promise', 'Symbol', 'Map', 'Set', 'WeakMap',
+      'WeakSet', 'Proxy', 'Reflect', 'Intl', 'WebAssembly', 'BigInt',
+      // Autres globales
+      'console', 'window', 'document', 'undefined', 'null', 'NaN', 'Infinity',
+      // Noms spéciaux
+      'arguments', 'eval', 'await', 'enum', 'implements', 'interface', 'package',
+      'private', 'protected', 'public', 'static', 'yield'
+    ]);
+
+    // Listes pour les noms de variables valides et invalides
+    const validVariableNames = [];
+    const invalidVariableNames = [];
+
+    // Vérifier chaque nom de variable
+    variableNames.forEach(varName => {
+      if (reservedWords.has(varName)) {
+        invalidVariableNames.push(varName);
+      } else {
+        validVariableNames.push(varName);
+      }
+    });
+
+    return {
+      validVariableNames,
+      invalidVariableNames
+    };
+  }
+
+  function prefixVariablesInCode(code, variableNames) {
+    // Parser le code en un AST
+    const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'script' });
+
+    const variablesSet = new Set(variableNames);
+
+    // Parcourir et modifier l'AST
+    acorn.walk.simple(ast, {
+      Identifier(node, state, ancestors) {
+        const parent = ancestors[ancestors.length - 2];
+        if (variablesSet.has(node.name)) {
+          if (!(
+            (parent.type === 'VariableDeclarator' && parent.id === node) ||
+            (parent.type === 'FunctionDeclaration' && parent.id === node) ||
+            (parent.type === 'FunctionExpression' && parent.params.includes(node)) ||
+            (parent.type === 'ArrowFunctionExpression' && parent.params.includes(node)) ||
+            (parent.type === 'MemberExpression' && parent.property === node && !parent.computed) ||
+            (parent.type === 'Property' && parent.key === node && !parent.computed)
+          )) {
+            // Remplacer l'identifiant par variables.identifiant
+            Object.assign(node, {
+              type: 'MemberExpression',
+              object: { type: 'Identifier', name: 'variables' },
+              property: { type: 'Identifier', name: node.name },
+              computed: false
+            });
+          }
+        }
+      }
+    }, null, (node, state, ancestors) => ancestors);
+
+    // Générer le code modifié
+    const modifiedCode = astring.generate(ast);
+    return modifiedCode;
+  }
+
+  function transformCode() {
+    const code = document.getElementById('userCode').value;
+    const variablesInput = document.getElementById('variables').value;
+    const variableNames = variablesInput.split(',').map(v => v.trim()).filter(v => v);
+
+    // Valider les noms de variables
+    const { validVariableNames, invalidVariableNames } = validateVariableNames(variableNames);
+
+    if (invalidVariableNames.length > 0) {
+      alert('Les noms de variables suivants sont réservés et ne peuvent pas être utilisés : ' + invalidVariableNames.join(', '));
+    }
+
+    try {
+      const newCode = prefixVariablesInCode(code, validVariableNames);
+      document.getElementById('result').textContent = newCode;
+    } catch (error) {
+      document.getElementById('result').textContent = 'Erreur lors de la transformation du code : ' + error.message;
+      throw error;
+    }
+  }
+</script>
+</body>
+</html>
