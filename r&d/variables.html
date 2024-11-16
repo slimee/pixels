@@ -2,13 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Préfixer les variables dans le code utilisateur</title>
-    <!-- Inclure Acorn depuis unpkg -->
     <script src="https://unpkg.com/acorn@8.8.1/dist/acorn.js"></script>
-    <!-- Inclure Acorn-walk depuis unpkg -->
     <script src="https://unpkg.com/acorn-walk@8.2.0/dist/walk.js"></script>
-    <!-- Inclure Astring depuis unpkg -->
-    <script src="https://unpkg.com/astring@1.10.0/dist/astring.min.js"></script>
+    <script src="https://unpkg.com/astring@1.9.0/dist/astring.min.js"></script>
 </head>
 <body>
 <h1>Transformation du code utilisateur</h1>
@@ -72,9 +68,9 @@ const perimetre = 2 * (rayon * Math.PI);
     const variablesSet = new Set(variableNames);
 
     // Parcourir et modifier l'AST
-    acorn.walk.simple(ast, {
-      Identifier(node, state, ancestors) {
-        const parent = ancestors[ancestors.length - 2];
+    acorn.walk.ancestor(ast, {
+      Identifier(node, ancestors) {
+        const parent = ancestors[ancestors.length - 2]; // Le parent direct
         if (variablesSet.has(node.name)) {
           if (!(
             (parent.type === 'VariableDeclarator' && parent.id === node) ||
@@ -94,7 +90,7 @@ const perimetre = 2 * (rayon * Math.PI);
           }
         }
       }
-    }, null, (node, state, ancestors) => ancestors);
+    });
 
     // Générer le code modifié
     const modifiedCode = astring.generate(ast);
