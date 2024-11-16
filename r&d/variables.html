@@ -2,9 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <script src="https://unpkg.com/acorn@8.8.1/dist/acorn.js"></script>
-    <script src="https://unpkg.com/acorn-walk@8.2.0/dist/walk.js"></script>
-    <script src="https://unpkg.com/astring@1.9.0/dist/astring.min.js"></script>
+    <title>Préfixer les variables dans le code utilisateur</title>
 </head>
 <body>
 <h1>Transformation du code utilisateur</h1>
@@ -22,7 +20,12 @@ const perimetre = 2 * (rayon * Math.PI);
 <h2>Code transformé :</h2>
 <pre id="result"></pre>
 
-<script>
+<script type="module">
+  // Importer les modules ES
+  import * as acorn from 'https://unpkg.com/acorn@8.8.1/dist/acorn.mjs';
+  import * as acornWalk from 'https://unpkg.com/acorn-walk@8.2.0/dist/walk.mjs';
+  import * as astring from 'https://unpkg.com/astring@1.9.0/dist/astring.mjs';
+
   function validateVariableNames(variableNames) {
     // Liste des mots-clés réservés et des objets intégrés
     const reservedWords = new Set([
@@ -68,7 +71,7 @@ const perimetre = 2 * (rayon * Math.PI);
     const variablesSet = new Set(variableNames);
 
     // Parcourir et modifier l'AST
-    acorn.walk.ancestor(ast, {
+    acornWalk.ancestor(ast, {
       Identifier(node, ancestors) {
         const parent = ancestors[ancestors.length - 2]; // Le parent direct
         if (variablesSet.has(node.name)) {
@@ -97,7 +100,8 @@ const perimetre = 2 * (rayon * Math.PI);
     return modifiedCode;
   }
 
-  function transformCode() {
+  // Rendre la fonction accessible depuis le bouton
+  window.transformCode = function transformCode() {
     const code = document.getElementById('userCode').value;
     const variablesInput = document.getElementById('variables').value;
     const variableNames = variablesInput.split(',').map(v => v.trim()).filter(v => v);
@@ -116,7 +120,7 @@ const perimetre = 2 * (rayon * Math.PI);
       document.getElementById('result').textContent = 'Erreur lors de la transformation du code : ' + error.message;
       throw error;
     }
-  }
+  };
 </script>
 </body>
 </html>
