@@ -72,9 +72,7 @@ export default function makeVariables() {
       }
     });
 
-    // Générer le code modifié
-    const modifiedCode = astring.generate(ast);
-    return modifiedCode;
+    return astring.generate(ast);
   }
 
   return function transformCode(code, variables) {
