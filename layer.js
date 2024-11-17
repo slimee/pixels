@@ -1,7 +1,10 @@
+import prefixVariables from './components/prefix-variables.js';
+
 export default class Layer {
-  constructor(width, height) {
+  constructor(width, height, state) {
     this.width = width;
     this.height = height;
+    this.state = state;
     this.offscreenCanvas = document.createElement('canvas');
     this.offscreenCanvas.width = width;
     this.offscreenCanvas.height = height;
@@ -23,7 +26,8 @@ export default class Layer {
   }
 
   updateTransformationFunction() {
-    this.transformationFunction = new Function('x', 'y', 'width', 'height', 'matrices', `${this.code} return { x, y };`);
+    const codeWithVariables = prefixVariables(this.code, Object.keys(this.state.variables));
+    this.transformationFunction = new Function('x', 'y', 'width', 'height', 'matrices', 'variables', `${codeWithVariables} return { x, y };`);
   }
 
   transform(layersImageData) {
@@ -36,7 +40,7 @@ export default class Layer {
         const {
           x: newX,
           y: newY
-        } = this.transformationFunction(x, y, width, height, layersImageData);
+        } = this.transformationFunction(x, y, width, height, layersImageData, this.state.variables);
         const intNewX = Math.floor(newX);
         const intNewY = Math.floor(newY);
         const wrappedX = ((intNewX % width) + width) % width;

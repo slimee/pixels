@@ -32,7 +32,7 @@ export default class CanvasManager {
   }
 
   addNewLayer() {
-    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height);
+    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height, this.state);
     this.layers.push(newLayer);
     this.currentLayerIndex = this.layers.length - 1;
     this.updateLayersList();

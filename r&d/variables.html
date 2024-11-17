@@ -16,18 +16,18 @@ const perimetre = 2 * (rayon * Math.PI);
 <label for="variables">Variables (séparées par des virgules) :</label>
 <input type="text" id="variables" value="rayon, Math">
 <br>
-<button onclick="transformCode()">Transformer le code</button>
+<button onclick="prefixVariables()">Transformer le code</button>
 <h2>Code transformé :</h2>
 <pre id="result"></pre>
 
 <script type="module">
-  import makeVariables from '../components/make-variables.js';
+  import prefixVariables from '../components/prefix-variables.js';
 
-  window.transformCode = function () {
+  window.prefixVariables = function () {
     const userCode = document.getElementById('userCode').value;
     const variables = document.getElementById('variables').value.split(',').map(v => v.trim());
     const result = document.getElementById('result');
-    result.textContent = makeVariables()(userCode, variables);
+    result.textContent = prefixVariables(userCode, variables);
   };
 </script>
 </body>
