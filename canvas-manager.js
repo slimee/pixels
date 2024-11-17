@@ -261,7 +261,7 @@ export default class CanvasManager {
   updateCanvas() {
     this.canvasContext.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
     this.layers.forEach((layer) => {
-      if (layer.visible) layer.drawTo(this.canvasContext);
+      if (layer.visible) this.canvasContext.drawImage(layer.offscreenCanvas, 0, 0)
     });
   }
 

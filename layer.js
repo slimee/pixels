@@ -6,7 +6,7 @@ export default class Layer {
     this.offscreenCanvas.width = width;
     this.offscreenCanvas.height = height;
     this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
-    this.imageData = this.offscreenCanvasContext.createImageData(this.width, this.height);
+    this.offscreenImage = this.offscreenCanvasContext.createImageData(this.width, this.height);
     this.visible = true;
     this.isPlaying = true;
     this.transformationFunction = null;
@@ -27,13 +27,12 @@ export default class Layer {
   }
 
   transform(layersImageData) {
-    const newData = new Uint8ClampedArray(this.imageData.data.length);
+    const newData = new Uint8ClampedArray(this.offscreenImage.data.length);
     const width = this.width;
     const height = this.height;
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        const index = (y * width + x) * 4;
         const {
           x: newX,
           y: newY
@@ -44,24 +43,21 @@ export default class Layer {
         const wrappedY = ((intNewY % height) + height) % height;
         const newIndex = (wrappedY * width + wrappedX) * 4;
 
-        newData[newIndex] = this.imageData.data[index];
-        newData[newIndex + 1] = this.imageData.data[index + 1];
-        newData[newIndex + 2] = this.imageData.data[index + 2];
-        newData[newIndex + 3] = this.imageData.data[index + 3];
+        const index = (y * width + x) * 4;
+        newData[newIndex] = this.offscreenImage.data[index];
+        newData[newIndex + 1] = this.offscreenImage.data[index + 1];
+        newData[newIndex + 2] = this.offscreenImage.data[index + 2];
+        newData[newIndex + 3] = this.offscreenImage.data[index + 3];
       }
     }
 
-    this.imageData.data.set(newData);
-    this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
-  }
-
-  drawTo(canvasContext) {
-    canvasContext.drawImage(this.offscreenCanvas, 0, 0);
+    this.offscreenImage.data.set(newData);
+    this.offscreenCanvasContext.putImageData(this.offscreenImage, 0, 0);
   }
 
   clear() {
-    this.imageData.data.fill(0);
-    this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
+    this.offscreenImage.data.fill(0);
+    this.offscreenCanvasContext.putImageData(this.offscreenImage, 0, 0);
   }
 
   hexToRGBA(hex) {
@@ -91,7 +87,7 @@ export default class Layer {
       this.paintTriangle(x, y, halfSize, color);
     }
 
-    this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
+    this.offscreenCanvasContext.putImageData(this.offscreenImage, 0, 0);
   }
 
   paintCircle(x, y, halfSize, color) {
@@ -156,10 +152,10 @@ export default class Layer {
     const y = this.wrapCoordinate(rawY, this.height);
     const index = (y * this.width + x) * 4;
 
-    this.imageData.data[index] = color.r;
-    this.imageData.data[index + 1] = color.g;
-    this.imageData.data[index + 2] = color.b;
-    this.imageData.data[index + 3] = color.a;
+    this.offscreenImage.data[index] = color.r;
+    this.offscreenImage.data[index + 1] = color.g;
+    this.offscreenImage.data[index + 2] = color.b;
+    this.offscreenImage.data[index + 3] = color.a;
   }
 
   resize(width, height) {
@@ -171,17 +167,17 @@ export default class Layer {
         const oldY = y % this.height;
         const oldIndex = (oldY * this.width + oldX) * 4;
 
-        newImageData.data[newIndex] = this.imageData.data[oldIndex];
-        newImageData.data[newIndex + 1] = this.imageData.data[oldIndex + 1];
-        newImageData.data[newIndex + 2] = this.imageData.data[oldIndex + 2];
-        newImageData.data[newIndex + 3] = this.imageData.data[oldIndex + 3];
+        newImageData.data[newIndex] = this.offscreenImage.data[oldIndex];
+        newImageData.data[newIndex + 1] = this.offscreenImage.data[oldIndex + 1];
+        newImageData.data[newIndex + 2] = this.offscreenImage.data[oldIndex + 2];
+        newImageData.data[newIndex + 3] = this.offscreenImage.data[oldIndex + 3];
       }
     }
     this.width = width;
     this.height = height;
-    this.imageData = newImageData;
+    this.offscreenImage = newImageData;
     this.offscreenCanvas.width = width;
     this.offscreenCanvas.height = height;
-    this.offscreenCanvasContext.putImageData(this.imageData, 0, 0);
+    this.offscreenCanvasContext.putImageData(this.offscreenImage, 0, 0);
   }
 }
