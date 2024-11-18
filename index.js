@@ -2,7 +2,6 @@ import UI from './ui.js';
 import State from './state.js';
 import CanvasManager from "./canvas-manager.js";
 import ControlPanel from "./control-panel.js";
-import makeFader from "./components/make-fader.js";
 
 document.addEventListener('DOMContentLoaded', start);
 
@@ -15,6 +14,4 @@ async function start() {
   const ui = new UI();
   const canvasManager = new CanvasManager(state, ui);
   new ControlPanel(state, ui, canvasManager);
-
-  document.body.appendChild(makeFader());
 }

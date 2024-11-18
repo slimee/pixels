@@ -1,0 +1,83 @@
+.fader-container {
+    width: 60px;
+    height: 220px;
+    padding: 10px;
+    box-sizing: border-box;
+    margin: 20px;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    position: relative; /* Pour positionner l'étiquette */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Piste du fader */
+.fader-track {
+    position: relative;
+    width: 6px;
+    height: 100%;
+    background-color: #c7c7c7;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+/* Curseur du fader */
+.fader-thumb {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 24px;
+    height: 12px;
+    background: linear-gradient(to bottom, #ffffff, #e0e0e0);
+    border: 1px solid #b1b1b1;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    touch-action: none;
+    z-index: 2;
+}
+
+/* Étiquette de la valeur actuelle */
+.fader-label {
+    position: absolute;
+    left: 100%; /* Place l'étiquette à droite du curseur */
+    top: 50%;
+    transform: translate(5px, -50%); /* Ajuste la position pour centrer verticalement */
+    background-color: #fff;
+    padding: 2px 5px;
+    border: 1px solid #b1b1b1;
+    border-radius: 3px;
+    font-size: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    opacity: 0; /* L'étiquette est cachée par défaut */
+    transition: opacity 0.2s;
+    white-space: nowrap; /* Empêche le texte de se casser */
+}
+
+/* Afficher l'étiquette lors du glissement */
+.fader-label.visible {
+    opacity: 1;
+}
+
+.fader-hover-label {
+    position: absolute;
+    left: 100%; /* Place l'étiquette à droite de la piste */
+    transform: translate(5px, -50%); /* Ajuste la position */
+    background-color: #fff;
+    padding: 2px 5px;
+    border: 1px solid #b1b1b1;
+    border-radius: 3px;
+    font-size: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+.fader-hover-label.visible {
+    opacity: 1;
+}

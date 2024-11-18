@@ -21,5 +21,7 @@ export default class UI {
     this.playPauseButton = document.getElementById('playPauseButton');
     this.clearButton = document.getElementById('clearButton');
     this.clearAllButton = document.getElementById('clearAllButton');
+
+    this.faderContainer = document.getElementById('fader-container');
   }
 }

@@ -1,3 +1,5 @@
+import makeFader from './components/make-fader.js';
+
 export default class ControlPanel {
   constructor(state, ui, canvasManager) {
     this.state = state;
@@ -11,6 +13,7 @@ export default class ControlPanel {
     this.bindBrush();
     this.bindEraserButton();
     this.bindResize();
+    this.addFader('fader');
   }
 
   bindAddDeleteLayerButtons() {
@@ -113,5 +116,13 @@ export default class ControlPanel {
     });
 
     resizeObserver.observe(this.ui.canvasRedim);
+  }
+
+  addFader(name) {
+    const faderState = { min: 20, max: 120, value: 50 };
+    const updateFaderState = () => this.state.variables[name] = faderState.value;
+    const fader = makeFader(faderState);
+    fader.addEventListener('change', updateFaderState);
+    this.ui.faderContainer.appendChild(fader);
   }
 }

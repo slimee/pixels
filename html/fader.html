@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Fader Vertical Fonctionnel</title>
+    <link rel="stylesheet" href="../styles/fader-style.css">
+</head>
+<body>
+
+<!-- Conteneur pour le fader -->
+<div id="fader-container"></div>
+
+<script type="module">
+  import makeFader from '../components/make-fader.js';
+  // Utilisation de la fonction et ajout au DOM
+  document.addEventListener('DOMContentLoaded', () => {
+    const faderState = {
+      min: 20,
+      max: 120,
+      value: 50,
+    };
+    const fader = makeFader(faderState);
+
+    // Écouter l'événement 'change'
+    fader.addEventListener('change', () => {
+      console.log(`La nouvelle valeur est : ${faderState.value}`);
+      // this.state.variables.fader1 = state.value;
+    });
+
+    // Ajouter le fader au conteneur
+    document.getElementById('fader-container').appendChild(fader);
+  });
+
+</script>
+</body>
+</html>

@@ -6,9 +6,7 @@ export default class State {
     this.transformations = transformations;
     this.activeTransformationLayerIndex = null;
     this.brush = { size: 15, color: '#ff0000', shape: 'circle', erase: false, drawOnDrag: false };
-    this.variables = {
-      toto: 10,
-    }
+    this.variables = {};
   }
 
   get playingLayers() {
