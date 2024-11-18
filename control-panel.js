@@ -13,7 +13,8 @@ export default class ControlPanel {
     this.bindBrush();
     this.bindEraserButton();
     this.bindResize();
-    this.addFader('fader');
+    this.addFader('fadex');
+    this.addFader('fadey');
   }
 
   bindAddDeleteLayerButtons() {
@@ -119,10 +120,13 @@ export default class ControlPanel {
   }
 
   addFader(name) {
-    const faderState = { min: 20, max: 120, value: 50 };
-    const updateFaderState = () => this.state.variables[name] = faderState.value;
+    const faderState = { name, min: -30, max: 30, value: 0 };
     const fader = makeFader(faderState);
-    fader.addEventListener('change', updateFaderState);
+    const updateFaderValue = () => {
+      this.state.setVariable(faderState.name, faderState.value);
+    };
+    fader.addEventListener('change', updateFaderValue);
     this.ui.faderContainer.appendChild(fader);
+    updateFaderValue();
   }
 }

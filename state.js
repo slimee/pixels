@@ -16,4 +16,9 @@ export default class State {
   get currentLayer() {
     return this.layers[this.currentLayerIndex];
   }
+
+  setVariable(name, value) {
+    this.variables[name] = value;
+    this.layers.forEach(layer => layer.updateTransformationFunction());
+  }
 }
