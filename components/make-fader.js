@@ -1,4 +1,4 @@
-function makeFaderUI() {
+function makeFaderUI(name) {
   // Créer les éléments HTML
   const faderContainer = document.createElement('div');
   faderContainer.classList.add('fader-container');
@@ -16,18 +16,32 @@ function makeFaderUI() {
   faderHoverLabel.classList.add('fader-hover-label');
   faderTrack.appendChild(faderHoverLabel);
 
+  // Label pour le nom du fader
+  const faderNameInput = document.createElement('input');
+  faderNameInput.classList.add('fader-name-input');
+  faderNameInput.type = 'text';
+  faderNameInput.value = name;
+
   // Assembler les éléments
   faderThumb.appendChild(faderLabel); // L'étiquette est un enfant du curseur
   faderTrack.appendChild(faderThumb);
   faderContainer.appendChild(faderTrack);
+  faderContainer.appendChild(faderNameInput);
 
   return {
-    faderLabel, faderThumb, faderTrack, faderHoverLabel, faderContainer
+    faderLabel, faderThumb, faderTrack, faderHoverLabel, faderContainer, faderNameInput
   }
 }
 
 export default function makeFader(state) {
-  const { faderLabel, faderThumb, faderTrack, faderHoverLabel, faderContainer } = makeFaderUI();
+  const {
+    faderLabel,
+    faderThumb,
+    faderTrack,
+    faderHoverLabel,
+    faderContainer,
+    faderNameInput
+  } = makeFaderUI(state.name);
   // Variables pour le glissement
   let isDragging = false;
   let isThumbHovered = false;
@@ -196,6 +210,13 @@ export default function makeFader(state) {
     faderHoverLabel.classList.remove('visible');
   });
 
+  faderNameInput.addEventListener('blur', (event) => {
+    state.oldName = state.name;
+    state.name = event.target.value;
+    const changeEvent = new Event('change');
+    faderContainer.dispatchEvent(changeEvent);
+  });
+
   faderContainer.setValue = (newValue) => {
     state.value = Math.min(Math.max(newValue, state.min), state.max);
     updateThumbPosition();
@@ -207,7 +228,7 @@ export default function makeFader(state) {
     updateThumbPosition();
   };
 
-  requestAnimationFrame(updateThumbPosition)
+  requestAnimationFrame(updateThumbPosition);
 
   return faderContainer;
 }

@@ -17,7 +17,8 @@ export default class State {
     return this.layers[this.currentLayerIndex];
   }
 
-  setVariable(name, value) {
+  setVariable({ oldName, name, value }) {
+    delete this.variables[oldName];
     this.variables[name] = value;
     this.layers.forEach(layer => layer.updateTransformationFunction());
   }

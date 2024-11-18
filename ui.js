@@ -23,5 +23,6 @@ export default class UI {
     this.clearAllButton = document.getElementById('clearAllButton');
 
     this.faderContainer = document.getElementById('fader-container');
+    this.addFaderButton = document.getElementById('addFaderButton');
   }
 }
