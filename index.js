@@ -6,7 +6,7 @@ import ControlPanel from "./control-panel.js";
 document.addEventListener('DOMContentLoaded', start);
 
 async function start() {
-  const transformations = await fetch('./transformations.json')
+  const transformations = await fetch('./data/transformations.json')
     .then(response => response.json())
     .catch(error => console.error('Erreur lors du chargement des transformations:', error));
 
