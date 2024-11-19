@@ -7,6 +7,7 @@ export default class CanvasManager {
 
     this.canvasContext = this.ui.canvas.getContext('2d');
     this.startPoint = null;
+    this.draggedLayerIndex = null;
 
     this.initializeControls();
   }
@@ -97,16 +98,58 @@ export default class CanvasManager {
 
   updateLayersList() {
     this.ui.layersList.innerHTML = '';
+
     this.layers.forEach((layer, index) => {
       const layerItem = document.createElement('div');
       layerItem.className = 'layer-item';
+      layerItem.setAttribute('data-index', index);
 
-// Crée le conteneur du label
+      // Créer la zone de grip
+      const gripArea = document.createElement('div');
+      gripArea.className = 'layer-grip';
+      gripArea.draggable = true;
+
+      // Ajouter l'icône du grip
+      const gripIcon = document.createElement('i');
+      gripIcon.className = 'bx bx-menu'; // Utiliser l'icône appropriée
+      gripArea.appendChild(gripIcon);
+
+      // Ajouter les écouteurs d'événements pour le drag and drop
+      gripArea.addEventListener('dragstart', (event) => {
+        this.draggedLayerIndex = index;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', '');
+        gripArea.classList.add('dragging');
+      });
+
+      gripArea.addEventListener('dragend', (event) => {
+        gripArea.classList.remove('dragging');
+      });
+
+      layerItem.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        layerItem.classList.add('drag-over');
+      });
+
+      layerItem.addEventListener('dragleave', (event) => {
+        layerItem.classList.remove('drag-over');
+      });
+
+      layerItem.addEventListener('drop', (event) => {
+        event.preventDefault();
+        layerItem.classList.remove('drag-over');
+        const targetIndex = index;
+        this.moveLayer(this.draggedLayerIndex, targetIndex);
+      });
+
+      // Créer les autres éléments (checkbox œil, nom du calque, etc.)
+
+      // Code pour la checkbox œil (inchangé)
       const eyeCheckboxContainer = document.createElement('label');
       eyeCheckboxContainer.className = 'eye-checkbox';
       eyeCheckboxContainer.htmlFor = `eyeCheckbox-${index}`;
 
-      // Crée la case à cocher
       const eyeCheckbox = document.createElement('input');
       eyeCheckbox.type = 'checkbox';
       eyeCheckbox.id = `eyeCheckbox-${index}`;
@@ -116,20 +159,15 @@ export default class CanvasManager {
         this.updateCanvas();
       });
 
-      // Crée les icônes
       const eyeIconShow = document.createElement('i');
       eyeIconShow.className = 'bx bxs-show';
 
       const eyeIconHide = document.createElement('i');
       eyeIconHide.className = 'bx bxs-hide';
 
-      // Ajoute les éléments au conteneur
       eyeCheckboxContainer.appendChild(eyeCheckbox);
       eyeCheckboxContainer.appendChild(eyeIconShow);
       eyeCheckboxContainer.appendChild(eyeIconHide);
-
-      // Ajoute le conteneur à votre élément parent (par exemple, un div)
-
 
       // Nom du calque
       const layerName = document.createElement('span');
@@ -153,6 +191,7 @@ export default class CanvasManager {
       });
 
       // Ajouter les éléments au calque
+      layerItem.appendChild(gripArea);
       layerItem.appendChild(eyeCheckboxContainer);
       layerItem.appendChild(layerName);
       layerItem.appendChild(transformToggleButton);
@@ -170,6 +209,25 @@ export default class CanvasManager {
         this.ui.layersList.appendChild(transformationArea);
       }
     });
+  }
+
+  moveLayer(fromIndex, toIndex) {
+    if (fromIndex === toIndex) return;
+    const layers = this.state.layers;
+    const layer = layers.splice(fromIndex, 1)[0];
+    layers.splice(toIndex, 0, layer);
+
+    // Mettre à jour currentLayerIndex si nécessaire
+    if (this.currentLayerIndex === fromIndex) {
+      this.currentLayerIndex = toIndex;
+    } else if (this.currentLayerIndex > fromIndex && this.currentLayerIndex <= toIndex) {
+      this.currentLayerIndex--;
+    } else if (this.currentLayerIndex < fromIndex && this.currentLayerIndex >= toIndex) {
+      this.currentLayerIndex++;
+    }
+
+    this.updateLayersList();
+    this.updateCanvas();
   }
 
   createTransformationArea(layer, index) {

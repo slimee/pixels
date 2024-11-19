@@ -60,12 +60,37 @@ body {
     background-color: #ddd;
 }
 
+.layer-grip {
+    width: 20px;
+    height: 100%;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 5px;
+}
+
+.layer-grip.dragging {
+    cursor: grabbing;
+}
+
+.layer-grip i {
+    font-size: 16px;
+    color: #666;
+}
+
 .layer-item {
     display: flex;
     align-items: center;
     background-color: #F8F8F8;
     padding: 5px;
     cursor: pointer;
+    border-bottom: 1px solid #ccc;
+    position: relative;
+}
+
+.layer-item.drag-over {
+    border-top: 2px solid #007bff;
 }
 
 .layer-item.selected {
