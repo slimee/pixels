@@ -118,7 +118,7 @@ export default class CanvasManager {
       gripArea.addEventListener('dragstart', (event) => {
         this.draggedLayerIndex = index;
         event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', '');
+        event.dataTransfer.setData('text/plain', index.toString()); // Modifier ici
         gripArea.classList.add('dragging');
       });
 
@@ -139,8 +139,9 @@ export default class CanvasManager {
       layerItem.addEventListener('drop', (event) => {
         event.preventDefault();
         layerItem.classList.remove('drag-over');
-        const targetIndex = index;
+        const targetIndex = parseInt(layerItem.getAttribute('data-index'), 10);
         this.moveLayer(this.draggedLayerIndex, targetIndex);
+        this.draggedLayerIndex = null;
       });
 
       // Créer les autres éléments (checkbox œil, nom du calque, etc.)
@@ -212,7 +213,9 @@ export default class CanvasManager {
   }
 
   moveLayer(fromIndex, toIndex) {
-    if (fromIndex === toIndex) return;
+    if (fromIndex === toIndex || fromIndex === null || toIndex === null) return;
+
+    // Réordonner les calques
     const layers = this.state.layers;
     const layer = layers.splice(fromIndex, 1)[0];
     layers.splice(toIndex, 0, layer);
@@ -224,6 +227,15 @@ export default class CanvasManager {
       this.currentLayerIndex--;
     } else if (this.currentLayerIndex < fromIndex && this.currentLayerIndex >= toIndex) {
       this.currentLayerIndex++;
+    }
+
+    // Mettre à jour l'index de transformation active
+    if (this.state.activeTransformationLayerIndex === fromIndex) {
+      this.state.activeTransformationLayerIndex = toIndex;
+    } else if (this.state.activeTransformationLayerIndex > fromIndex && this.state.activeTransformationLayerIndex <= toIndex) {
+      this.state.activeTransformationLayerIndex--;
+    } else if (this.state.activeTransformationLayerIndex < fromIndex && this.state.activeTransformationLayerIndex >= toIndex) {
+      this.state.activeTransformationLayerIndex++;
     }
 
     this.updateLayersList();
