@@ -122,7 +122,7 @@ export default class CanvasManager {
         gripArea.classList.add('dragging');
       });
 
-      gripArea.addEventListener('dragend', (event) => {
+      gripArea.addEventListener('dragend', () => {
         gripArea.classList.remove('dragging');
       });
 
@@ -134,18 +134,34 @@ export default class CanvasManager {
         const offset = event.clientY - rect.top;
         const height = rect.height;
 
-        if (offset < height / 2) {
-          // Dans la moitié supérieure du calque
-          layerItem.classList.add('drag-over-top');
-          layerItem.classList.remove('drag-over-bottom');
+        let targetIndex = index;
+
+        if (offset > height / 2) {
+          // Si la souris est dans la moitié inférieure, insérer après
+          targetIndex = index + 1;
+        }
+
+        // Vérifier si le targetIndex est différent de draggedLayerIndex
+        if (
+          targetIndex !== this.draggedLayerIndex &&
+          targetIndex !== this.draggedLayerIndex + 1
+        ) {
+          // Afficher l'indicateur visuel
+          if (offset < height / 2) {
+            layerItem.classList.add('drag-over-top');
+            layerItem.classList.remove('drag-over-bottom');
+          } else {
+            layerItem.classList.add('drag-over-bottom');
+            layerItem.classList.remove('drag-over-top');
+          }
         } else {
-          // Dans la moitié inférieure du calque
-          layerItem.classList.add('drag-over-bottom');
+          // Ne pas afficher l'indicateur visuel
           layerItem.classList.remove('drag-over-top');
+          layerItem.classList.remove('drag-over-bottom');
         }
       });
 
-      layerItem.addEventListener('dragleave', (event) => {
+      layerItem.addEventListener('dragleave', () => {
         layerItem.classList.remove('drag-over-top');
         layerItem.classList.remove('drag-over-bottom');
       });
