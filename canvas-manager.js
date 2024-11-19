@@ -172,10 +172,14 @@ export default class CanvasManager {
 
       // Nom du calque
       const layerName = document.createElement('span');
-      layerName.textContent = `Calque ${index + 1}`;
-      layerName.addEventListener('click', () => {
+      layerName.textContent = layer.name;
+      layerName.addEventListener('change', () => {
+        layer.name = layerName.value;
+      });
+      layerName.addEventListener('click', (event) => {
         this.currentLayerIndex = index;
         this.updateLayersList();
+        event.stopPropagation();
       });
 
       // Bouton de transformation

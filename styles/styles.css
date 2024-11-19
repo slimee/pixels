@@ -152,6 +152,17 @@ body {
     display: none;
 }
 
+.layer-name-input {
+    flex-grow: 1;
+    border: none;
+    background: transparent;
+    color: #333;
+    font-size: 14px;
+}
+
+.layer-name-input:focus {
+    outline: none;
+}
 
 .layer-item .layer-name {
     flex-grow: 1;

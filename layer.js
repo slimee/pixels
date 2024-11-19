@@ -1,10 +1,12 @@
 import prefixVariables from './components/prefix-variables.js';
 
+let i = 0;
 export default class Layer {
-  constructor(width, height, state) {
+  constructor(width, height, state, name = `Calque ${++i}`) {
     this.width = width;
     this.height = height;
     this.state = state;
+    this.name = name;
     this.offscreenCanvas = document.createElement('canvas');
     this.offscreenCanvas.width = width;
     this.offscreenCanvas.height = height;
