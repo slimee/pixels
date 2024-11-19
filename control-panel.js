@@ -28,14 +28,13 @@ export default class ControlPanel {
   }
 
   bindDrawOnDragCheckbox() {
-    this.updateDrawOnDragState();
+    const updateDrawOnDragState = () => {
+      this.state.brush.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
+    }
+    updateDrawOnDragState();
     this.ui.drawOnDragCheckbox.addEventListener('change', () => {
-      this.updateDrawOnDragState();
+      updateDrawOnDragState();
     });
-  }
-
-  updateDrawOnDragState() {
-    this.state.brush.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
   }
 
   bindBrush() {
@@ -43,7 +42,7 @@ export default class ControlPanel {
       this.state.brush.size = parseInt(this.ui.brushSizeInput.value, 10);
     });
 
-    this.ui.brushColorInput.addEventListener('input', () => {
+    const updateBrush = () => {
       this.state.brush.color = this.ui.brushColorInput.value;
       this.state.brush.erase = false;
       if (this.state.brush.erase) {
@@ -51,7 +50,9 @@ export default class ControlPanel {
       } else {
         this.ui.eraserButton.classList.remove("active");
       }
-    });
+    };
+    updateBrush();
+    this.ui.brushColorInput.addEventListener('input', updateBrush);
 
     this.ui.brushShapeInput.addEventListener('change', () => {
       this.state.brush.shape = this.ui.brushShapeInput.value;

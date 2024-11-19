@@ -52,6 +52,30 @@
   {
     "name": "Éclatement",
     "code": "var centerX = width / 2;\nvar centerY = height / 2;\nx = x + (x - centerX) * 0.01;\ny = y + (y - centerY) * 0.01;"
+  },
+  {
+    "name": "Gravity",
+    "code": "const centerX = width / 2;\n    const centerY = height / 2;\n    const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2) + 1;\n    const gravity = 1000 / distance;\n    x = x + (centerX - x) * gravity * 0.01;\n    y = y + (centerY - y) * gravity * 0.01;"
+  },
+  {
+    "name": "pinceau étrange",
+    "code": "const chaos = Math.sin(x * y) + Math.cos(y * x);\n    x = x + Math.sin(chaos) * 2;\n    y = y + Math.cos(chaos) * 2;"
+  },
+  {
+    "name": "imaginaire",
+    "code": "const centerX = width / 2;\n    const centerY = height / 2;\n    const zx = (x - centerX) / 100;\n    const zy = (y - centerY) / 100;\n    const real = zx * zx - zy * zy;\n    const imaginary = 2 * zx * zy;\n    x = centerX + real * 100;\n    y = centerY + imaginary * 100;"
+  },
+  {
+    "name": "warp",
+    "code": "const centerX = width / 2;\n    const centerY = height / 2;\n    const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);\n    const warp = Math.exp(-distance / 100) * 50;\n    x = x + Math.sin(distance / 10) * warp;\n    y = y + Math.cos(distance / 10) * warp;"
+  },
+  {
+    "name": "sable",
+    "code": "const blockSize = 10;\n    x = (x + blockSize + (y % blockSize)) % width; // Boucle en grille\n    y = (y + blockSize - (x % blockSize)) % height;"
+  },
+  {
+    "name": "best",
+    "code": "const centerX = width / 2;\n    const centerY = height / 2;\n    const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);\n    const angle = Math.atan2(y - centerY, x - centerX);\n    const warp = Math.exp(-distance / 100) * 50;\n    x = x + Math.cos(angle) * warp;\n    y = y + Math.sin(angle) * warp;"
   }
 ]
 
