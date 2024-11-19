@@ -89,8 +89,14 @@ body {
     position: relative;
 }
 
-.layer-item.drag-over {
+/* Indicateur visuel pour la moitié supérieure */
+.layer-item.drag-over-top {
     border-top: 2px solid #007bff;
+}
+
+/* Indicateur visuel pour la moitié inférieure */
+.layer-item.drag-over-bottom {
+    border-bottom: 2px solid #007bff;
 }
 
 .layer-item.selected {

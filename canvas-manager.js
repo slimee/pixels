@@ -129,17 +129,42 @@ export default class CanvasManager {
       layerItem.addEventListener('dragover', (event) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
-        layerItem.classList.add('drag-over');
+
+        const rect = layerItem.getBoundingClientRect();
+        const offset = event.clientY - rect.top;
+        const height = rect.height;
+
+        if (offset < height / 2) {
+          // Dans la moitié supérieure du calque
+          layerItem.classList.add('drag-over-top');
+          layerItem.classList.remove('drag-over-bottom');
+        } else {
+          // Dans la moitié inférieure du calque
+          layerItem.classList.add('drag-over-bottom');
+          layerItem.classList.remove('drag-over-top');
+        }
       });
 
       layerItem.addEventListener('dragleave', (event) => {
-        layerItem.classList.remove('drag-over');
+        layerItem.classList.remove('drag-over-top');
+        layerItem.classList.remove('drag-over-bottom');
       });
 
       layerItem.addEventListener('drop', (event) => {
         event.preventDefault();
         layerItem.classList.remove('drag-over');
-        const targetIndex = parseInt(layerItem.getAttribute('data-index'), 10);
+
+        const rect = layerItem.getBoundingClientRect();
+        const offset = event.clientY - rect.top;
+        const height = rect.height;
+
+        let targetIndex = index;
+
+        if (offset > height / 2) {
+          // Si la souris est dans la moitié inférieure, insérer après
+          targetIndex = index + 1;
+        }
+
         this.moveLayer(this.draggedLayerIndex, targetIndex);
         this.draggedLayerIndex = null;
       });
@@ -219,9 +244,14 @@ export default class CanvasManager {
   moveLayer(fromIndex, toIndex) {
     if (fromIndex === toIndex || fromIndex === null || toIndex === null) return;
 
-    // Réordonner les calques
     const layers = this.state.layers;
     const layer = layers.splice(fromIndex, 1)[0];
+
+    // Ajuster l'index de destination si nécessaire
+    if (fromIndex < toIndex) {
+      toIndex--; // Compte tenu du retrait du calque
+    }
+
     layers.splice(toIndex, 0, layer);
 
     // Mettre à jour currentLayerIndex si nécessaire
