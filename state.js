@@ -8,6 +8,7 @@ export default class State {
     this.brush = { size: 15, color: '#ff0000', shape: 'circle', erase: false, drawOnDrag: false };
     this.lastPoint = null;
     this.variables = {};
+    this.mouse = { x: 0, y: 0, prevX: 0, prevY: 0 };
   }
 
   get playingLayers() {

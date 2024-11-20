@@ -8,6 +8,7 @@ export default class CanvasManager {
     this.canvasContext = this.ui.canvas.getContext('2d');
     this.startPoint = null;
     this.draggedLayerIndex = null;
+    this.mouseMoveInterval = null;
 
     this.initializeControls();
   }
@@ -48,10 +49,9 @@ export default class CanvasManager {
     this.ui.canvas.addEventListener('mousedown', this.handleCanvasMouseDown.bind(this));
   }
 
-  handleCanvasMouseDown(event) {
-    const rect = this.ui.canvas.getBoundingClientRect();
-    const x = Math.floor(event.clientX - rect.left);
-    const y = Math.floor(event.clientY - rect.top);
+  handleCanvasMouseDown() {
+    const x = this.state.mouse.x;
+    const y = this.state.mouse.y;
     this.state.lastPoint = { x, y };
 
     if (this.brush.shape === 'segment') {
@@ -61,14 +61,13 @@ export default class CanvasManager {
       this.drawAt(x, y, this.brush);
     }
 
-    document.addEventListener('mousemove', this.handleMouseMove);
+    this.mouseMoveInterval = setInterval(this.handleMouseMove, 1000 / 60);
     document.addEventListener('mouseup', this.handleMouseUp);
   }
 
-  handleMouseMove = (event) => {
-    const rect = this.ui.canvas.getBoundingClientRect();
-    const x = Math.floor(event.clientX - rect.left);
-    const y = Math.floor(event.clientY - rect.top);
+  handleMouseMove = () => {
+    const x = this.state.mouse.x;
+    const y = this.state.mouse.y;
 
     if (this.brush.shape === 'segment' && this.brush.drawOnDrag) {
       // Dessin continu avec le pinceau "segment"
@@ -88,10 +87,9 @@ export default class CanvasManager {
     }
   }
 
-  handleMouseUp = (event) => {
-    const rect = this.ui.canvas.getBoundingClientRect();
-    const x = Math.floor(event.clientX - rect.left);
-    const y = Math.floor(event.clientY - rect.top);
+  handleMouseUp = () => {
+    const x = this.state.mouse.x;
+    const y = this.state.mouse.y;
 
     if (this.brush.shape === 'segment') {
       if (this.brush.drawOnDrag) {
@@ -108,9 +106,7 @@ export default class CanvasManager {
       }
     }
 
-    // Pour les autres pinceaux, aucune action nécessaire au mouseup
-
-    document.removeEventListener('mousemove', this.handleMouseMove);
+    clearInterval(this.mouseMoveInterval);
     document.removeEventListener('mouseup', this.handleMouseUp);
   }
 
@@ -408,12 +404,5 @@ export default class CanvasManager {
     this.ui.canvas.height = newHeight;
     this.layers.forEach(matrix => matrix.resize(newWidth, newHeight));
     this.updateCanvas();
-  }
-
-  drawOnDragInterval() {
-    if (this.state.brush.drawOnDrag && this.lastMousePosition) {
-      const { x, y } = this.lastMousePosition;
-      this.currentLayer.paint(x, y, this.brush);
-    }
   }
 }

@@ -14,6 +14,20 @@ export default class ControlPanel {
     this.bindEraserButton();
     this.bindResize();
     this.bindFader();
+    this.bindMouse();
+  }
+
+  bindMouse() {
+    document.addEventListener('mousedown', () => {
+
+    });
+    document.addEventListener('mousemove', event => {
+      this.state.mouse.prevX = this.state.mouse.x;
+      this.state.mouse.prevY = this.state.mouse.y;
+      const rect = this.ui.canvas.getBoundingClientRect();
+      this.state.mouse.x = Math.floor(event.clientX - rect.left);
+      this.state.mouse.y = Math.floor(event.clientY - rect.top);
+    });
   }
 
   bindAddDeleteLayerButtons() {
@@ -99,7 +113,6 @@ export default class ControlPanel {
   }
 
   frame() {
-    this.canvasManager.drawOnDragInterval();
     const layersImageData = this.state.layers.map(layer => layer.imageData);
 
     this.state.playingLayers.forEach(visibleLayer => visibleLayer.transform(layersImageData));
