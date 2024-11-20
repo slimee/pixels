@@ -52,10 +52,12 @@ export default class CanvasManager {
     const rect = this.ui.canvas.getBoundingClientRect();
     const x = Math.floor(event.clientX - rect.left);
     const y = Math.floor(event.clientY - rect.top);
-    this.lastMousePosition = { x, y };
+    this.state.lastPoint = { x, y };
+
     if (this.brush.shape === 'segment') {
       this.startPoint = { x, y };
     } else {
+      // Pour les autres pinceaux, on dessine immédiatement au mousedown
       this.drawAt(x, y, this.brush);
     }
 
@@ -67,13 +69,22 @@ export default class CanvasManager {
     const rect = this.ui.canvas.getBoundingClientRect();
     const x = Math.floor(event.clientX - rect.left);
     const y = Math.floor(event.clientY - rect.top);
-    if (this.state.brush.drawOnDrag && this.brush.shape !== 'segment') {
-      this.lastMousePosition = { x, y };
-      this.drawAt(x, y, this.brush);
-    } else {
-      if (this.brush.shape === 'segment' && this.startPoint) {
-        this.lastMousePosition = { x, y };
+
+    if (this.brush.shape === 'segment' && this.brush.drawOnDrag) {
+      // Dessin continu avec le pinceau "segment"
+      if (this.state.lastPoint) {
+        this.brush.startX = this.state.lastPoint.x;
+        this.brush.startY = this.state.lastPoint.y;
+        this.brush.endX = x;
+        this.brush.endY = y;
+        this.drawAt(x, y, { ...this.brush });
+        this.state.lastPoint = { x, y };
       }
+    } else if (this.state.brush.drawOnDrag) {
+      // Dessin continu avec les autres pinceaux
+      this.drawAt(x, y, this.brush);
+    } else if (this.brush.shape === 'segment') {
+      // En mode non continu avec le pinceau "segment", on peut implémenter un aperçu si souhaité
     }
   }
 
@@ -82,15 +93,22 @@ export default class CanvasManager {
     const x = Math.floor(event.clientX - rect.left);
     const y = Math.floor(event.clientY - rect.top);
 
-    if (this.brush.shape === 'segment' && this.startPoint) {
-      this.brush.startX = this.startPoint.x;
-      this.brush.startY = this.startPoint.y;
-      this.brush.endX = x;
-      this.brush.endY = y;
-      this.drawAt(x, y, { ...this.brush });
-      this.startPoint = null;
+    if (this.brush.shape === 'segment') {
+      if (this.brush.drawOnDrag) {
+        // En mode dessin continu, on réinitialise state.lastPoint
+        this.state.lastPoint = null;
+      } else if (this.startPoint) {
+        // En mode normal, on dessine le segment une fois le bouton relâché
+        this.brush.startX = this.startPoint.x;
+        this.brush.startY = this.startPoint.y;
+        this.brush.endX = x;
+        this.brush.endY = y;
+        this.drawAt(x, y, { ...this.brush });
+        this.startPoint = null;
+      }
     }
-    this.lastMousePosition = null;
+
+    // Pour les autres pinceaux, aucune action nécessaire au mouseup
 
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);

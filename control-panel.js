@@ -54,9 +54,9 @@ export default class ControlPanel {
     updateBrush();
     this.ui.brushColorInput.addEventListener('input', updateBrush);
 
-    this.ui.brushShapeInput.addEventListener('change', () => {
-      this.state.brush.shape = this.ui.brushShapeInput.value;
-    });
+    const updateBrushShape = () => this.state.brush.shape = this.ui.brushShapeInput.value;
+    updateBrushShape();
+    this.ui.brushShapeInput.addEventListener('change', updateBrushShape);
   }
 
   bindEraserButton() {
