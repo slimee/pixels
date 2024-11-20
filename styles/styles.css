@@ -462,3 +462,45 @@ body {
 .submenu li:not(:last-child) {
     border-bottom: 1px solid #E1E1E1;
 }
+
+/* Styles pour les menus */
+.menu-item {
+    position: relative;
+}
+
+.menu-item > .submenu {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 1000;
+}
+
+.menu-item:hover > .submenu {
+    display: block;
+}
+
+/* Styles pour les sous-sous-menus */
+.menu-item .submenu .menu-item {
+    position: relative;
+}
+
+.menu-item .submenu .menu-item > .submenu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    z-index: 1000;
+}
+
+.menu-item .submenu .menu-item:hover > .submenu {
+    display: block;
+}
+
+/* Style pour les liens désactivés */
+a.disabled {
+    color: gray;
+    pointer-events: none;
+    cursor: default;
+    text-decoration: none;
+}

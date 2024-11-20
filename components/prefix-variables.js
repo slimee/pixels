@@ -48,12 +48,15 @@ function prefixVariablesInCode(code, variableNames) {
   const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'script' });
 
   const variablesSet = new Set(variableNames);
+  const usedVariables = new Set();
 
   // Parcourir et modifier l'AST
   acornWalk.ancestor(ast, {
     Identifier(node, ancestors) {
       const parent = ancestors[ancestors.length - 2]; // Le parent direct
       if (variablesSet.has(node.name)) {
+        usedVariables.add(node.name); // Stocker la variable utilisée
+
         if (!(
           (parent.type === 'VariableDeclarator' && parent.id === node) ||
           (parent.type === 'FunctionDeclaration' && parent.id === node) ||
@@ -74,7 +77,9 @@ function prefixVariablesInCode(code, variableNames) {
     }
   });
 
-  return astring.generate(ast);
+  const codeWithVariables = astring.generate(ast);
+
+  return { codeWithVariables, usedVariables: Array.from(usedVariables) };
 }
 
 export default function prefixVariables(code, variables) {

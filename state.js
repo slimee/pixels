@@ -26,9 +26,29 @@ export default class State {
     return this.layers[this.currentLayerIndex];
   }
 
+  hasVariable(name) {
+    return this.variables.hasOwnProperty(name);
+  }
+
   setVariable({ oldName, name, value }) {
     delete this.variables[oldName];
     this.variables[name] = value;
     this.layers.forEach(layer => layer.updateTransformationFunction());
+  }
+
+  deleteVariable(name) {
+    delete this.variables[name];
+    this.layers.forEach(layer => layer.updateTransformationFunction());
+  }
+
+  isVariableUsed(name) {
+    return this.layers.some(layer => layer.usedVariables && layer.usedVariables.includes(name));
+  }
+
+  getLayersUsingVariable(name) {
+    return this.layers
+      .map((layer, index) => ({ layer, index }))
+      .filter(({ layer }) => layer.usedVariables && layer.usedVariables.includes(name))
+      .map(({ index }) => index);
   }
 }

@@ -19,11 +19,13 @@ export default class UI {
 
     // Controls palette
     this.playPauseButton = document.getElementById('playPauseButton');
+    this.paintSpeedInput = document.getElementById('paintSpeedInput');
+
     this.clearButton = document.getElementById('clearButton');
     this.clearAllButton = document.getElementById('clearAllButton');
 
     this.faderContainer = document.getElementById('fader-container');
     this.addFaderButton = document.getElementById('addFaderButton');
-    this.paintSpeedInput = document.getElementById('paintSpeedInput');
+    this.deleteFaderSubmenu = document.getElementById('deleteFaderSubmenu');
   }
 }

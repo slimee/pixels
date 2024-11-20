@@ -15,6 +15,7 @@ export default class ControlPanel {
     this.bindResize();
     this.bindFader();
     this.bindMouse();
+    this.updateDeleteFaderSubmenu();
   }
 
   bindMouse() {
@@ -139,8 +140,11 @@ export default class ControlPanel {
   bindFader() {
     this.ui.addFaderButton.addEventListener('click', () => {
       const name = prompt('Quel nom voulez-vous donner à ce fader ?');
-      if (name) {
+      if (this.state.hasVariable(name)) alert('Ce nom est déjà utilisé.');
+      else if (!name) alert('Le nom ne peut pas être vide.');
+      else {
         this.addFader(name);
+        this.updateDeleteFaderSubmenu();
       }
     });
   }
@@ -150,9 +154,64 @@ export default class ControlPanel {
     const fader = makeFader(faderState);
     const updateFader = () => {
       this.state.setVariable(faderState);
+      this.updateDeleteFaderSubmenu();
     };
     fader.addEventListener('change', updateFader);
     this.ui.faderContainer.appendChild(fader);
     updateFader();
+  }
+
+  updateDeleteFaderSubmenu() {
+    const submenu = this.ui.deleteFaderSubmenu;
+    submenu.innerHTML = ''; // Vider le sous-menu
+
+    const variables = Object.keys(this.state.variables);
+
+    if (variables.length === 0) {
+      const emptyItem = document.createElement('li');
+      emptyItem.textContent = 'Aucun fader';
+      submenu.appendChild(emptyItem);
+      return;
+    }
+
+    variables.forEach(variableName => {
+      const menuItem = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = '#';
+      link.textContent = variableName;
+
+      const isUsed = this.state.isVariableUsed(variableName);
+
+      if (isUsed) {
+        link.classList.add('disabled');
+        const layersUsingVar = this.state.getLayersUsingVariable(variableName);
+        link.textContent += ` (Utilisé dans: ${layersUsingVar.map(i => this.state.layers[i].name).join(', ')})`;
+        link.addEventListener('click', (e) => e.preventDefault()); // Empêcher le clic
+      } else {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.deleteFader(variableName);
+        });
+      }
+
+      menuItem.appendChild(link);
+      submenu.appendChild(menuItem);
+    });
+  }
+
+  deleteFader(variableName) {
+    // Supprimer le fader de l'état
+    this.state.deleteVariable(variableName);
+
+    // Supprimer le fader de l'interface
+    const faderElements = Array.from(this.ui.faderContainer.children);
+    faderElements.forEach(faderEl => {
+      const input = faderEl.querySelector('.fader-name-input');
+      if (input && input.value === variableName) {
+        this.ui.faderContainer.removeChild(faderEl);
+      }
+    });
+
+    this.updateDeleteFaderSubmenu(); // Mettre à jour le sous-menu
   }
 }

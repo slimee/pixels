@@ -16,6 +16,7 @@ export default class Layer {
     this.isPlaying = true;
     this.transformationFunction = null;
     this.code = 'x += 1;\ny += 1;';
+    this.usedVariables = [];
   }
 
   get code() {
@@ -28,7 +29,9 @@ export default class Layer {
   }
 
   updateTransformationFunction() {
-    const codeWithVariables = prefixVariables(this.code, Object.keys(this.state.variables));
+    const variableNames = Object.keys(this.state.variables);
+    const { codeWithVariables, usedVariables } = prefixVariables(this.code, variableNames);
+    this.usedVariables = usedVariables;
     this.transformationFunction = new Function('x', 'y', 'width', 'height', 'matrices', 'variables', `${codeWithVariables} return { x, y };`);
   }
 
