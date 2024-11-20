@@ -161,6 +161,8 @@ export default class ControlPanel {
     updateFader();
   }
 
+// control-panel.js
+
   updateDeleteFaderSubmenu() {
     const submenu = this.ui.deleteFaderSubmenu;
     submenu.innerHTML = ''; // Vider le sous-menu
@@ -169,7 +171,7 @@ export default class ControlPanel {
 
     if (variables.length === 0) {
       const emptyItem = document.createElement('li');
-      emptyItem.textContent = 'Aucun fader';
+      emptyItem.textContent = 'Aucun fader disponible';
       submenu.appendChild(emptyItem);
       return;
     }
@@ -185,7 +187,7 @@ export default class ControlPanel {
       if (isUsed) {
         link.classList.add('disabled');
         const layersUsingVar = this.state.getLayersUsingVariable(variableName);
-        link.textContent += ` (Utilisé dans: ${layersUsingVar.map(i => this.state.layers[i].name).join(', ')})`;
+        link.textContent += ` (Utilisé dans calque(s): ${layersUsingVar.map(i => this.state.layers[i].name).join(', ')})`;
         link.addEventListener('click', (e) => e.preventDefault()); // Empêcher le clic
       } else {
         link.addEventListener('click', (e) => {
