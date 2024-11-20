@@ -24,5 +24,6 @@ export default class UI {
 
     this.faderContainer = document.getElementById('fader-container');
     this.addFaderButton = document.getElementById('addFaderButton');
+    this.paintSpeedInput = document.getElementById('paintSpeedInput');
   }
 }

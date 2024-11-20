@@ -5,7 +5,14 @@ export default class State {
     this.isPlaying = false;
     this.transformations = transformations;
     this.activeTransformationLayerIndex = null;
-    this.brush = { size: 15, color: '#ff0000', shape: 'circle', erase: false, drawOnDrag: false };
+    this.brush = {
+      size: 15,
+      color: '#ff0000',
+      shape: 'circle',
+      erase: false,
+      drawOnDrag: false,
+      speed: null
+    };
     this.lastPoint = null;
     this.variables = {};
     this.mouse = { x: 0, y: 0, prevX: 0, prevY: 0 };

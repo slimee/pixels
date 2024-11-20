@@ -61,7 +61,7 @@ export default class CanvasManager {
       this.drawAt(x, y, this.brush);
     }
 
-    this.mouseMoveInterval = setInterval(this.handleMouseMove, 1000 / 60);
+    this.mouseMoveInterval = setInterval(this.handleMouseMove, 1000 / this.brush.speed);
     document.addEventListener('mouseup', this.handleMouseUp);
   }
 
