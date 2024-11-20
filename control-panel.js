@@ -1,4 +1,5 @@
 import makeFader from './components/make-fader.js';
+import Layer from './layer.js';
 
 export default class ControlPanel {
   constructor(state, ui, canvasManager) {
@@ -16,6 +17,19 @@ export default class ControlPanel {
     this.bindFader();
     this.bindMouse();
     this.updateDeleteFaderSubmenu();
+    this.addNewLayer();
+  }
+
+  get layers() {
+    return this.state.layers;
+  }
+
+  get currentLayerIndex() {
+    return this.state.currentLayerIndex;
+  }
+
+  set currentLayerIndex(index) {
+    this.state.currentLayerIndex = index;
   }
 
   bindMouse() {
@@ -32,9 +46,9 @@ export default class ControlPanel {
   }
 
   bindAddDeleteLayerButtons() {
-    this.ui.addLayerButton.addEventListener("click", () => this.canvasManager.addNewLayer());
-    this.ui.deleteLayerButton.addEventListener("click", () => this.canvasManager.deleteCurrentLayer());
-    this.ui.deleteAllLayersButton.addEventListener("click", () => this.canvasManager.deleteAllLayers());
+    this.ui.addLayerButton.addEventListener("click", () => this.addNewLayer());
+    this.ui.deleteLayerButton.addEventListener("click", () => this.deleteCurrentLayer());
+    this.ui.deleteAllLayersButton.addEventListener("click", () => this.deleteAllLayers());
   }
 
   bindClearButtons() {
@@ -170,8 +184,8 @@ export default class ControlPanel {
     const variables = Object.keys(this.state.variables);
 
     if (variables.length === 0) {
-      const emptyItem = document.createElement('li');
-      emptyItem.textContent = 'Aucun fader disponible';
+      const emptyItem = document.createElement('a');
+      emptyItem.textContent = 'Aucun fader';
       submenu.appendChild(emptyItem);
       return;
     }
@@ -215,5 +229,282 @@ export default class ControlPanel {
     });
 
     this.updateDeleteFaderSubmenu(); // Mettre à jour le sous-menu
+  }
+
+  addNewLayer() {
+    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height, this.state);
+    this.layers.push(newLayer);
+    this.currentLayerIndex = this.layers.length - 1;
+    this.updateLayersList();
+  }
+
+  updateLayersList() {
+    this.ui.layersList.innerHTML = '';
+
+    this.layers.forEach((layer, index) => {
+      const layerItem = document.createElement('div');
+      layerItem.className = 'layer-item';
+      layerItem.setAttribute('data-index', index);
+
+      // Créer la zone de grip
+      const gripArea = document.createElement('div');
+      gripArea.className = 'layer-grip';
+      gripArea.draggable = true;
+
+      // Ajouter l'icône du grip
+      const gripIcon = document.createElement('i');
+      gripIcon.className = 'bx bx-menu'; // Utiliser l'icône appropriée
+      gripArea.appendChild(gripIcon);
+
+      // Ajouter les écouteurs d'événements pour le drag and drop
+      gripArea.addEventListener('dragstart', (event) => {
+        this.draggedLayerIndex = index;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', index.toString()); // Modifier ici
+        gripArea.classList.add('dragging');
+      });
+
+      gripArea.addEventListener('dragend', () => {
+        gripArea.classList.remove('dragging');
+      });
+
+      layerItem.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+
+        const rect = layerItem.getBoundingClientRect();
+        const offset = event.clientY - rect.top;
+        const height = rect.height;
+
+        let targetIndex = index;
+
+        if (offset > height / 2) {
+          // Si la souris est dans la moitié inférieure, insérer après
+          targetIndex = index + 1;
+        }
+
+        // Vérifier si le targetIndex est différent de draggedLayerIndex
+        if (
+          targetIndex !== this.draggedLayerIndex &&
+          targetIndex !== this.draggedLayerIndex + 1
+        ) {
+          // Afficher l'indicateur visuel
+          if (offset < height / 2) {
+            layerItem.classList.add('drag-over-top');
+            layerItem.classList.remove('drag-over-bottom');
+          } else {
+            layerItem.classList.add('drag-over-bottom');
+            layerItem.classList.remove('drag-over-top');
+          }
+        } else {
+          // Ne pas afficher l'indicateur visuel
+          layerItem.classList.remove('drag-over-top');
+          layerItem.classList.remove('drag-over-bottom');
+        }
+      });
+
+      layerItem.addEventListener('dragleave', () => {
+        layerItem.classList.remove('drag-over-top');
+        layerItem.classList.remove('drag-over-bottom');
+      });
+
+      layerItem.addEventListener('drop', (event) => {
+        event.preventDefault();
+        layerItem.classList.remove('drag-over');
+
+        const rect = layerItem.getBoundingClientRect();
+        const offset = event.clientY - rect.top;
+        const height = rect.height;
+
+        let targetIndex = index;
+
+        if (offset > height / 2) {
+          // Si la souris est dans la moitié inférieure, insérer après
+          targetIndex = index + 1;
+        }
+
+        this.moveLayer(this.draggedLayerIndex, targetIndex);
+        this.draggedLayerIndex = null;
+      });
+
+      // Créer les autres éléments (checkbox œil, nom du calque, etc.)
+
+      // Code pour la checkbox œil (inchangé)
+      const eyeCheckboxContainer = document.createElement('label');
+      eyeCheckboxContainer.className = 'eye-checkbox';
+      eyeCheckboxContainer.htmlFor = `eyeCheckbox-${index}`;
+
+      const eyeCheckbox = document.createElement('input');
+      eyeCheckbox.type = 'checkbox';
+      eyeCheckbox.id = `eyeCheckbox-${index}`;
+      eyeCheckbox.checked = layer.visible;
+      eyeCheckbox.addEventListener('change', () => {
+        layer.visible = eyeCheckbox.checked;
+        this.canvasManager.updateCanvas();
+      });
+
+      const eyeIconShow = document.createElement('i');
+      eyeIconShow.className = 'bx bxs-show';
+
+      const eyeIconHide = document.createElement('i');
+      eyeIconHide.className = 'bx bxs-hide';
+
+      eyeCheckboxContainer.appendChild(eyeCheckbox);
+      eyeCheckboxContainer.appendChild(eyeIconShow);
+      eyeCheckboxContainer.appendChild(eyeIconHide);
+
+      // Nom du calque
+      const layerName = document.createElement('span');
+      layerName.textContent = layer.name;
+      layerName.addEventListener('change', () => {
+        layer.name = layerName.value;
+      });
+      layerName.addEventListener('click', (event) => {
+        this.currentLayerIndex = index;
+        this.updateLayersList();
+        event.stopPropagation();
+      });
+
+      // Bouton de transformation
+      const transformToggleButton = document.createElement('button');
+      transformToggleButton.className = 'transform-toggle-button';
+      transformToggleButton.textContent = this.state.activeTransformationLayerIndex === index ? '▼' : '◀';
+      transformToggleButton.addEventListener('click', () => {
+        if (this.state.activeTransformationLayerIndex === index) {
+          this.state.activeTransformationLayerIndex = null;
+        } else {
+          this.state.activeTransformationLayerIndex = index;
+        }
+        this.updateLayersList();
+      });
+
+      // Ajouter les éléments au calque
+      layerItem.appendChild(gripArea);
+      layerItem.appendChild(eyeCheckboxContainer);
+      layerItem.appendChild(layerName);
+      layerItem.appendChild(transformToggleButton);
+
+      // Mettre en évidence le calque sélectionné
+      if (index === this.currentLayerIndex) {
+        layerItem.classList.add('selected');
+      }
+
+      this.ui.layersList.appendChild(layerItem);
+
+      // Afficher la zone de transformation si nécessaire
+      if (this.state.activeTransformationLayerIndex === index) {
+        const transformationArea = this.createTransformationArea(layer, index);
+        this.ui.layersList.appendChild(transformationArea);
+      }
+    });
+  }
+
+  moveLayer(fromIndex, toIndex) {
+    if (fromIndex === toIndex || fromIndex === null || toIndex === null) return;
+
+    const layers = this.state.layers;
+    const layer = layers.splice(fromIndex, 1)[0];
+
+    // Ajuster l'index de destination si nécessaire
+    if (fromIndex < toIndex) {
+      toIndex--; // Compte tenu du retrait du calque
+    }
+
+    layers.splice(toIndex, 0, layer);
+
+    // Mettre à jour currentLayerIndex si nécessaire
+    if (this.currentLayerIndex === fromIndex) {
+      this.currentLayerIndex = toIndex;
+    } else if (this.currentLayerIndex > fromIndex && this.currentLayerIndex <= toIndex) {
+      this.currentLayerIndex--;
+    } else if (this.currentLayerIndex < fromIndex && this.currentLayerIndex >= toIndex) {
+      this.currentLayerIndex++;
+    }
+
+    // Mettre à jour l'index de transformation active
+    if (this.state.activeTransformationLayerIndex === fromIndex) {
+      this.state.activeTransformationLayerIndex = toIndex;
+    } else if (this.state.activeTransformationLayerIndex > fromIndex && this.state.activeTransformationLayerIndex <= toIndex) {
+      this.state.activeTransformationLayerIndex--;
+    } else if (this.state.activeTransformationLayerIndex < fromIndex && this.state.activeTransformationLayerIndex >= toIndex) {
+      this.state.activeTransformationLayerIndex++;
+    }
+
+    this.updateLayersList();
+    this.canvasManager.updateCanvas();
+  }
+
+  createTransformationArea(layer, index) {
+    const transformationArea = document.createElement('div');
+    transformationArea.className = 'transformation-area';
+
+    // Zone de code de transformation
+    const transformationCodeInput = document.createElement('textarea');
+    transformationCodeInput.className = 'transformation-code';
+    transformationCodeInput.rows = 5;
+    transformationCodeInput.value = layer.code;
+    transformationCodeInput.update = () => {
+      layer.code = transformationCodeInput.value;
+      this.updateDeleteFaderSubmenu();
+    };
+    transformationCodeInput.addEventListener('blur', transformationCodeInput.update);
+
+    // Affichage des erreurs
+    const errorDisplay = document.createElement('div');
+    errorDisplay.className = 'error-display';
+    // Mettre à jour errorDisplay selon les besoins
+
+    // Liste déroulante de sélection de transformation
+    const transformationSelector = document.createElement('select');
+    transformationSelector.className = 'transformation-selector';
+    this.state.transformations.forEach(({ name, code, selected }) => {
+      transformationSelector.add(new Option(name, code, selected, selected));
+    });
+    // Ajouter les options nécessaires
+    transformationSelector.addEventListener('change', (event) => {
+      transformationCodeInput.value = event.target.value;
+      transformationCodeInput.update();
+    });
+
+    // Bouton Play
+    const playPauseButton = document.createElement('button');
+    playPauseButton.update = () => {
+      playPauseButton.textContent = layer.isPlaying ? '⏸' : '▷';
+    };
+    playPauseButton.id = `playPauseButton-${index}`;
+    playPauseButton.update();
+    playPauseButton.addEventListener('click', () => {
+      layer.isPlaying = !layer.isPlaying;
+      playPauseButton.update();
+    });
+
+    // Ajouter les éléments à la zone de transformation
+    transformationArea.appendChild(transformationCodeInput);
+    transformationArea.appendChild(errorDisplay);
+    transformationArea.appendChild(transformationSelector);
+
+    return transformationArea;
+  }
+
+  deleteCurrentLayer() {
+    if (this.layers.length > 1) {
+      this.layers.splice(this.currentLayerIndex, 1);
+      if (this.currentLayerIndex >= this.layers.length) {
+        this.currentLayerIndex = this.layers.length - 1;
+      }
+      this.updateLayersList();
+      this.canvasManager.updateCanvas();
+    }
+  }
+
+  deleteAllLayers() {
+    while (this.layers.length > 1) {
+      this.layers.splice(this.currentLayerIndex, 1);
+      if (this.currentLayerIndex >= this.layers.length) {
+        this.currentLayerIndex = this.layers.length - 1;
+      }
+    }
+    this.updateLayersList();
+    this.canvasManager.updateCanvas();
   }
 }

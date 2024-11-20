@@ -1,8 +1,9 @@
 import prefixVariables from './components/prefix-variables.js';
 
 let i = 0;
-export default class Layer {
+export default class Layer extends EventTarget {
   constructor(width, height, state, name = `Calque ${++i}`) {
+    super();
     this.width = width;
     this.height = height;
     this.state = state;
@@ -26,6 +27,7 @@ export default class Layer {
   set code(newCode) {
     this._code = newCode;
     this.updateTransformationFunction();
+    this.dispatchEvent(new Event('codechange'));
   }
 
   updateTransformationFunction() {
