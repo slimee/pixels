@@ -16,6 +16,7 @@ export default class State {
     this.lastPoint = null;
     this.variables = {};
     this.mouse = { x: 0, y: 0, prevX: 0, prevY: 0 };
+    this.strafeLock = false;
   }
 
   get playingLayers() {

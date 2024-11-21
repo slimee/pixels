@@ -39,12 +39,18 @@ export default class CanvasManager {
     if (this.brush.shape === 'strafe') {
       // Enregistrer le point de départ pour le strafe
       this.strafeStartPoint = { x, y };
-      // Créer une copie du canvas du calque courant
-      this.strafeCanvas = document.createElement('canvas');
-      this.strafeCanvas.width = this.currentLayer.width;
-      this.strafeCanvas.height = this.currentLayer.height;
-      const strafeCtx = this.strafeCanvas.getContext('2d');
-      strafeCtx.drawImage(this.currentLayer.offscreenCanvas, 0, 0);
+      // Créer une copie des calques
+      this.strafeLayers = this.state.strafeLock
+        ? this.layers.map((layer) => ({
+          canvas: this.cloneCanvas(layer.offscreenCanvas),
+          layer: layer,
+        }))
+        : [
+          {
+            canvas: this.cloneCanvas(this.currentLayer.offscreenCanvas),
+            layer: this.currentLayer,
+          },
+        ];
     } else if (this.brush.shape === 'segment') {
       this.startPoint = { x, y };
     } else {
@@ -54,6 +60,15 @@ export default class CanvasManager {
 
     this.mouseMoveInterval = setInterval(this.handleMouseMove, 1000 / this.brush.speed);
     document.addEventListener('mouseup', this.handleMouseUp);
+  }
+
+  cloneCanvas(sourceCanvas) {
+    const clone = document.createElement('canvas');
+    clone.width = sourceCanvas.width;
+    clone.height = sourceCanvas.height;
+    const context = clone.getContext('2d');
+    context.drawImage(sourceCanvas, 0, 0);
+    return clone;
   }
 
   handleMouseMove = () => {
@@ -121,46 +136,29 @@ export default class CanvasManager {
   }
 
   performStrafe(shiftX, shiftY) {
-    const width = this.currentLayer.width;
-    const height = this.currentLayer.height;
+    if (!shiftX && !shiftY) return;
+    this.strafeLayers.forEach(({ canvas, layer }) => {
+      const width = layer.width;
+      const height = layer.height;
 
-    // Effacer le calque courant
-    this.currentLayer.offscreenCanvasContext.clearRect(0, 0, width, height);
+      layer.offscreenCanvasContext.clearRect(0, 0, width, height);
+      layer.offscreenCanvasContext.drawImage(canvas, -shiftX, -shiftY);
 
-    // Dessiner l'image décalée
-    this.currentLayer.offscreenCanvasContext.drawImage(
-      this.strafeCanvas,
-      -shiftX,
-      -shiftY
-    );
+      if (shiftX !== 0) {
+        // Côté droit
+        layer.offscreenCanvasContext.drawImage(canvas, width - shiftX, -shiftY);
+      }
 
-    // Dessiner les parties bouclées
-    if (shiftX !== 0) {
-      // Côté droit
-      this.currentLayer.offscreenCanvasContext.drawImage(
-        this.strafeCanvas,
-        width - shiftX,
-        -shiftY
-      );
-    }
+      if (shiftY !== 0) {
+        // Côté inférieur
+        layer.offscreenCanvasContext.drawImage(canvas, -shiftX, height - shiftY);
+      }
 
-    if (shiftY !== 0) {
-      // Côté inférieur
-      this.currentLayer.offscreenCanvasContext.drawImage(
-        this.strafeCanvas,
-        -shiftX,
-        height - shiftY
-      );
-    }
-
-    if (shiftX !== 0 && shiftY !== 0) {
-      // Coin inférieur droit
-      this.currentLayer.offscreenCanvasContext.drawImage(
-        this.strafeCanvas,
-        width - shiftX,
-        height - shiftY
-      );
-    }
+      if (shiftX !== 0 && shiftY !== 0) {
+        // Coin inférieur droit
+        layer.offscreenCanvasContext.drawImage(canvas, width - shiftX, height - shiftY);
+      }
+    });
 
     this.updateCanvas();
   }

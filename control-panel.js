@@ -19,14 +19,12 @@ export default class ControlPanel {
     this.updateDeleteFaderSubmenu();
     this.addNewLayer();
     this.bindTools();
+    this.bindStrafeLockButton();
   }
 
   bindTools() {
     // Liste des boutons d'outils
     this.toolButtons = document.querySelectorAll('#tools button');
-
-    // Écouteurs pour les autres outils existants
-    // ...
 
     // Écouteur pour le bouton "strafe"
     this.ui.strafeToolButton.addEventListener('click', () => {
@@ -34,9 +32,26 @@ export default class ControlPanel {
     });
   }
 
+  bindStrafeLockButton() {
+    const updateStrateLockButton = () => {
+      if (this.state.strafeLock) {
+        this.ui.strafeLockButton.classList.add('active');
+        this.ui.strafeLockButton.innerHTML = "<i class='bx bx-lock'></i>";
+      } else {
+        this.ui.strafeLockButton.classList.remove('active');
+        this.ui.strafeLockButton.innerHTML = "<i class='bx bx-lock-open'></i>";
+      }
+    }
+    this.ui.strafeLockButton.addEventListener('click', () => {
+      this.state.strafeLock = !this.state.strafeLock;
+      updateStrateLockButton();
+    });
+    updateStrateLockButton();
+  }
+
   selectTool(toolName) {
     // Désélectionner tous les boutons d'outils
-    this.toolButtons.forEach(button => {
+    this.toolButtons.forEach((button) => {
       button.classList.remove('active');
     });
 

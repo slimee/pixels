@@ -21,6 +21,7 @@ export default class UI {
     this.playPauseButton = document.getElementById('playPauseButton');
     this.paintSpeedInput = document.getElementById('paintSpeedInput');
     this.strafeToolButton = document.getElementById('strafeToolButton');
+    this.strafeLockButton = document.getElementById('strafeLockButton');
 
     this.clearButton = document.getElementById('clearButton');
     this.clearAllButton = document.getElementById('clearAllButton');
