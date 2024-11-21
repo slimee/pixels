@@ -76,6 +76,10 @@
   {
     "name": "best",
     "code": "const centerX = width / 2;\n    const centerY = height / 2;\n    const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);\n    const angle = Math.atan2(y - centerY, x - centerX);\n    const warp = Math.exp(-distance / 100) * 50;\n    x = x + Math.cos(angle) * warp;\n    y = y + Math.sin(angle) * warp;"
+  },
+  {
+    "name": "sin",
+    "code": "x = x + Math.sin(y * 0.1) * 3;"
   }
 ]
 
