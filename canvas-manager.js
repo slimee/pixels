@@ -36,7 +36,16 @@ export default class CanvasManager {
     const y = this.state.mouse.y;
     this.state.lastPoint = { x, y };
 
-    if (this.brush.shape === 'segment') {
+    if (this.brush.shape === 'strafe') {
+      // Enregistrer le point de départ pour le strafe
+      this.strafeStartPoint = { x, y };
+      // Créer une copie du canvas du calque courant
+      this.strafeCanvas = document.createElement('canvas');
+      this.strafeCanvas.width = this.currentLayer.width;
+      this.strafeCanvas.height = this.currentLayer.height;
+      const strafeCtx = this.strafeCanvas.getContext('2d');
+      strafeCtx.drawImage(this.currentLayer.offscreenCanvas, 0, 0);
+    } else if (this.brush.shape === 'segment') {
       this.startPoint = { x, y };
     } else {
       // Pour les autres pinceaux, on dessine immédiatement au mousedown
@@ -51,7 +60,20 @@ export default class CanvasManager {
     const x = this.state.mouse.x;
     const y = this.state.mouse.y;
 
-    if (this.brush.shape === 'segment' && this.brush.drawOnDrag) {
+    if (this.brush.shape === 'strafe') {
+      // Calculer le delta
+      const dx = x - this.strafeStartPoint.x;
+      const dy = y - this.strafeStartPoint.y;
+
+      const width = this.currentLayer.width;
+      const height = this.currentLayer.height;
+
+      // Ajuster dx et dy pour qu'ils soient dans [0, width) et [0, height)
+      const shiftX = ((-dx % width) + width) % width;
+      const shiftY = ((-dy % height) + height) % height;
+
+      this.performStrafe(shiftX, shiftY);
+    } else if (this.brush.shape === 'segment' && this.brush.drawOnDrag) {
       // Dessin continu avec le pinceau "segment"
       if (this.state.lastPoint) {
         this.brush.startX = this.state.lastPoint.x;
@@ -70,6 +92,12 @@ export default class CanvasManager {
   }
 
   handleMouseUp = () => {
+    if (this.brush.shape === 'strafe') {
+      // Effacer les variables temporaires
+      this.strafeStartPoint = null;
+      this.strafeCanvas = null;
+    }
+
     const x = this.state.mouse.x;
     const y = this.state.mouse.y;
 
@@ -90,6 +118,51 @@ export default class CanvasManager {
 
     clearInterval(this.mouseMoveInterval);
     document.removeEventListener('mouseup', this.handleMouseUp);
+  }
+
+  performStrafe(shiftX, shiftY) {
+    const width = this.currentLayer.width;
+    const height = this.currentLayer.height;
+
+    // Effacer le calque courant
+    this.currentLayer.offscreenCanvasContext.clearRect(0, 0, width, height);
+
+    // Dessiner l'image décalée
+    this.currentLayer.offscreenCanvasContext.drawImage(
+      this.strafeCanvas,
+      -shiftX,
+      -shiftY
+    );
+
+    // Dessiner les parties bouclées
+    if (shiftX !== 0) {
+      // Côté droit
+      this.currentLayer.offscreenCanvasContext.drawImage(
+        this.strafeCanvas,
+        width - shiftX,
+        -shiftY
+      );
+    }
+
+    if (shiftY !== 0) {
+      // Côté inférieur
+      this.currentLayer.offscreenCanvasContext.drawImage(
+        this.strafeCanvas,
+        -shiftX,
+        height - shiftY
+      );
+    }
+
+    if (shiftX !== 0 && shiftY !== 0) {
+      // Coin inférieur droit
+      this.currentLayer.offscreenCanvasContext.drawImage(
+        this.strafeCanvas,
+        width - shiftX,
+        height - shiftY
+      );
+    }
+
+    this.updateCanvas();
   }
 
   clearAllLayers() {

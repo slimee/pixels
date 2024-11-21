@@ -512,3 +512,20 @@ a.disabled {
     cursor: default;
     text-decoration: none;
 }
+
+
+#tools button {
+    padding: 5px;
+    margin: 2px;
+    background-color: #f0f0f0;
+    border: none;
+    cursor: pointer;
+}
+
+#tools button.active {
+    background-color: #d0d0d0;
+}
+
+#tools button:hover {
+    background-color: #e0e0e0;
+}

@@ -18,6 +18,37 @@ export default class ControlPanel {
     this.bindMouse();
     this.updateDeleteFaderSubmenu();
     this.addNewLayer();
+    this.bindTools();
+  }
+
+  bindTools() {
+    // Liste des boutons d'outils
+    this.toolButtons = document.querySelectorAll('#tools button');
+
+    // Écouteurs pour les autres outils existants
+    // ...
+
+    // Écouteur pour le bouton "strafe"
+    this.ui.strafeToolButton.addEventListener('click', () => {
+      this.selectTool('strafe');
+    });
+  }
+
+  selectTool(toolName) {
+    // Désélectionner tous les boutons d'outils
+    this.toolButtons.forEach(button => {
+      button.classList.remove('active');
+    });
+
+    // Définir l'outil courant
+    this.state.brush.shape = toolName;
+
+    // Activer le bouton sélectionné
+    if (toolName === 'strafe') {
+      this.ui.strafeToolButton.classList.add('active');
+    }
+    // Gérer les autres outils
+    // ...
   }
 
   get layers() {
