@@ -1,74 +1,150 @@
+/* styles/styles.css */
+
+/* Amélioration du flou et de la teinte de l'arrière-plan */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
-    backdrop-filter: blur(5px); /* Flou d'arrière-plan */
+    /*background: rgba(0, 0, 0, 0.7); !* Fond plus sombre *!*/
+    backdrop-filter: blur(10px) saturate(180%);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    transition: opacity 0.3s ease; /* Transition d'apparition */
 }
 
 .modal-overlay.hidden {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
 }
 
+/* Style modernisé pour la modale */
 .modal {
-    background-color: #fff;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    padding: 20px;
+    background: rgba(255, 255, 255, 0.85); /* Effet verre dépoli */
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); /* Ombre douce */
+    padding: 24px;
     width: 90%;
     max-width: 400px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .modal h2 {
     margin-top: 0;
+    font-size: 1.5rem;
+    color: #111827; /* Gris anthracite moderne */
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
+/* Champs du formulaire */
+/* styles/styles.css */
+
+/* ... (styles existants) ... */
+
+/* Champs du formulaire : alignement et largeur */
 .form-group {
     margin-bottom: 15px;
 }
 
 .form-group label {
     display: block;
-    font-weight: bold;
+    font-weight: 500;
     margin-bottom: 5px;
+    color: #374151; /* Gris doux */
 }
 
 .form-group input {
     width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db; /* Gris clair */
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    color: #111827;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box; /* Corrige la largeur des inputs */
 }
 
+.form-group input:focus {
+    outline: none;
+    border-color: #3b82f6; /* Bleu moderne */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); /* Anneau de focus */
+}
+
+/* Champs côte à côte */
+.form-group-inline {
+    display: flex;
+    gap: 10px; /* Espacement entre les champs */
+    margin-bottom: 15px;
+}
+
+.form-group-inline .form-group {
+    flex: 1; /* Répartition équitable */
+    margin-bottom: 0; /* Supprime l'espacement inutile */
+}
+
+
+/* Actions de la modale */
 .modal-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 45px;
 }
 
 .modal-actions .btn {
-    margin-left: 10px;
-    padding: 8px 12px;
+    flex: 1;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 8px;
+    font-weight: 500;
     cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.2s ease;
 }
 
-/* Styles pour les boutons */
-.btn {
-    background-color: #1d4ed8; /* Couleur bleue tailwind */
+.modal-actions .btn:first-child {
+    background-color: #1d4ed8; /* Bleu tailwind */
     color: #fff;
     border: none;
-    border-radius: 4px;
 }
 
-.btn:hover {
-    background-color: #2563eb; /* Couleur bleue plus claire au survol */
+.modal-actions .btn:first-child:hover {
+    background-color: #2563eb; /* Bleu clair */
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); /* Ombre douce */
 }
 
-.btn:active {
-    background-color: #1e40af; /* Couleur bleue plus foncée au clic */
+.modal-actions .btn:first-child:active {
+    background-color: #1e40af; /* Bleu foncé */
+}
+
+.modal-actions .btn:last-child {
+    background-color: #e5e7eb; /* Gris clair */
+    color: #111827; /* Gris anthracite */
+}
+
+.modal-actions .btn:last-child:hover {
+    background-color: #d1d5db; /* Gris plus sombre */
+    box-shadow: 0 4px 10px rgba(209, 213, 219, 0.3); /* Ombre douce */
+}
+
+.modal-actions .btn:last-child:active {
+    background-color: #9ca3af; /* Gris encore plus sombre */
 }

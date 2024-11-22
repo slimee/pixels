@@ -13,19 +13,21 @@
 
 <div id="modalOverlay" class="modal-overlay hidden">
     <div id="modal" class="modal">
-        <h2>Créer un nouveau fader</h2>
+        <h2>Ajouter un fader</h2>
         <form id="faderForm">
             <div class="form-group">
-                <label for="faderName">Nom :</label>
+                <label for="faderName">Nom</label>
                 <input type="text" id="faderName" name="faderName" required>
             </div>
-            <div class="form-group">
-                <label for="faderMin">Min :</label>
-                <input type="number" id="faderMin" name="faderMin" required>
-            </div>
-            <div class="form-group">
-                <label for="faderMax">Max :</label>
-                <input type="number" id="faderMax" name="faderMax" required>
+            <div class="form-group-inline">
+                <div class="form-group">
+                    <label for="faderMin">Valeur min</label>
+                    <input type="number" id="faderMin" name="faderMin" required>
+                </div>
+                <div class="form-group">
+                    <label for="faderMax">Valeur max</label>
+                    <input type="number" id="faderMax" name="faderMax" required>
+                </div>
             </div>
             <div class="modal-actions">
                 <button type="submit" class="btn">Créer</button>
@@ -136,9 +138,8 @@
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a href="#">Supprimer...</a>
-                    <ul class="submenu" id="deleteFaderSubmenu">
-                    </ul>
+                    <a href="#"><i class='bx bx-trash'></i>Supprimer...</a>
+                    <ul class="submenu" id="deleteFaderSubmenu"></ul>
                 </li>
             </ul>
         </li>
