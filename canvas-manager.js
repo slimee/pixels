@@ -88,7 +88,7 @@ export default class CanvasManager {
       const shiftY = ((-dy % height) + height) % height;
 
       this.performStrafe(shiftX, shiftY);
-    } else if (this.brush.shape === 'segment' && this.brush.drawOnDrag) {
+    } else if (this.brush.shape === 'segment' && this.brush.tool === 'continousBrush') {
       // Dessin continu avec le pinceau "segment"
       if (this.state.lastPoint) {
         this.brush.startX = this.state.lastPoint.x;
@@ -98,11 +98,9 @@ export default class CanvasManager {
         this.drawAt(x, y, { ...this.brush });
         this.state.lastPoint = { x, y };
       }
-    } else if (this.state.brush.drawOnDrag) {
+    } else if (this.state.brush.tool === 'continousBrush') {
       // Dessin continu avec les autres pinceaux
       this.drawAt(x, y, this.brush);
-    } else if (this.brush.shape === 'segment') {
-      // En mode non continu avec le pinceau "segment", on peut implémenter un aperçu si souhaité
     }
   }
 
@@ -117,7 +115,7 @@ export default class CanvasManager {
     const y = this.state.mouse.y;
 
     if (this.brush.shape === 'segment') {
-      if (this.brush.drawOnDrag) {
+      if (this.brush.tool === 'continousBrush') {
         // En mode dessin continu, on réinitialise state.lastPoint
         this.state.lastPoint = null;
       } else if (this.startPoint) {

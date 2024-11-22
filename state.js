@@ -9,7 +9,6 @@ export default class State {
       size: 15,
       color: '#ff0000',
       shape: 'circle',
-      drawOnDrag: false,
       speed: null,
       tool: 'brush',
     };

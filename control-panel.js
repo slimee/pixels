@@ -11,7 +11,6 @@ export default class ControlPanel {
     this.bindAddDeleteLayerButtons();
     this.bindTools();
     this.bindClearButtons();
-    this.bindDrawOnDragCheckbox();
     this.bindBrush();
     this.bindEraserButton();
     this.bindResize();
@@ -26,14 +25,14 @@ export default class ControlPanel {
     // Liste des boutons d'outils
     this.toolButtons = document.querySelectorAll('#tools button');
 
-    // Écouteur pour le bouton "strafe"
     this.ui.strafeToolButton.addEventListener('click', () => {
       this.selectTool('strafe');
     });
-
-    // Écouteurs pour le bouton "pinceau"
     this.ui.brushButton.addEventListener('click', () => {
       this.selectTool('brush');
+    });
+    this.ui.continousBrushButton.addEventListener('click', () => {
+      this.selectTool('continousBrush');
     });
   }
 
@@ -100,16 +99,6 @@ export default class ControlPanel {
   bindClearButtons() {
     this.ui.clearButton.addEventListener('click', () => this.canvasManager.clearCurrentLayer());
     this.ui.clearAllButton.addEventListener('click', () => this.canvasManager.clearAllLayers());
-  }
-
-  bindDrawOnDragCheckbox() {
-    const updateDrawOnDragState = () => {
-      this.state.brush.drawOnDrag = this.ui.drawOnDragCheckbox.checked;
-    }
-    updateDrawOnDragState();
-    this.ui.drawOnDragCheckbox.addEventListener('change', () => {
-      updateDrawOnDragState();
-    });
   }
 
   bindBrush() {

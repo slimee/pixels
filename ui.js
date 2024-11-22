@@ -4,10 +4,9 @@ export default class UI {
     this.brushSizeInput = document.getElementById('size');
     this.brushColorInput = document.getElementById('color');
     this.brushButton = document.getElementById('brushButton');
+    this.continousBrushButton = document.getElementById('continousBrushButton');
     this.eraserButton = document.getElementById('eraserButton');
     this.brushShapeInput = document.getElementById('shape');
-    this.drawOnDragCheckbox = document.getElementById('drawOnDrag');
-
 
     // Canvas
     this.canvas = document.getElementById('myCanvas');
