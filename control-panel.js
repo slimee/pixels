@@ -63,6 +63,16 @@ export default class ControlPanel {
     if (toolName === 'strafe') {
       this.ui.strafeToolButton.classList.add('active');
     }
+    if (toolName === 'brush') {
+      this.ui.brushButton.classList.add('active');
+    }
+    if (toolName === 'continousBrush') {
+      this.ui.continousBrushButton.classList.add('active');
+    }
+    if (toolName === 'eraser') {
+      this.ui.eraserButton.classList.add('active');
+    }
+
   }
 
   get layers() {
