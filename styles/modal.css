@@ -24,8 +24,8 @@
 /* Style modernisé pour la modale */
 .modal {
     background: rgba(255, 255, 255, 0.85); /* Effet verre dépoli */
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(153, 153, 153, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); /* Ombre douce */
     padding: 24px;
     width: 90%;
@@ -73,7 +73,7 @@
 .form-group input {
     width: 100%;
     padding: 10px 12px;
-    border-radius: 8px;
+    border-radius: 16px;
     border: 1px solid #d1d5db; /* Gris clair */
     background: rgba(255, 255, 255, 0.6);
     font-size: 1rem;
