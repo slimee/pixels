@@ -30,5 +30,17 @@ export default class UI {
     this.faderContainer = document.getElementById('fader-container');
     this.addFaderButton = document.getElementById('addFaderButton');
     this.deleteFaderSubmenu = document.getElementById('deleteFaderSubmenu');
+
+    this.initModal();
+  }
+
+  initModal() {
+    this.modalOverlay = document.getElementById('modalOverlay');
+    this.modal = document.getElementById('modal');
+    this.faderForm = document.getElementById('faderForm');
+    this.faderNameInput = document.getElementById('faderName');
+    this.faderMinInput = document.getElementById('faderMin');
+    this.faderMaxInput = document.getElementById('faderMax');
+    this.closeModalButton = document.getElementById('closeModalButton');
   }
 }

@@ -188,18 +188,49 @@ export default class ControlPanel {
 
   bindFader() {
     this.ui.addFaderButton.addEventListener('click', () => {
-      const name = prompt('Quel nom voulez-vous donner à ce fader ?');
-      if (this.state.hasVariable(name)) alert('Ce nom est déjà utilisé.');
-      else if (!name) alert('Le nom ne peut pas être vide.');
-      else {
-        this.addFader(name);
-        this.updateDeleteFaderSubmenu();
-      }
+      this.openFaderModal();
+    });
+
+    this.ui.faderForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.createFaderFromModal();
+    });
+
+    this.ui.closeModalButton.addEventListener('click', () => {
+      this.closeFaderModal();
     });
   }
 
-  addFader(name) {
-    const faderState = { name, min: -30, max: 30, value: 0 };
+  createFaderFromModal() {
+    const name = this.ui.faderNameInput.value.trim();
+    const min = parseFloat(this.ui.faderMinInput.value);
+    const max = parseFloat(this.ui.faderMaxInput.value);
+
+    if (name && !isNaN(min) && !isNaN(max)) {
+      // Créer le fader avec les valeurs saisies
+      this.addFader(name, min, max);
+      this.updateDeleteFaderSubmenu();
+      // Fermer la modale
+      this.closeFaderModal();
+    } else {
+      alert('Veuillez remplir tous les champs correctement.');
+    }
+  }
+
+  openFaderModal() {
+    // Réinitialiser le formulaire
+    this.ui.faderForm.reset();
+    // Afficher la modale
+    this.ui.modalOverlay.classList.remove('hidden');
+  }
+
+  closeFaderModal() {
+    // Masquer la modale
+    this.ui.modalOverlay.classList.add('hidden');
+  }
+
+  addFader(name, min = -30, max = 30) {
+    const faderState = { name, min, max, value: (min + max) / 2 };
     const fader = makeFader(faderState);
     const updateFader = () => {
       this.state.setVariable(faderState);
