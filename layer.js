@@ -82,7 +82,7 @@ export default class Layer extends EventTarget {
   }
 
   paint(x, y, brush) {
-    const color = brush.erase
+    const color = brush.tool === 'eraser'
       ? { r: 0, g: 0, b: 0, a: 0 }  // Transparent color for eraser
       : this.hexToRGBA(brush.color);
 

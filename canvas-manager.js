@@ -36,7 +36,7 @@ export default class CanvasManager {
     const y = this.state.mouse.y;
     this.state.lastPoint = { x, y };
 
-    if (this.brush.shape === 'strafe') {
+    if (this.brush.tool === 'strafe') {
       // Enregistrer le point de départ pour le strafe
       this.strafeStartPoint = { x, y };
       // Créer une copie des calques
@@ -75,7 +75,7 @@ export default class CanvasManager {
     const x = this.state.mouse.x;
     const y = this.state.mouse.y;
 
-    if (this.brush.shape === 'strafe') {
+    if (this.brush.tool === 'strafe') {
       // Calculer le delta
       const dx = x - this.strafeStartPoint.x;
       const dy = y - this.strafeStartPoint.y;

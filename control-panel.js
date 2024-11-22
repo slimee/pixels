@@ -9,6 +9,7 @@ export default class ControlPanel {
     this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     this.frame = this.frame.bind(this);
     this.bindAddDeleteLayerButtons();
+    this.bindTools();
     this.bindClearButtons();
     this.bindDrawOnDragCheckbox();
     this.bindBrush();
@@ -18,7 +19,6 @@ export default class ControlPanel {
     this.bindMouse();
     this.updateDeleteFaderSubmenu();
     this.addNewLayer();
-    this.bindTools();
     this.bindStrafeLockButton();
   }
 
@@ -29,6 +29,11 @@ export default class ControlPanel {
     // Écouteur pour le bouton "strafe"
     this.ui.strafeToolButton.addEventListener('click', () => {
       this.selectTool('strafe');
+    });
+
+    // Écouteurs pour le bouton "pinceau"
+    this.ui.brushButton.addEventListener('click', () => {
+      this.selectTool('brush');
     });
   }
 
@@ -50,20 +55,15 @@ export default class ControlPanel {
   }
 
   selectTool(toolName) {
-    // Désélectionner tous les boutons d'outils
     this.toolButtons.forEach((button) => {
       button.classList.remove('active');
     });
 
-    // Définir l'outil courant
-    this.state.brush.shape = toolName;
+    this.state.brush.tool = toolName;
 
-    // Activer le bouton sélectionné
     if (toolName === 'strafe') {
       this.ui.strafeToolButton.classList.add('active');
     }
-    // Gérer les autres outils
-    // ...
   }
 
   get layers() {
@@ -119,12 +119,7 @@ export default class ControlPanel {
 
     const updateBrush = () => {
       this.state.brush.color = this.ui.brushColorInput.value;
-      this.state.brush.erase = false;
-      if (this.state.brush.erase) {
-        this.ui.eraserButton.classList.add("active");
-      } else {
-        this.ui.eraserButton.classList.remove("active");
-      }
+      this.selectTool('brush');
     };
     updateBrush();
     this.ui.brushColorInput.addEventListener('input', updateBrush);
@@ -140,13 +135,8 @@ export default class ControlPanel {
 
   bindEraserButton() {
     this.ui.eraserButton.addEventListener('click', () => {
-      this.state.brush.erase = !this.state.brush.erase;
-      if (this.state.brush.erase) {
-        this.ui.eraserButton.classList.add("active");
-      } else {
-        this.ui.eraserButton.classList.remove("active");
-      }
-      this.ui.brushColorInput.classList.toggle("disabled", this.state.brush.erase);
+      this.selectTool('eraser');
+      this.ui.brushColorInput.classList.toggle("active", true);
     });
   }
 

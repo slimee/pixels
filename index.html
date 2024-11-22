@@ -50,9 +50,6 @@
                     <input type="range" id="size" min="5" max="500" value="15">
                 </li>
                 <li>
-                    <button id="eraserButton"><i class='bx bxs-eraser'></i>Gomme</button>
-                </li>
-                <li>
                     <label for="shape">Forme</label>
                     <select id="shape">
                         <option value="circle">Cercle</option>
@@ -67,7 +64,13 @@
                 </li>
                 <li>
                     <div id="tools">
-                        <button id="strafeToolButton" title="Outil Strafe">
+                        <button id="brushButton" title="Pinceau">
+                            <i class='bx bx-paint'></i>
+                        </button>
+                        <button id="eraserButton" title="Gomme">
+                            <i class='bx bx-eraser'></i>
+                        </button>
+                        <button id="strafeToolButton" title="Déplacement">
                             <i class='bx bx-move'></i>
                         </button>
                         <button id="strafeLockButton" title="Strafe Lock">

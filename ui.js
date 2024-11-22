@@ -3,9 +3,11 @@ export default class UI {
     // Menu bar
     this.brushSizeInput = document.getElementById('size');
     this.brushColorInput = document.getElementById('color');
+    this.brushButton = document.getElementById('brushButton');
     this.eraserButton = document.getElementById('eraserButton');
     this.brushShapeInput = document.getElementById('shape');
     this.drawOnDragCheckbox = document.getElementById('drawOnDrag');
+
 
     // Canvas
     this.canvas = document.getElementById('myCanvas');

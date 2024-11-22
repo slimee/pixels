@@ -9,9 +9,9 @@ export default class State {
       size: 15,
       color: '#ff0000',
       shape: 'circle',
-      erase: false,
       drawOnDrag: false,
-      speed: null
+      speed: null,
+      tool: 'brush',
     };
     this.lastPoint = null;
     this.variables = {};
