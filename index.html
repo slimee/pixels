@@ -41,22 +41,8 @@
 <div class="menu-bar">
     <ul class="menu">
         <li class="menu-item">
-            <a href="#">Projet</a>
-            <ul class="submenu">
-                <li><a href="#" id="newProject">
-                    <i class='bx bx-file-blank'></i>Nouveau
-                </a></li>
-            </ul>
-        </li>
-        <li class="menu-item">
             <a href="#">Calque</a>
             <ul class="submenu middle">
-                <li><a href="#" id="addLayerButton"><i class='bx bx-layer-plus'></i>Créer un calque</a></li>
-                <li><a href="#" id="clearButton"><i class='bx bxs-eraser'></i>Effacer le calque</a></li>
-                <li><a href="#" id="deleteLayerButton"><i class='bx bxs-trash'></i>Supprimer le calque</a></li>
-                <li><a href="#" id="clearAllButton"><i class='bx bx-eraser'></i>Effacer tout les calques</a></li>
-                <li><a href="#" id="deleteAllLayersButton"><i class='bx bx-trash'></i>Supprimer tout les calques</a>
-                </li>
                 <li>
                     <div class="palette-container" id="paletteContainer">
                         <div class="palette-content">
@@ -70,61 +56,6 @@
                 </li>
             </ul>
         </li>
-        <li class="menu-item">
-            <a href="#">Pinceau</a>
-            <ul class="submenu large">
-                <li>
-                    <label for="size">Taille</label>
-                    <input type="range" id="size" min="5" max="500" value="15">
-                </li>
-                <li>
-                    <label for="shape">Forme</label>
-                    <select id="shape">
-                        <option value="circle">Cercle</option>
-                        <option value="square">Carré</option>
-                        <option value="triangle">Triangle</option>
-                        <option value="segment" selected>Segment</option>
-                    </select>
-                </li>
-            </ul>
-        </li>
-        <li>
-            <input type="color" id="color" value="#0000ff">
-        </li>
-        <li class="menu-item">
-            <a href="#">Animation</a>
-            <ul class="submenu">
-                <li>
-                    <a href="#" id="playPauseButton">
-                        <i id="playPauseIcon" class='bx bx-play'></i>
-                        <span id="playPauseText">Lecture</span>
-                    </a>
-                </li>
-                <li>
-                    <a>
-                        <i class='bx bx-brush'></i>
-                        <span id="paintSpeedText">Vitesse de peinture</span>
-                        <i class='bx bxs-brush'></i>
-                        <input type="range" id="paintSpeedInput" min="1" max="100" value="60">
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <li class="menu-item">
-            <a href="#">Fader</a>
-            <ul class="submenu">
-                <li>
-                    <a href="#" id="addFaderButton">
-                        <i id="faderIcon" class='bx bx-candles'></i>
-                        <span id="addFaderText">Ajouter un fader</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="#"><i class='bx bx-trash'></i>Supprimer...</a>
-                    <ul class="submenu" id="deleteFaderSubmenu"></ul>
-                </li>
-            </ul>
-        </li>
     </ul>
 </div>
 
@@ -132,21 +63,51 @@
 
 <div class="main-container">
     <div class="toolbar tools">
+        <button id="playPauseButton">
+            <i id="playPauseIcon" class='bx bx-play'></i>
+        </button>
+        <input type="color" id="color" value="#0000ff">
+        <select id="shape">
+            <option value="circle">Cercle</option>
+            <option value="square">Carré</option>
+            <option value="triangle">Triangle</option>
+            <option value="segment" selected>Segment</option>
+        </select>
         <button id="brushButton" title="Pinceau">
             <i class='bx bx-paint'></i>
         </button>
+        <input type="range" id="size" min="5" max="500" value="15">
         <button id="continousBrushButton" title="Rouleau">
             <i class='bx bx-paint-roll'></i>
         </button>
+        <span>
+            <i class='bx bx-brush'></i>
+            <span id="paintSpeedText">Vitesse de peinture</span>
+            <i class='bx bxs-brush'></i>
+            <input type="range" id="paintSpeedInput" min="1" max="100" value="60">
+        </span>
         <button id="eraserButton" title="Gomme">
             <i class='bx bx-eraser'></i>
         </button>
-        <button id="strafeToolButton" title="Déplacement">
+        <button id="strafeToolButton" title="Déplacer le calque">
             <i class='bx bx-move'></i>
         </button>
-        <button id="strafeLockButton" title="Strafe Lock">
+        <button id="strafeLockButton" title="Déplacer tous les calques">
             <i class='bx bx-lock-open'></i>
         </button>
+        <button id="addFaderButton" title="Ajouter un fader">
+            <i id="faderIcon" class='bx bx-candles'></i>
+        </button>
+        <span>
+            <i class='bx bx-trash' title="Supprimer un fader"></i>
+            <ul class="submenu" id="deleteFaderSubmenu"></ul>
+        </span>
+
+        <button id="addLayerButton" title="Créer un calque"><i class='bx bx-layer-plus'></i></button>
+        <button id="clearButton" title="Effacer le calque"><i class='bx bxs-eraser'></i></button>
+        <button id="deleteLayerButton" title="Supprimer le calque"><i class='bx bxs-trash'></i></button>
+        <button id="clearAllButton" title="Effacer tout les calques"><i class='bx bx-eraser'></i></button>
+        <button id="deleteAllLayersButton" title="Supprimer tout les calques"><i class='bx bx-trash'></i></button>
     </div>
     <div class="canvas-container">
         <div id="canvas-redimensionnable" class="redimensionnable">
