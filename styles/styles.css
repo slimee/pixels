@@ -89,12 +89,10 @@ body {
     position: relative;
 }
 
-/* Indicateur visuel pour la moitié supérieure */
 .layer-item.drag-over-top {
     border-top: 2px solid #007bff;
 }
 
-/* Indicateur visuel pour la moitié inférieure */
 .layer-item.drag-over-bottom {
     border-bottom: 2px solid #007bff;
 }
@@ -353,13 +351,6 @@ body {
     color: red;
     font-size: 12px;
     margin-top: 5px;
-}
-
-/* Canvas qui prend tout l'espace disponible */
-.canvas-container {
-    padding: 1px;
-    flex: 1;
-    /*position: relative;*/
 }
 
 .redimensionnable {

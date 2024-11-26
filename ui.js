@@ -9,7 +9,7 @@ export default class UI {
     this.brushShapeInput = document.getElementById('shape');
 
     // Canvas
-    this.canvas = document.getElementById('myCanvas');
+    this.canvas = document.getElementById('drawing-surface');
     this.canvasRedim = document.getElementById('canvas-redimensionnable');
 
     // Layers palette

@@ -22,7 +22,6 @@ export default class ControlPanel {
   }
 
   bindTools() {
-    // Liste des boutons d'outils
     this.toolButtons = document.querySelectorAll('#tools button');
 
     this.ui.strafeToolButton.addEventListener('click', () => {
@@ -240,8 +239,6 @@ export default class ControlPanel {
     this.ui.faderContainer.appendChild(fader);
     updateFader();
   }
-
-// control-panel.js
 
   updateDeleteFaderSubmenu() {
     const submenu = this.ui.deleteFaderSubmenu;

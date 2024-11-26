@@ -1,0 +1,36 @@
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+.toolbar {
+    width: 60px;
+    background-color: #343a40;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.toolbar button {
+    background: none;
+    border: none;
+    color: white;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+.canvas-container {
+    background-color: #dee0e3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1px;
+    flex: 1;
+}
+
+#drawing-surface {
+    background-color: white;
+    cursor: crosshair;
+}

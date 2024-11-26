@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Application de Dessin avec Transformations</title>
+    <link rel="stylesheet" href="styles/workbench.css">
     <link rel="stylesheet" href="styles/modal.css">
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/fader-style.css">
@@ -22,11 +23,11 @@
             <div class="form-group-inline">
                 <div class="form-group">
                     <label for="faderMin">Valeur min</label>
-                    <input type="number" id="faderMin" name="faderMin" required>
+                    <input type="number" id="faderMin" name="faderMin" value="-100" required>
                 </div>
                 <div class="form-group">
                     <label for="faderMax">Valeur max</label>
-                    <input type="number" id="faderMax" name="faderMax" required>
+                    <input type="number" id="faderMax" name="faderMax" value="100" required>
                 </div>
             </div>
             <div class="modal-actions">
@@ -85,25 +86,6 @@
                         <option value="segment" selected>Segment</option>
                     </select>
                 </li>
-                <li>
-                    <div id="tools">
-                        <button id="brushButton" title="Pinceau">
-                            <i class='bx bx-paint'></i>
-                        </button>
-                        <button id="continousBrushButton" title="Rouleau">
-                            <i class='bx bx-paint-roll'></i>
-                        </button>
-                        <button id="eraserButton" title="Gomme">
-                            <i class='bx bx-eraser'></i>
-                        </button>
-                        <button id="strafeToolButton" title="Déplacement">
-                            <i class='bx bx-move'></i>
-                        </button>
-                        <button id="strafeLockButton" title="Strafe Lock">
-                            <i class='bx bx-lock-open'></i>
-                        </button>
-                    </div>
-                </li>
             </ul>
         </li>
         <li>
@@ -149,10 +131,26 @@
 <div id="fader-container"></div>
 
 <div class="main-container">
-    <!-- Canvas -->
+    <div class="toolbar tools">
+        <button id="brushButton" title="Pinceau">
+            <i class='bx bx-paint'></i>
+        </button>
+        <button id="continousBrushButton" title="Rouleau">
+            <i class='bx bx-paint-roll'></i>
+        </button>
+        <button id="eraserButton" title="Gomme">
+            <i class='bx bx-eraser'></i>
+        </button>
+        <button id="strafeToolButton" title="Déplacement">
+            <i class='bx bx-move'></i>
+        </button>
+        <button id="strafeLockButton" title="Strafe Lock">
+            <i class='bx bx-lock-open'></i>
+        </button>
+    </div>
     <div class="canvas-container">
         <div id="canvas-redimensionnable" class="redimensionnable">
-            <canvas id="myCanvas"></canvas>
+            <canvas id="drawing-surface"></canvas>
         </div>
     </div>
 </div>
