@@ -38,76 +38,65 @@
     </div>
 </div>
 
-<div class="menu-bar">
-    <ul class="menu">
-        <li class="menu-item">
-            <a href="#">Calque</a>
-            <ul class="submenu middle">
-                <li>
-                    <div class="palette-container" id="paletteContainer">
-                        <div class="palette-content">
-                            <div class="layers-section">
-                                <div id="layersList">
-                                    <!-- Les calques seront ajoutés ici dynamiquement -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </li>
-    </ul>
-</div>
-
 <div id="fader-container"></div>
 
 <div class="main-container">
-    <div class="toolbar tools">
-        <button id="playPauseButton">
-            <i id="playPauseIcon" class='bx bx-play'></i>
-        </button>
-        <input type="color" id="color" value="#0000ff">
-        <select id="shape">
-            <option value="circle">Cercle</option>
-            <option value="square">Carré</option>
-            <option value="triangle">Triangle</option>
-            <option value="segment" selected>Segment</option>
-        </select>
-        <button id="brushButton" title="Pinceau">
-            <i class='bx bx-paint'></i>
-        </button>
-        <input type="range" id="size" min="5" max="500" value="15">
-        <button id="continousBrushButton" title="Rouleau">
-            <i class='bx bx-paint-roll'></i>
-        </button>
-        <span>
-            <i class='bx bx-brush'></i>
-            <span id="paintSpeedText">Vitesse de peinture</span>
-            <i class='bx bxs-brush'></i>
-            <input type="range" id="paintSpeedInput" min="1" max="100" value="60">
-        </span>
-        <button id="eraserButton" title="Gomme">
-            <i class='bx bx-eraser'></i>
-        </button>
-        <button id="strafeToolButton" title="Déplacer le calque">
-            <i class='bx bx-move'></i>
-        </button>
-        <button id="strafeLockButton" title="Déplacer tous les calques">
-            <i class='bx bx-lock-open'></i>
-        </button>
-        <button id="addFaderButton" title="Ajouter un fader">
-            <i id="faderIcon" class='bx bx-candles'></i>
-        </button>
-        <span>
-            <i class='bx bx-trash' title="Supprimer un fader"></i>
-            <ul class="submenu" id="deleteFaderSubmenu"></ul>
-        </span>
+    <div class="palette-container" id="paletteContainer">
+        <div class="toolbar">
+            <div>
+                <button id="playPauseButton"><i id="playPauseIcon" class='bx bx-play'></i></button>
+            </div>
 
-        <button id="addLayerButton" title="Créer un calque"><i class='bx bx-layer-plus'></i></button>
-        <button id="clearButton" title="Effacer le calque"><i class='bx bxs-eraser'></i></button>
-        <button id="deleteLayerButton" title="Supprimer le calque"><i class='bx bxs-trash'></i></button>
-        <button id="clearAllButton" title="Effacer tout les calques"><i class='bx bx-eraser'></i></button>
-        <button id="deleteAllLayersButton" title="Supprimer tout les calques"><i class='bx bx-trash'></i></button>
+            <div>
+                <button id="brushButton" title="Pinceau"><i class='bx bx-paint'></i></button>
+                <input type="range" id="size" min="5" max="500" value="15">
+            </div>
+
+            <div>
+                <input type="color" id="color" value="#0000ff">
+                <i class='bx bxs-shapes'></i>
+                <select id="shape">
+                    <option value="circle" selected>Cercle</option>
+                    <option value="square">Carré</option>
+                    <option value="triangle">Triangle</option>
+                    <option value="segment">Segment</option>
+                </select>
+            </div>
+
+            <span>
+                <button id="continousBrushButton" title="Rouleau"><i class='bx bxs-brush'></i></button>
+                <input type="range" id="paintSpeedInput" min="1" max="100" value="60">
+            </span>
+
+            <div>
+                <button id="eraserButton" title="Gomme"><i class='bx bx-eraser'></i></button>
+            </div>
+
+            <div id="fader-toolbar">
+                <button id="addFaderButton" title="Ajouter un fader"><i id="faderIcon" class='bx bx-candles'></i>
+                </button>
+                <i class='bx bx-trash' title="Supprimer un fader"></i>
+                <ul class="submenu" id="deleteFaderSubmenu"></ul>
+            </div>
+
+            <div id="layer-toolbar">
+                <button id="strafeToolButton" title="Déplacer le calque"><i class='bx bx-move'></i></button>
+                <button id="strafeLockButton" title="Déplacer tous les calques"><i class='bx bx-lock-open'></i></button>
+                <button id="addLayerButton" title="Ajouter un calque"><i class='bx bx-layer-plus'></i></button>
+                <button id="clearButton" title="Effacer le calque"><i class='bx bx-eraser'></i></button>
+                <button id="clearAllButton" title="Effacer tout les calques"><i class='bx bxs-eraser'></i></button>
+                <button id="deleteLayerButton" title="Supprimer le calque"><i class='bx bx-trash'></i></button>
+                <button id="deleteAllLayersButton" title="Supprimer tout les calques"><i class='bx bxs-trash'></i>
+                </button>
+            </div>
+        </div>
+        <div class="palette-content">
+            <div class="layers-section">
+                <div id="layersList">
+                    <!-- Les calques seront ajoutés ici dynamiquement -->
+                </div>
+            </div>
+        </div>
     </div>
     <div class="canvas-container">
         <div id="canvas-redimensionnable" class="redimensionnable">
@@ -115,7 +104,6 @@
         </div>
     </div>
 </div>
-
 
 </body>
 </html>
