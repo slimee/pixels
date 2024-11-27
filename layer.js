@@ -34,7 +34,7 @@ export default class Layer extends EventTarget {
     const variableNames = Object.keys(this.state.variables);
     const { codeWithVariables, usedVariables } = prefixVariables(this.code, variableNames);
     this.usedVariables = usedVariables;
-    this.transformationFunction = new Function('x', 'y', 'width', 'height', 'matrices', 'variables', `${codeWithVariables} return { x, y };`);
+    this.transformationFunction = new Function('x', 'y', 'r', 'g', 'b', 'a', 'width', 'height', 'matrices', 'variables', `${codeWithVariables} return { x, y, r, g, b };`);
   }
 
   transform(layersImageData) {
@@ -46,8 +46,12 @@ export default class Layer extends EventTarget {
       for (let x = 0; x < width; x++) {
         const {
           x: newX,
-          y: newY
-        } = this.transformationFunction(x, y, width, height, layersImageData, this.state.variables);
+          y: newY,
+          r: newR,
+          g: newG,
+          b: newB,
+          a: newA
+        } = this.transformationFunction(x, y, r, g, b, a, width, height, layersImageData, this.state.variables);
         const intNewX = Math.floor(newX);
         const intNewY = Math.floor(newY);
         const wrappedX = ((intNewX % width) + width) % width;
