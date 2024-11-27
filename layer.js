@@ -34,7 +34,7 @@ export default class Layer extends EventTarget {
     const variableNames = Object.keys(this.state.variables);
     const { codeWithVariables, usedVariables } = prefixVariables(this.code, variableNames);
     this.usedVariables = usedVariables;
-    this.transformationFunction = new Function('x', 'y', 'r', 'g', 'b', 'a', 'width', 'height', 'matrices', 'variables', `${codeWithVariables} return { x, y, r, g, b };`);
+    this.transformationFunction = new Function('x', 'y', 'r', 'g', 'b', 'a', 'width', 'height', 'matrices', 'variables', `${codeWithVariables} return { x, y, r, g, b, a };`);
   }
 
   transform(layersImageData) {
@@ -44,25 +44,36 @@ export default class Layer extends EventTarget {
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
+        const index = (y * width + x) * 4; // Index du pixel actuel dans l'image source
+        const r = this.offscreenImage.data[index];
+        const g = this.offscreenImage.data[index + 1];
+        const b = this.offscreenImage.data[index + 2];
+        const a = this.offscreenImage.data[index + 3];
+
+        // Appel de la fonction de transformation
         const {
           x: newX,
           y: newY,
           r: newR,
           g: newG,
           b: newB,
-          a: newA
-        } = this.transformationFunction(x, y, r, g, b, a, width, height, layersImageData, this.state.variables);
+          a: newA,
+        } = this.transformationFunction(
+          x, y, r, g, b, a, width, height, layersImageData, this.state.variables
+        );
+
+        // Calcul des coordonnées "wrap-around"
         const intNewX = Math.floor(newX);
         const intNewY = Math.floor(newY);
         const wrappedX = ((intNewX % width) + width) % width;
         const wrappedY = ((intNewY % height) + height) % height;
-        const newIndex = (wrappedY * width + wrappedX) * 4;
+        const newIndex = (wrappedY * width + wrappedX) * 4; // Index du pixel transformé
 
-        const index = (y * width + x) * 4;
-        newData[newIndex] = this.offscreenImage.data[index];
-        newData[newIndex + 1] = this.offscreenImage.data[index + 1];
-        newData[newIndex + 2] = this.offscreenImage.data[index + 2];
-        newData[newIndex + 3] = this.offscreenImage.data[index + 3];
+        // Écriture des nouvelles valeurs RGBA dans le tableau de données
+        newData[newIndex] = newR ?? r; // Garde r si newR est undefined
+        newData[newIndex + 1] = newG ?? g;
+        newData[newIndex + 2] = newB ?? b;
+        newData[newIndex + 3] = newA ?? a; // Transparence inchangée par défaut
       }
     }
 
