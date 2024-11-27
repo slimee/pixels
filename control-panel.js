@@ -19,6 +19,12 @@ export default class ControlPanel {
     this.updateDeleteFaderSubmenu();
     this.addNewLayer();
     this.bindStrafeLockButton();
+    this.bindVariablesInput();
+  }
+
+  bindVariablesInput() {
+    this.ui.variableInput.update = () => this.state.variableInputValue = this.ui.variableInput.value;
+    this.ui.variableInput.addEventListener('blur', this.ui.variableInput.update);
   }
 
   bindTools() {
@@ -143,16 +149,11 @@ export default class ControlPanel {
       ? this.pause()
       : this.play();
 
-    // Change le texte et l'icône
     const playPauseIcon = document.getElementById("playPauseIcon");
-    const playPauseText = document.getElementById("playPauseText");
-
     if (this.state.isPlaying) {
       playPauseIcon.classList.replace("bx-play", "bx-pause");
-      playPauseText.textContent = "Pause";
     } else {
       playPauseIcon.classList.replace("bx-pause", "bx-play");
-      playPauseText.textContent = "Lecture";
     }
   }
 
@@ -167,6 +168,8 @@ export default class ControlPanel {
 
   frame() {
     const layersImageData = this.state.layers.map(layer => layer.imageData);
+
+    this.state.runVariablesFunction();
 
     this.state.playingLayers.forEach(visibleLayer => visibleLayer.transform(layersImageData));
 

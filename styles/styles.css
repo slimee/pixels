@@ -43,11 +43,6 @@ body {
     font-weight: bold;
 }
 
-.palette-content {
-    flex: 1;
-    overflow-y: auto;
-}
-
 .palette-panel {
     padding: 10px;
 }

@@ -32,6 +32,8 @@ export default class UI {
     this.addFaderButton = document.getElementById('addFaderButton');
     this.deleteFaderSubmenu = document.getElementById('deleteFaderSubmenu');
 
+    this.variableInput = document.getElementById('variableInput');
+
     this.initModal();
   }
 

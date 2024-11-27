@@ -1,3 +1,5 @@
+import prefixVariables from './components/prefix-variables.js';
+
 export default class State {
   constructor(transformations) {
     this.layers = [];
@@ -16,6 +18,23 @@ export default class State {
     this.variables = {};
     this.mouse = { x: 0, y: 0, prevX: 0, prevY: 0 };
     this.strafeLock = false;
+    this.variablesCode = '';
+    this.variablesFunction = () => null;
+  }
+
+  set variableInputValue(value) {
+    this.variablesCode = value;
+    this.updateVariablesFunction();
+  }
+
+  updateVariablesFunction() {
+    const variableNames = Object.keys(this.variables);
+    const { codeWithVariables } = prefixVariables(this.variablesCode, variableNames);
+    this.variablesFunction = new Function('variables', `${codeWithVariables}`);
+  }
+
+  runVariablesFunction() {
+    this.variablesFunction(this.variables);
   }
 
   get playingLayers() {
@@ -24,10 +43,6 @@ export default class State {
 
   get currentLayer() {
     return this.layers[this.currentLayerIndex];
-  }
-
-  hasVariable(name) {
-    return this.variables.hasOwnProperty(name);
   }
 
   setVariable({ oldName, name, value }) {
