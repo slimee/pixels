@@ -1,5 +1,13 @@
 [
   {
+    "name": "inverser 1",
+    "code": "x = width - x;\ny = height - y;"
+  },
+  {
+    "name": "inverser 2",
+    "code": "_x = x;\nx = y;\ny = _x;"
+  },
+  {
     "name": "aide",
     "code": "var index = (y * width + x) * 4;\nvar otherMatrixIndex = 1; // Indice de la matrice avec laquelle fusionner\nvar otherRed = matrices[otherMatrixIndex].data[index];\nvar otherGreen = matrices[otherMatrixIndex].data[index + 1];\nvar otherBlue = matrices[otherMatrixIndex].data[index + 2];\n\n// Fusion des couleurs\nvar factor = 0.5; // Facteur de mélange\nvar currentRed = matrices[0].data[index];\nmatrices[0].data[index] = currentRed * (1 - factor) + otherRed * factor;\n\nvar index = (y * width + x) * 4;\nvar displacementMatrixIndex = 1; // Indice de la matrice de déplacement\nvar displacement = matrices[displacementMatrixIndex].data[index] / 255;\n\nx = x + displacement * 10;\ny = y + displacement * 10;"
   },

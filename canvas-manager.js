@@ -28,7 +28,7 @@ export default class CanvasManager {
   }
 
   initCanvasMouseEvents() {
-    this.ui.canvas.addEventListener('mousedown', this.handleCanvasMouseDown.bind(this));
+    this.ui.canvasContainer.addEventListener('mousedown', this.handleCanvasMouseDown.bind(this));
   }
 
   handleCanvasMouseDown() {

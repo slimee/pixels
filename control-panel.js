@@ -429,9 +429,8 @@ export default class ControlPanel {
       });
 
       // Bouton de transformation
-      const transformToggleButton = document.createElement('button');
-      transformToggleButton.className = 'transform-toggle-button';
-      transformToggleButton.textContent = this.state.activeTransformationLayerIndex === index ? '▼' : '◀';
+      const transformToggleButton = document.createElement('i');
+      transformToggleButton.className = 'transform-toggle-button bx bx-code-curly';
       transformToggleButton.addEventListener('click', () => {
         if (this.state.activeTransformationLayerIndex === index) {
           this.state.activeTransformationLayerIndex = null;

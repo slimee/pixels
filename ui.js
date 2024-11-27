@@ -10,6 +10,7 @@ export default class UI {
 
     // Canvas
     this.canvas = document.getElementById('drawing-surface');
+    this.canvasContainer = document.getElementById('canvas-container');
     this.canvasRedim = document.getElementById('canvas-redimensionnable');
 
     // Layers palette
