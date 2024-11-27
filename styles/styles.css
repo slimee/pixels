@@ -6,7 +6,7 @@ body {
 .main-container {
     display: flex;
     flex-direction: row;
-    height: calc(100vh - 50px); /* Ajustez si nécessaire en fonction de la hauteur de votre barre de menu */
+    height: 100%
 }
 
 .hidden {
@@ -17,7 +17,6 @@ body {
     width: 220px;
     max-height: 100%;
     background-color: #f0f0f0;
-    border-left: 1px solid #ccc;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -357,11 +356,13 @@ body {
 .redimensionnable {
     resize: both;
     overflow: scroll;
-    border: 1px solid black;
     width: 500px;
     height: 500px;
 }
 
+.shadow {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
 
 /* Style général du corps */
 body {
