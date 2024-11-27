@@ -30,6 +30,9 @@ export default class State {
   updateVariablesFunction() {
     const variableNames = Object.keys(this.variables);
     const { codeWithVariables } = prefixVariables(this.variablesCode, variableNames);
+
+    console.log('codeWithVariables', codeWithVariables);
+
     this.variablesFunction = new Function('variables', `${codeWithVariables}`);
   }
 
