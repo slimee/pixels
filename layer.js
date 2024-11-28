@@ -34,13 +34,14 @@ export default class Layer extends EventTarget {
     const variableNames = Object.keys(this.state.variables);
     const { codeWithVariables, usedVariables } = prefixVariables(this.code, variableNames);
     this.usedVariables = usedVariables;
-    this.transformationFunction = new Function('x', 'y', 'r', 'g', 'b', 'a', 'width', 'height', 'matrices', 'variables', `${codeWithVariables} return { x, y, r, g, b, a };`);
+    this.transformationFunction = new Function('x', 'y', 'r', 'g', 'b', 'a', 'width', 'height', 'variables', `${codeWithVariables} return { x, y, r, g, b, a };`);
   }
 
-  transform(layersImageData) {
+  transform(layers) {
     const newData = new Uint8ClampedArray(this.offscreenImage.data.length);
     const width = this.width;
     const height = this.height;
+    const numLayers = layers.length;
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -50,6 +51,18 @@ export default class Layer extends EventTarget {
         const b = this.offscreenImage.data[index + 2];
         const a = this.offscreenImage.data[index + 3];
 
+        for (let i = 0; i < numLayers; i++) {
+          const layer = layers[i];
+          const data = layer.offscreenImage.data;
+          const name = layer.name;
+          this.state.variables[name] = {
+            r: data[index],
+            g: data[index + 1],
+            b: data[index + 2],
+            a: data[index + 3],
+          };
+        }
+
         // Appel de la fonction de transformation
         const {
           x: newX,
@@ -58,9 +71,7 @@ export default class Layer extends EventTarget {
           g: newG,
           b: newB,
           a: newA,
-        } = this.transformationFunction(
-          x, y, r, g, b, a, width, height, layersImageData, this.state.variables
-        );
+        } = this.transformationFunction(x, y, r, g, b, a, width, height, this.state.variables);
 
         // Calcul des coordonnées "wrap-around"
         const intNewX = Math.floor(newX);

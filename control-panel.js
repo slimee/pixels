@@ -167,11 +167,9 @@ export default class ControlPanel {
   }
 
   frame() {
-    const layersImageData = this.state.layers.map(layer => layer.imageData);
-
     this.state.runVariablesFunction();
 
-    this.state.playingLayers.forEach(visibleLayer => visibleLayer.transform(layersImageData));
+    this.state.playingLayers.forEach(visibleLayer => visibleLayer.transform(this.state.layers));
 
     this.canvasManager.updateCanvas();
 
@@ -298,6 +296,7 @@ export default class ControlPanel {
   }
 
   addNewLayer() {
+    this.state.setVariable({ name: 'c1', value: { r: 0, g: 0, b: 0, a: 0 } });
     const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height, this.state);
     this.layers.push(newLayer);
     this.currentLayerIndex = this.layers.length - 1;
