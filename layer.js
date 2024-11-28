@@ -3,7 +3,7 @@ import prefixVariables from './components/prefix-variables.js';
 let i = 0;
 
 export default class Layer extends EventTarget {
-  constructor(width, height, state, name = `Calque ${++i}`) {
+  constructor(width, height, state, name = `c${++i}`) {
     super();
     this.width = width;
     this.height = height;
