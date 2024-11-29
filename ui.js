@@ -33,6 +33,8 @@ export default class UI {
     this.deleteFaderSubmenu = document.getElementById('deleteFaderSubmenu');
 
     this.variableInput = document.getElementById('variableInput');
+    this.fillBucketButton = document.getElementById('fillBucketButton');
+    this.magicFillButton = document.getElementById('magicFillButton');
 
     this.initModal();
   }

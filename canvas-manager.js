@@ -36,7 +36,13 @@ export default class CanvasManager {
     const y = this.state.mouse.y;
     this.state.lastPoint = { x, y };
 
-    if (this.brush.tool === 'strafe') {
+    if (this.brush.tool === 'magic-fill') {
+      this.magicFillRegion(x, y, this.brush.color);
+      return;
+    } else if (this.brush.tool === 'fill') {
+      this.fillRegion(x, y, this.brush.color);
+      return;
+    } else if (this.brush.tool === 'strafe') {
       // Enregistrer le point de départ pour le strafe
       this.strafeStartPoint = { x, y };
       // Créer une copie des calques
@@ -61,6 +67,78 @@ export default class CanvasManager {
     this.mouseMoveInterval = setInterval(this.handleMouseMove, 1000 / this.brush.speed);
     document.addEventListener('mouseup', this.handleMouseUp);
   }
+
+  fillRegion(x, y, targetColor) {
+    this.currentLayer.paintAll(targetColor);
+    this.updateCanvas();
+  }
+
+  magicFillRegion(x, y, hexTargetColor) {
+    const targetColor = this.currentLayer.hexToRGBA(hexTargetColor);
+    const canvasData = this.currentLayer.offscreenImage.data;
+    const width = this.currentLayer.width;
+    const height = this.currentLayer.height;
+
+    // Couleur de départ
+    const startIndex = (y * width + x) * 4;
+    const startColor = {
+      r: canvasData[startIndex],
+      g: canvasData[startIndex + 1],
+      b: canvasData[startIndex + 2],
+      a: canvasData[startIndex + 3],
+    };
+
+    // Si la couleur cible est identique à la couleur de départ, rien à faire
+    if (
+      startColor.r === targetColor.r &&
+      startColor.g === targetColor.g &&
+      startColor.b === targetColor.b &&
+      startColor.a === targetColor.a
+    ) return;
+
+    // Tampon pour suivre les pixels visités
+    const visited = new Uint8Array(width * height);
+    const stack = [{ x, y }];
+
+    // Fonction utilitaire pour obtenir l'index
+    const getPixelIndex = (x, y) => (y * width + x) * 4;
+
+    // Fonction pour vérifier si une couleur correspond
+    const isSameColor = (index) =>
+      canvasData[index] === startColor.r &&
+      canvasData[index + 1] === startColor.g &&
+      canvasData[index + 2] === startColor.b &&
+      canvasData[index + 3] === startColor.a;
+
+    // Parcours en profondeur
+    while (stack.length > 0) {
+      const { x, y } = stack.pop();
+      const index = getPixelIndex(x, y);
+
+      // Si déjà visité ou non identique à la couleur de départ, ignorer
+      if (visited[y * width + x] || !isSameColor(index)) continue;
+
+      // Marquer comme visité
+      visited[y * width + x] = 1;
+
+      // Appliquer la nouvelle couleur
+      canvasData[index] = targetColor.r;
+      canvasData[index + 1] = targetColor.g;
+      canvasData[index + 2] = targetColor.b;
+      canvasData[index + 3] = targetColor.a;
+
+      // Ajouter les voisins à la pile
+      if (x > 0) stack.push({ x: x - 1, y });
+      if (x < width - 1) stack.push({ x: x + 1, y });
+      if (y > 0) stack.push({ x, y: y - 1 });
+      if (y < height - 1) stack.push({ x, y: y + 1 });
+    }
+
+    // Mettre à jour le canvas
+    this.currentLayer.updateOffscreen();
+    this.updateCanvas();
+  }
+
 
   cloneCanvas(sourceCanvas) {
     const clone = document.createElement('canvas');

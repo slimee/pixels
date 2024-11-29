@@ -39,6 +39,12 @@ export default class ControlPanel {
     this.ui.continousBrushButton.addEventListener('click', () => {
       this.selectTool('continousBrush');
     });
+    this.ui.fillBucketButton.addEventListener('click', () => {
+      this.selectTool('fill');
+    });
+    this.ui.magicFillButton.addEventListener('click', () => {
+      this.selectTool('magic-fill');
+    });
   }
 
   bindStrafeLockButton() {
@@ -68,6 +74,9 @@ export default class ControlPanel {
     if (toolName === 'strafe') {
       this.ui.strafeToolButton.classList.add('active');
     }
+    if (toolName === 'magic-fill') {
+      this.ui.magicFillButton.classList.add('active');
+    }
     if (toolName === 'brush') {
       this.ui.brushButton.classList.add('active');
     }
@@ -76,6 +85,9 @@ export default class ControlPanel {
     }
     if (toolName === 'eraser') {
       this.ui.eraserButton.classList.add('active');
+    }
+    if (toolName === 'fill') {
+      this.ui.fillBucketButton.classList.add('active');
     }
 
   }

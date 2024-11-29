@@ -89,12 +89,12 @@ export default class Layer extends EventTarget {
     }
 
     this.offscreenImage.data.set(newData);
-    this.offscreenCanvasContext.putImageData(this.offscreenImage, 0, 0);
+    this.updateOffscreen();
   }
 
   clear() {
     this.offscreenImage.data.fill(0);
-    this.offscreenCanvasContext.putImageData(this.offscreenImage, 0, 0);
+    this.updateOffscreen();
   }
 
   hexToRGBA(hex) {
@@ -124,6 +124,10 @@ export default class Layer extends EventTarget {
       this.paintTriangle(x, y, halfSize, color);
     }
 
+    this.updateOffscreen();
+  }
+
+  updateOffscreen() {
     this.offscreenCanvasContext.putImageData(this.offscreenImage, 0, 0);
   }
 
@@ -135,6 +139,15 @@ export default class Layer extends EventTarget {
         }
       }
     }
+  }
+
+  paintAll(hexColor) {
+    const { r, g, b, a } = this.hexToRGBA(hexColor);
+    const rgbaValue = (a << 24) | (b << 16) | (g << 8) | r;
+    const data32 = new Uint32Array(this.offscreenImage.data.buffer);
+    data32.fill(rgbaValue);
+
+    this.updateOffscreen();
   }
 
   paintSquare(x, y, halfSize, color) {
@@ -215,6 +228,6 @@ export default class Layer extends EventTarget {
     this.offscreenImage = newImageData;
     this.offscreenCanvas.width = width;
     this.offscreenCanvas.height = height;
-    this.offscreenCanvasContext.putImageData(this.offscreenImage, 0, 0);
+    this.updateOffscreen();
   }
 }
