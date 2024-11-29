@@ -1,5 +1,17 @@
 [
   {
+    "name": "noise",
+    "code": "r = g = b = 255*Math.random();"
+  },
+  {
+    "name": "color noise",
+    "code": "r = 255*Math.random();\ng = 255*Math.random();\nb = 255*Math.random();"
+  },
+  {
+    "name": "vague",
+    "code": "x+=Math.round(Math.sin(Date.now()));"
+  },
+  {
     "name": "inverser 1",
     "code": "x = width - x;\ny = height - y;"
   },
