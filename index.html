@@ -42,21 +42,15 @@
     <div class="palette-container" id="paletteContainer">
         <div class="toolbar">
             <div>
-                <button id="playPauseButton"><i id="playPauseIcon" class='bx bx-play'></i></button>
-            </div>
-
-            <div>
                 <button id="brushButton" title="Pinceau"><i class='bx bx-paint'></i></button>
+                <button id="continousBrushButton" title="Rouleau"><i class='bx bxs-brush'></i></button>
+                <button id="fillBucketButton" title="Pot de peinture"><i class='bx bx-paint-roll'></i></button>
+                <button id="magicFillButton" title="Baguette magique"><i class='bx bxs-magic-wand'></i></button>
+                <button id="eraserButton" title="Gomme"><i class='bx bx-eraser'></i></button>
+            </div>
+            <div>
                 <input type="range" id="size" min="5" max="500" value="15">
             </div>
-
-            <button id="fillBucketButton" title="Pot de peinture">
-                <i class='bx bx-paint-roll'></i>
-            </button>
-
-            <button id="magicFillButton" title="Baguette magique">
-                <i class='bx bxs-magic-wand'></i>
-            </button>
 
             <div>
                 <input type="color" id="color" value="#0000ff">
@@ -69,31 +63,26 @@
                 </select>
             </div>
 
-            <span>
-                <button id="continousBrushButton" title="Rouleau"><i class='bx bxs-brush'></i></button>
-                <input type="range" id="paintSpeedInput" min="1" max="100" value="60">
-            </span>
-
-            <div>
-                <button id="eraserButton" title="Gomme"><i class='bx bx-eraser'></i></button>
-            </div>
-
-            <div id="fader-toolbar">
-                <button id="addFaderButton" title="Ajouter un fader"><i id="faderIcon" class='bx bx-candles'></i>
-                </button>
-                <i class='bx bx-trash' title="Supprimer un fader"></i>
-                <ul class="submenu" id="deleteFaderSubmenu"></ul>
+            <div id="move-toolbar">
+                <button id="strafeToolButton" title="Déplacer le calque"><i class='bx bx-move'></i></button>
+                <button id="strafeLockButton" title="Déplacer tous les calques"><i class='bx bx-lock-open'></i></button>
             </div>
 
             <div id="layer-toolbar">
-                <button id="strafeToolButton" title="Déplacer le calque"><i class='bx bx-move'></i></button>
-                <button id="strafeLockButton" title="Déplacer tous les calques"><i class='bx bx-lock-open'></i></button>
                 <button id="addLayerButton" title="Ajouter un calque"><i class='bx bx-layer-plus'></i></button>
                 <button id="clearButton" title="Effacer le calque"><i class='bx bx-eraser'></i></button>
                 <button id="clearAllButton" title="Effacer tout les calques"><i class='bx bxs-eraser'></i></button>
                 <button id="deleteLayerButton" title="Supprimer le calque"><i class='bx bx-trash'></i></button>
                 <button id="deleteAllLayersButton" title="Supprimer tout les calques"><i class='bx bxs-trash'></i>
                 </button>
+            </div>
+
+            <div id="transform-toolbar">
+                <button id="playPauseButton"><i id="playPauseIcon" class='bx bx-play'></i></button>
+                <button id="addFaderButton" title="Ajouter un fader"><i id="faderIcon" class='bx bx-candles'></i>
+                </button>
+                <i class='bx bx-trash' title="Supprimer un fader"></i>
+                <ul class="submenu" id="deleteFaderSubmenu"></ul>
             </div>
         </div>
         <div class="palette-content">

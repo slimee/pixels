@@ -11,7 +11,7 @@ export default class State {
       size: 15,
       color: '#ff0000',
       shape: 'circle',
-      speed: null,
+      speed: 30,
       tool: 'brush',
     };
     this.lastPoint = null;

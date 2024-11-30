@@ -143,10 +143,6 @@ export default class ControlPanel {
     const updateBrushShape = () => this.state.brush.shape = this.ui.brushShapeInput.value;
     updateBrushShape();
     this.ui.brushShapeInput.addEventListener('change', updateBrushShape);
-
-    const updatePaintSpeed = () => this.state.brush.speed = parseInt(this.ui.paintSpeedInput.value, 10);
-    updatePaintSpeed();
-    this.ui.paintSpeedInput.addEventListener('input', updatePaintSpeed);
   }
 
   bindEraserButton() {
