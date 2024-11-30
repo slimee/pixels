@@ -138,7 +138,7 @@ export default class ControlPanel {
       this.selectTool('brush');
     };
     updateBrush();
-    this.ui.brushColorInput.addEventListener('input', updateBrush);
+    this.ui.brushColorInput.addEventListener('change', updateBrush);
 
     const updateBrushShape = () => this.state.brush.shape = this.ui.brushShapeInput.value;
     updateBrushShape();
