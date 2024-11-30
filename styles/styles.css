@@ -123,31 +123,31 @@ body {
     cursor: pointer;
 }
 
-.eye-checkbox {
+.checkbox {
     position: relative;
     cursor: pointer;
     padding-right: 5px;
 }
 
-.eye-checkbox input {
+.checkbox input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
 }
 
-.eye-checkbox .bx {
+.checkbox .bx {
     font-size: 24px; /* Ajustez la taille selon vos besoins */
 }
 
-.eye-checkbox .bxs-show {
+.checkbox .show {
     display: none;
 }
 
-.eye-checkbox input:checked ~ .bxs-show {
+.checkbox input:checked ~ .show {
     display: inline;
 }
 
-.eye-checkbox input:checked ~ .bxs-hide {
+.checkbox input:checked ~ .hide {
     display: none;
 }
 

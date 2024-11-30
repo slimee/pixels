@@ -1,4 +1,4 @@
-import prefixVariables from './components/prefix-variables.js';
+import prefixVariables from './utils/prefix-variables.js';
 
 export default class State {
   constructor(transformations) {
@@ -42,6 +42,10 @@ export default class State {
 
   get playingLayers() {
     return this.layers.filter(({ isPlaying }) => isPlaying);
+  }
+
+  get drawingLayers() {
+    return this.layers.filter(({ isDrawing }) => isDrawing);
   }
 
   get currentLayer() {

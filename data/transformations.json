@@ -1,7 +1,7 @@
 [
   {
     "name": "double move",
-    "code": "r = at(x+1,y).r\nb = at(x,y+1).b;"
+    "code": "//draw in red \nr = at(x+1,y).r"
   },
   {
     "name": "noise",

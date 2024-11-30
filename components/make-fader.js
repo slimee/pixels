@@ -33,7 +33,7 @@ function makeFaderUI(name) {
   }
 }
 
-export default function makeFader(state) {
+export default function makeFader(state, onChange) {
   const {
     faderLabel,
     faderThumb,
@@ -227,6 +227,8 @@ export default function makeFader(state) {
     state.value = Math.min(Math.max(state.value, state.min), state.max);
     updateThumbPosition();
   };
+  faderContainer.addEventListener('change', onChange);
+  onChange();
 
   requestAnimationFrame(updateThumbPosition);
 

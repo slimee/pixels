@@ -1,4 +1,4 @@
-import prefixVariables from './components/prefix-variables.js';
+import prefixVariables from './utils/prefix-variables.js';
 
 let i = 0;
 
@@ -16,9 +16,25 @@ export default class Layer extends EventTarget {
     this.offscreenImage = this.offscreenCanvasContext.createImageData(this.width, this.height);
     this.visible = true;
     this.isPlaying = true;
+    this.isDrawing = true;
     this.transformationFunction = null;
     this.code = 'x += 1;\ny += 1;';
     this.usedVariables = [];
+    this.state.setVariable({
+      name,
+      value: {
+        r: 0, g: 0, b: 0, a: 0, at: (x, y) => {
+          const data = this.offscreenImage.data;
+          const index = (y * this.width + x) * 4;
+          return {
+            r: data[index],
+            g: data[index + 1],
+            b: data[index + 2],
+            a: data[index + 3],
+          };
+        }
+      }
+    });
   }
 
   get code() {
@@ -44,21 +60,6 @@ export default class Layer extends EventTarget {
     const numLayers = layers.length;
     const anyX = () => Math.floor(Math.random() * width);
     const anyY = () => Math.floor(Math.random() * height);
-
-    for (let i = 0; i < numLayers; i++) {
-      const layer = layers[i];
-      const data = layer.offscreenImage.data;
-      const name = layer.name;
-      this.state.variables[name].at = (x, y) => {
-        const index = (y * width + x) * 4;
-        return {
-          r: data[index],
-          g: data[index + 1],
-          b: data[index + 2],
-          a: data[index + 3],
-        };
-      }
-    }
     const at = this.state.variables[this.name].at;
 
     for (let y = 0; y < height; y++) {
@@ -210,6 +211,79 @@ export default class Layer extends EventTarget {
         y1 += sy;
       }
     }
+  }
+
+  fillRegion(x, y, targetColor) {
+    this.paintAll(targetColor);
+  }
+
+  magicFillRegion(x, y, hexTargetColor) {
+    const targetColor = this.hexToRGBA(hexTargetColor);
+    const canvasData = this.offscreenImage.data;
+    const width = this.width;
+    const height = this.height;
+
+    // Couleur de départ
+    const startIndex = (y * width + x) * 4;
+    const startColor = {
+      r: canvasData[startIndex],
+      g: canvasData[startIndex + 1],
+      b: canvasData[startIndex + 2],
+      a: canvasData[startIndex + 3],
+    };
+
+    // Si la couleur cible est identique à la couleur de départ, rien à faire
+    if (
+      startColor.r === targetColor.r &&
+      startColor.g === targetColor.g &&
+      startColor.b === targetColor.b &&
+      startColor.a === targetColor.a
+    ) return;
+
+    // Tampon pour suivre les pixels visités
+    const visited = new Uint8Array(width * height);
+    const stack = [{ x, y }];
+
+    // Fonction utilitaire pour obtenir l'index
+    const getPixelIndex = (x, y) => (y * width + x) * 4;
+
+    // Fonction pour vérifier si une couleur correspond
+    const isSameColor = (index) =>
+      canvasData[index] === startColor.r &&
+      canvasData[index + 1] === startColor.g &&
+      canvasData[index + 2] === startColor.b &&
+      canvasData[index + 3] === startColor.a;
+
+    // Parcours en profondeur
+    while (stack.length > 0) {
+      const { x, y } = stack.pop();
+      const index = getPixelIndex(x, y);
+
+      // Si déjà visité ou non identique à la couleur de départ, ignorer
+      if (visited[y * width + x] || !isSameColor(index)) continue;
+
+      // Marquer comme visité
+      visited[y * width + x] = 1;
+
+      // Appliquer la nouvelle couleur
+      canvasData[index] = targetColor.r;
+      canvasData[index + 1] = targetColor.g;
+      canvasData[index + 2] = targetColor.b;
+      canvasData[index + 3] = targetColor.a;
+
+      // Ajouter les voisins à la pile
+      if (x > 0) stack.push({ x: x - 1, y });
+      if (x < width - 1) stack.push({ x: x + 1, y });
+      if (y > 0) stack.push({ x, y: y - 1 });
+      if (y < height - 1) stack.push({ x, y: y + 1 });
+    }
+
+    // Mettre à jour le canvas
+    this.updateOffscreen();
+  }
+
+  drawAt(x, y, brush) {
+    this.paint(x, y, brush);
   }
 
   wrapCoordinate(value, max) {

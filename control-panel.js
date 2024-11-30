@@ -1,5 +1,6 @@
 import makeFader from './components/make-fader.js';
 import Layer from './layer.js';
+import makeCheckbox from "./components/make-checkbox.js";
 
 export default class ControlPanel {
   constructor(state, ui, canvasManager) {
@@ -247,15 +248,12 @@ export default class ControlPanel {
   }
 
   addFader(name, min = -30, max = 30) {
-    const faderState = { name, min, max, value: (min + max) / 2 };
-    const fader = makeFader(faderState);
-    const updateFader = () => {
-      this.state.setVariable(faderState);
+    const state = { name, min, max, value: (min + max) / 2 };
+    const onChange = () => {
+      this.state.setVariable(state);
       this.updateDeleteFaderSubmenu();
     };
-    fader.addEventListener('change', updateFader);
-    this.ui.faderContainer.appendChild(fader);
-    updateFader();
+    this.ui.faderContainer.appendChild(makeFader(state, onChange));
   }
 
   updateDeleteFaderSubmenu() {
@@ -313,7 +311,6 @@ export default class ControlPanel {
   }
 
   addNewLayer() {
-    this.state.setVariable({ name: 'c1', value: { r: 0, g: 0, b: 0, a: 0 } });
     const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height, this.state);
     this.layers.push(newLayer);
     this.currentLayerIndex = this.layers.length - 1;
@@ -409,31 +406,14 @@ export default class ControlPanel {
         this.draggedLayerIndex = null;
       });
 
-      // Créer les autres éléments (checkbox œil, nom du calque, etc.)
-
-      // Code pour la checkbox œil (inchangé)
-      const eyeCheckboxContainer = document.createElement('label');
-      eyeCheckboxContainer.className = 'eye-checkbox';
-      eyeCheckboxContainer.htmlFor = `eyeCheckbox-${index}`;
-
-      const eyeCheckbox = document.createElement('input');
-      eyeCheckbox.type = 'checkbox';
-      eyeCheckbox.id = `eyeCheckbox-${index}`;
-      eyeCheckbox.checked = layer.visible;
-      eyeCheckbox.addEventListener('change', () => {
+      const eyeCheckbox = makeCheckbox('bxs-show', 'bxs-hide', layer.visible, () => {
         layer.visible = eyeCheckbox.checked;
         this.canvasManager.updateCanvas();
       });
 
-      const eyeIconShow = document.createElement('i');
-      eyeIconShow.className = 'bx bxs-show';
-
-      const eyeIconHide = document.createElement('i');
-      eyeIconHide.className = 'bx bxs-hide';
-
-      eyeCheckboxContainer.appendChild(eyeCheckbox);
-      eyeCheckboxContainer.appendChild(eyeIconShow);
-      eyeCheckboxContainer.appendChild(eyeIconHide);
+      const drawCheckbox = makeCheckbox('bxs-paint', 'bx-paint', false, () => {
+        layer.isDrawing = drawCheckbox.checked;
+      });
 
       // Nom du calque
       const layerName = document.createElement('span');
@@ -459,9 +439,23 @@ export default class ControlPanel {
         this.updateLayersList();
       });
 
+      // Bouton Play
+      const playPauseButton = document.createElement('button');
+      playPauseButton.update = () => {
+        playPauseButton.textContent = layer.isPlaying ? '⏸' : '▷';
+      };
+      playPauseButton.id = `playPauseButton-${index}`;
+      playPauseButton.update();
+      playPauseButton.addEventListener('click', () => {
+        layer.isPlaying = !layer.isPlaying;
+        playPauseButton.update();
+      });
+
       // Ajouter les éléments au calque
       layerItem.appendChild(gripArea);
-      layerItem.appendChild(eyeCheckboxContainer);
+      layerItem.appendChild(eyeCheckbox);
+      layerItem.appendChild(drawCheckbox);
+      layerItem.appendChild(playPauseButton);
       layerItem.appendChild(layerName);
       layerItem.appendChild(transformToggleButton);
 
@@ -515,7 +509,7 @@ export default class ControlPanel {
     this.canvasManager.updateCanvas();
   }
 
-  createTransformationArea(layer, index) {
+  createTransformationArea(layer) {
     const transformationArea = document.createElement('div');
     transformationArea.className = 'transformation-area';
 
@@ -545,18 +539,6 @@ export default class ControlPanel {
     transformationSelector.addEventListener('change', (event) => {
       transformationCodeInput.value = event.target.value;
       transformationCodeInput.update();
-    });
-
-    // Bouton Play
-    const playPauseButton = document.createElement('button');
-    playPauseButton.update = () => {
-      playPauseButton.textContent = layer.isPlaying ? '⏸' : '▷';
-    };
-    playPauseButton.id = `playPauseButton-${index}`;
-    playPauseButton.update();
-    playPauseButton.addEventListener('click', () => {
-      layer.isPlaying = !layer.isPlaying;
-      playPauseButton.update();
     });
 
     // Ajouter les éléments à la zone de transformation
