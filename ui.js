@@ -2,7 +2,7 @@ export default class UI {
   constructor() {
     // Menu bar
     this.brushSizeInput = document.getElementById('size');
-    this.brushColorInput = document.getElementById('color');
+    this.colorPicker = document.getElementById('color-picker');
     this.brushButton = document.getElementById('brushButton');
     this.continousBrushButton = document.getElementById('continousBrushButton');
     this.eraserButton = document.getElementById('eraserButton');
@@ -40,7 +40,6 @@ export default class UI {
 
   initModal() {
     this.modalOverlay = document.getElementById('modalOverlay');
-    this.modal = document.getElementById('modal');
     this.faderForm = document.getElementById('faderForm');
     this.faderNameInput = document.getElementById('faderName');
     this.faderMinInput = document.getElementById('faderMin');

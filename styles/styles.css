@@ -518,6 +518,7 @@ a.disabled {
     background-color: #e0e0e0;
 }
 
-#color {
+#color-picker {
+    cursor: pointer;
     width: 20px;
 }

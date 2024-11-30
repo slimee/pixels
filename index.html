@@ -19,11 +19,11 @@
     <div id="modal" class="modal">
         <h2>Ajouter un fader</h2>
         <form id="faderForm">
-            <div class="form-group">
-                <label for="faderName">Nom</label>
-                <input type="text" id="faderName" name="faderName" required>
-            </div>
             <div class="form-group-inline">
+                <div class="form-group">
+                    <label for="faderName">Nom</label>
+                    <input type="text" id="faderName" name="faderName" required>
+                </div>
                 <div class="form-group">
                     <label for="faderMin">Valeur min</label>
                     <input type="number" id="faderMin" name="faderMin" value="-100" required>
@@ -53,10 +53,10 @@
             </div>
             <div>
                 <input type="range" id="size" min="5" max="500" value="15">
+                <input type="text" id="color-picker" data-coloris>
             </div>
 
             <div>
-                <input type="text" id="color" data-coloris>
                 <i class='bx bxs-shapes'></i>
                 <select id="shape">
                     <option value="circle" selected>Cercle</option>

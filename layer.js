@@ -43,6 +43,21 @@ export default class Layer extends EventTarget {
     const height = this.height;
     const numLayers = layers.length;
 
+    for (let i = 0; i < numLayers; i++) {
+      const layer = layers[i];
+      const data = layer.offscreenImage.data;
+      const name = layer.name;
+      this.state.variables[name].at = (x, y) => {
+        const index = (y * width + x) * 4;
+        return {
+          r: data[index],
+          g: data[index + 1],
+          b: data[index + 2],
+          a: data[index + 3],
+        };
+      }
+    }
+
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const index = (y * width + x) * 4; // Index du pixel actuel dans l'image source
@@ -55,12 +70,11 @@ export default class Layer extends EventTarget {
           const layer = layers[i];
           const data = layer.offscreenImage.data;
           const name = layer.name;
-          this.state.variables[name] = {
-            r: data[index],
-            g: data[index + 1],
-            b: data[index + 2],
-            a: data[index + 3],
-          };
+          const layerVariable = this.state.variables[name];
+          layerVariable.r = data[index];
+          layerVariable.g = data[index + 1];
+          layerVariable.b = data[index + 2];
+          layerVariable.a = data[index + 3];
         }
 
         // Appel de la fonction de transformation

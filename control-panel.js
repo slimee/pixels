@@ -20,6 +20,7 @@ export default class ControlPanel {
     this.addNewLayer();
     this.bindStrafeLockButton();
     this.bindVariablesInput();
+    this.faderIndex = 0;
   }
 
   bindVariablesInput() {
@@ -135,15 +136,17 @@ export default class ControlPanel {
 
     const updateBrush = (color) => {
       this.state.brush.color = color;
-      this.selectTool('brush');
     };
-    updateBrush('#00000000');
+    updateBrush('#000000FF');
     Coloris({
       forceAlpha: true,
       theme: 'polaroid',
       themeMode: 'dark',
       onChange: updateBrush,
+      defaultColor: '#000000FF',
     });
+    document.querySelector('#color-picker').dispatchEvent(new Event('input', { bubbles: true }));
+
 
     const updateBrushShape = () => this.state.brush.shape = this.ui.brushShapeInput.value;
     updateBrushShape();
@@ -153,7 +156,7 @@ export default class ControlPanel {
   bindEraserButton() {
     this.ui.eraserButton.addEventListener('click', () => {
       this.selectTool('eraser');
-      this.ui.brushColorInput.classList.toggle("active", true);
+      this.ui.colorPicker.classList.toggle("active", true);
     });
   }
 
@@ -233,6 +236,7 @@ export default class ControlPanel {
   openFaderModal() {
     // Réinitialiser le formulaire
     this.ui.faderForm.reset();
+    this.ui.faderNameInput.value = `f${++this.faderIndex}`;
     // Afficher la modale
     this.ui.modalOverlay.classList.remove('hidden');
   }
