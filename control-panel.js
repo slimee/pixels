@@ -133,12 +133,17 @@ export default class ControlPanel {
       this.state.brush.size = parseInt(this.ui.brushSizeInput.value, 10);
     });
 
-    const updateBrush = () => {
-      this.state.brush.color = this.ui.brushColorInput.value;
+    const updateBrush = (color) => {
+      this.state.brush.color = color;
       this.selectTool('brush');
     };
-    updateBrush();
-    this.ui.brushColorInput.addEventListener('change', updateBrush);
+    updateBrush('#00000000');
+    Coloris({
+      forceAlpha: true,
+      theme: 'polaroid',
+      themeMode: 'dark',
+      onChange: updateBrush,
+    });
 
     const updateBrushShape = () => this.state.brush.shape = this.ui.brushShapeInput.value;
     updateBrushShape();

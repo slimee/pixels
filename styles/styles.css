@@ -517,3 +517,7 @@ a.disabled {
 #tools button:hover {
     background-color: #e0e0e0;
 }
+
+#color {
+    width: 20px;
+}

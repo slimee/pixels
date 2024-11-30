@@ -98,12 +98,14 @@ export default class Layer extends EventTarget {
   }
 
   hexToRGBA(hex) {
-    const bigint = parseInt(hex.slice(1), 16);
+    let c = hex.slice(1);
+    if (c.length === 6) c += 'FF';
+    const num = parseInt(c, 16);
     return {
-      r: (bigint >> 16) & 255,
-      g: (bigint >> 8) & 255,
-      b: bigint & 255,
-      a: 255 // Full opacity
+      r: (num >> 24) & 255,
+      g: (num >> 16) & 255,
+      b: (num >> 8) & 255,
+      a: num & 255
     };
   }
 
