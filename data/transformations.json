@@ -1,5 +1,9 @@
 [
   {
+    "name": "double move",
+    "code": "r = at(x+1,y).r\nb = at(x,y+1).b;"
+  },
+  {
     "name": "noise",
     "code": "r = g = b = 255*Math.random();"
   },
