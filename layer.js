@@ -34,7 +34,7 @@ export default class Layer extends EventTarget {
     const variableNames = Object.keys(this.state.variables);
     const { codeWithVariables, usedVariables } = prefixVariables(this.code, variableNames);
     this.usedVariables = usedVariables;
-    this.transformationFunction = new Function('x', 'y', 'r', 'g', 'b', 'a', 'width', 'height', 'variables', `${codeWithVariables} return { x, y, r, g, b, a };`);
+    this.transformationFunction = new Function('x', 'y', 'r', 'g', 'b', 'a', 'width', 'height', 'max', 'min', 'anyX', 'anyY', 'at', 'variables', `${codeWithVariables} return { x, y, r, g, b, a };`);
   }
 
   transform(layers) {
@@ -42,6 +42,8 @@ export default class Layer extends EventTarget {
     const width = this.width;
     const height = this.height;
     const numLayers = layers.length;
+    const anyX = () => Math.floor(Math.random() * width);
+    const anyY = () => Math.floor(Math.random() * height);
 
     for (let i = 0; i < numLayers; i++) {
       const layer = layers[i];
@@ -57,6 +59,7 @@ export default class Layer extends EventTarget {
         };
       }
     }
+    const at = this.state.variables[this.name].at;
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -85,7 +88,7 @@ export default class Layer extends EventTarget {
           g: newG,
           b: newB,
           a: newA,
-        } = this.transformationFunction(x, y, r, g, b, a, width, height, this.state.variables);
+        } = this.transformationFunction(x, y, r, g, b, a, width, height, 255, 0, anyX, anyY, at, this.state.variables);
 
         // Calcul des coordonnées "wrap-around"
         const intNewX = Math.floor(newX);
