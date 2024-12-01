@@ -415,6 +415,10 @@ export default class ControlPanel {
         layer.isDrawing = drawCheckbox.checked;
       });
 
+      const playPauseCheckbox = makeCheckbox('bx-play', 'bx-pause', layer.isPlaying, () => {
+        layer.isPlaying = !layer.isPlaying;
+      });
+
       // Nom du calque
       const layerName = document.createElement('span');
       layerName.textContent = layer.name;
@@ -439,23 +443,11 @@ export default class ControlPanel {
         this.updateLayersList();
       });
 
-      // Bouton Play
-      const playPauseButton = document.createElement('button');
-      playPauseButton.update = () => {
-        playPauseButton.textContent = layer.isPlaying ? '⏸' : '▷';
-      };
-      playPauseButton.id = `playPauseButton-${index}`;
-      playPauseButton.update();
-      playPauseButton.addEventListener('click', () => {
-        layer.isPlaying = !layer.isPlaying;
-        playPauseButton.update();
-      });
-
       // Ajouter les éléments au calque
       layerItem.appendChild(gripArea);
       layerItem.appendChild(eyeCheckbox);
       layerItem.appendChild(drawCheckbox);
-      layerItem.appendChild(playPauseButton);
+      layerItem.appendChild(playPauseCheckbox);
       layerItem.appendChild(layerName);
       layerItem.appendChild(transformToggleButton);
 
