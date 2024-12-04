@@ -1,5 +1,3 @@
-import prefixVariables from './utils/prefix-variables.js';
-
 let i = 0;
 
 export default class Layer extends EventTarget {
@@ -18,7 +16,6 @@ export default class Layer extends EventTarget {
     this.isPlaying = true;
     this.isDrawing = true;
     this.transformationFunction = null;
-    this.code = 'x += 1;\ny += 1;';
     this.usedVariables = [];
     this.state.setVariable({
       name,
@@ -35,37 +32,6 @@ export default class Layer extends EventTarget {
         }
       }
     });
-  }
-
-  get code() {
-    return this._code;
-  }
-
-  set code(newCode) {
-    this._code = newCode;
-    this.updateTransformationFunction();
-  }
-
-  updateTransformationFunction() {
-    const variableNames = Object.keys(this.state.variables);
-
-    const {
-      codeWithVariables,
-      usedVariables,
-      unprefixedVariables
-    } = prefixVariables(this.code, variableNames);
-    console.log('');
-    console.log(' - - - - layer code - - - - ')
-    console.log('variable names:', variableNames);
-    console.log('layer code before:', this.code);
-    console.log('usedVariables:', usedVariables);
-    console.log('unprefixedVariables:', unprefixedVariables);
-    console.log('state.variables:', this.state.variables);
-    console.log('code transformed:', codeWithVariables);
-
-
-    this.usedVariables = usedVariables;
-    this.transformationFunction = new Function('x', 'y', 'r', 'g', 'b', 'a', 'width', 'height', 'max', 'min', 'anyX', 'anyY', 'at', 'variables', `${codeWithVariables} return { x, y, r, g, b, a };`);
   }
 
   transform(layers) {

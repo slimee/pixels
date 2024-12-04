@@ -17,6 +17,7 @@ export default class State {
     this.mouse = { x: 0, y: 0, prevX: 0, prevY: 0 };
     this.strafeLock = false;
     this.frameCode = '';
+    this.pixelCode = '';
   }
 
   get playingLayers() {

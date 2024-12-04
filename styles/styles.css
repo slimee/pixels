@@ -14,7 +14,7 @@ body {
 }
 
 .palette-container {
-    width: 220px;
+    width: 300px;
     max-height: 100%;
     background-color: #f0f0f0;
     overflow: hidden;
@@ -203,7 +203,7 @@ body {
 }
 
 .controls-palette {
-    width: 220px;
+    width: 300px;
     background-color: #323232;
     color: #ffffff;
     padding: 10px;
@@ -332,8 +332,10 @@ body {
     position: relative;
 }
 
-.transformation-code-input {
+.code-input {
     width: 100%;
+    height: 250px;
+    border: #676767;
     resize: vertical;
     margin-top: 5px;
 }

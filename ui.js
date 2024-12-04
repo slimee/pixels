@@ -32,6 +32,7 @@ export default class UI {
     this.deleteFaderSubmenu = document.getElementById('deleteFaderSubmenu');
 
     this.frameCodeInput = document.getElementById('frameCodeInput');
+    this.pixelCodeInput = document.getElementById('pixelCodeInput');
     this.fillBucketButton = document.getElementById('fillBucketButton');
     this.magicFillButton = document.getElementById('magicFillButton');
 
