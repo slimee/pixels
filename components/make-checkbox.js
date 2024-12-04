@@ -2,13 +2,13 @@ import createElement from "../utils/create-element.js";
 
 let i = 0;
 
-export default function makeCheckbox(show, hide, checked, onChange) {
+export default function makeCheckbox(show, hide, checked, title, onChange) {
   const id = `checkbox-${++i}`;
   const component = createElement(`
-        <label class="checkbox" for="${id}">
+        <label class="checkbox" for="${id}" title="${title}">
             <input type="checkbox" id="${id}" ${checked ? 'checked' : ''}>
-            <i class="bx ${show} show"></i>
-            <i class="bx ${hide} hide"></i>
+            <i class="${show} show"></i>
+            <i class="${hide} hide"></i>
         </label>
       `);
   const box = component.querySelector('input');

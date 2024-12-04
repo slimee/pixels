@@ -406,16 +406,16 @@ export default class ControlPanel {
         this.draggedLayerIndex = null;
       });
 
-      const eyeCheckbox = makeCheckbox('bxs-show', 'bxs-hide', layer.visible, () => {
+      const eyeCheckbox = makeCheckbox('bx bxs-show', 'bx bxs-hide', layer.visible, 'Cacher le calque', () => {
         layer.visible = eyeCheckbox.checked;
         this.canvasManager.updateCanvas();
       });
 
-      const drawCheckbox = makeCheckbox('bxs-paint', 'bx-paint', false, () => {
+      const drawCheckbox = makeCheckbox('bx bxs-paint', 'bx bx-paint', false, 'Dessiner sur ce calque', () => {
         layer.isDrawing = drawCheckbox.checked;
       });
 
-      const playPauseCheckbox = makeCheckbox('bx-play', 'bx-pause', layer.isPlaying, () => {
+      const playPauseCheckbox = makeCheckbox('bx bx-play', 'bx bx-pause', layer.isPlaying, 'Lecture', () => {
         layer.isPlaying = !layer.isPlaying;
       });
 
@@ -432,9 +432,7 @@ export default class ControlPanel {
       });
 
       // Bouton de transformation
-      const transformToggleButton = document.createElement('i');
-      transformToggleButton.className = 'transform-toggle-button bx bx-code-curly';
-      transformToggleButton.addEventListener('click', () => {
+      const codeButton = makeCheckbox('bx bx-code-curly', 'bx bx-code-curly', false, 'code', () => {
         if (this.state.activeTransformationLayerIndex === index) {
           this.state.activeTransformationLayerIndex = null;
         } else {
@@ -449,7 +447,7 @@ export default class ControlPanel {
       layerItem.appendChild(drawCheckbox);
       layerItem.appendChild(playPauseCheckbox);
       layerItem.appendChild(layerName);
-      layerItem.appendChild(transformToggleButton);
+      layerItem.appendChild(codeButton);
 
       // Mettre en évidence le calque sélectionné
       if (index === this.currentLayerIndex) {
