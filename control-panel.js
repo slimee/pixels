@@ -251,6 +251,7 @@ export default class ControlPanel {
     const onChange = () => {
       this.state.setVariable(state);
       this.updateDeleteFaderSubmenu();
+      this.transformationManager.updateFrameCodeFunction();
     };
     this.ui.faderContainer.appendChild(makeFader(state, onChange));
     this.transformationManager.updateFrameCodeFunction();

@@ -49,22 +49,47 @@ function prefixVariablesInCode(code, variableNames) {
 
   const variablesSet = new Set(variableNames);
   const usedVariables = new Set();
+  const allVariablesUsed = new Set();
+
+  const builtInVariables = new Set([
+    // Objets intégrés et globales communes
+    'Array', 'Boolean', 'Date', 'Error', 'Function', 'JSON', 'Math', 'Number',
+    'Object', 'RegExp', 'String', 'Promise', 'Symbol', 'Map', 'Set', 'WeakMap',
+    'WeakSet', 'Proxy', 'Reflect', 'Intl', 'WebAssembly', 'BigInt',
+    'console', 'window', 'document', 'undefined', 'null', 'NaN', 'Infinity'
+  ]);
+
+  function isVariableUse(node, parent) {
+    // Détermine si le nœud est une utilisation de variable (et non une déclaration ou une propriété)
+    if (parent.type === 'VariableDeclarator' && parent.id === node) {
+      return false; // Déclaration de variable
+    }
+    if ((parent.type === 'FunctionDeclaration' || parent.type === 'FunctionExpression' || parent.type === 'ArrowFunctionExpression') && (parent.id === node || parent.params.includes(node))) {
+      return false; // Nom ou paramètre de fonction
+    }
+    if (parent.type === 'MemberExpression' && ((parent.property === node && !parent.computed) || parent.object === node)) {
+      return false; // Propriété d'un objet
+    }
+    if (parent.type === 'Property' && parent.key === node && !parent.computed) {
+      return false; // Clé d'une propriété dans un objet
+    }
+    // Ajouter d'autres cas si nécessaire
+    return true; // Sinon, c'est une utilisation de variable
+  }
 
   // Parcourir et modifier l'AST
   acornWalk.ancestor(ast, {
     Identifier(node, ancestors) {
       const parent = ancestors[ancestors.length - 2]; // Le parent direct
+
+      if (isVariableUse(node, parent)) {
+        allVariablesUsed.add(node.name); // Collecter toutes les variables utilisées
+      }
+
       if (variablesSet.has(node.name)) {
         usedVariables.add(node.name); // Stocker la variable utilisée
 
-        if (!(
-          (parent.type === 'VariableDeclarator' && parent.id === node) ||
-          (parent.type === 'FunctionDeclaration' && parent.id === node) ||
-          (parent.type === 'FunctionExpression' && parent.params.includes(node)) ||
-          (parent.type === 'ArrowFunctionExpression' && parent.params.includes(node)) ||
-          (parent.type === 'MemberExpression' && parent.property === node && !parent.computed) ||
-          (parent.type === 'Property' && parent.key === node && !parent.computed)
-        )) {
+        if (isVariableUse(node, parent)) {
           // Remplacer l'identifiant par variables.identifiant
           Object.assign(node, {
             type: 'MemberExpression',
@@ -79,7 +104,15 @@ function prefixVariablesInCode(code, variableNames) {
 
   const codeWithVariables = astring.generate(ast);
 
-  return { codeWithVariables, usedVariables: Array.from(usedVariables) };
+  // Calculer les variables non préfixées
+  const unprefixedVariables = Array.from(allVariablesUsed)
+    .filter(varName => !usedVariables.has(varName) && !builtInVariables.has(varName));
+
+  return {
+    codeWithVariables,
+    usedVariables: Array.from(usedVariables),
+    unprefixedVariables
+  };
 }
 
 export default function prefixVariables(code, variables) {

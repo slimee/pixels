@@ -20,16 +20,21 @@ export default class TransformationManager {
   updateFrameCodeFunction() {
     const variableNames = Object.keys(this.state.variables);
 
-    console.log('codeBefore:', this.state.frameCode);
 
     const {
       codeWithVariables,
-      usedVariables
+      usedVariables,
+      unprefixedVariables,
     } = prefixVariables(this.state.frameCode, variableNames);
 
+    console.log('')
+    console.log(' - - - - frame code - - - - ');
+    console.log('variable names:', variableNames);
+    console.log('code before:', this.state.frameCode);
     console.log('usedVariables:', usedVariables);
+    console.log('unprefixedVariables:', unprefixedVariables);
     console.log('state.variables:', this.state.variables);
-    console.log('code:', codeWithVariables);
+    console.log('code transformed:', codeWithVariables);
 
     this.frameFunction = new Function('variables', `${codeWithVariables}`);
   }
