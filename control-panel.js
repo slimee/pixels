@@ -3,12 +3,13 @@ import Layer from './layer.js';
 import makeCheckbox from "./components/make-checkbox.js";
 
 export default class ControlPanel {
-  constructor(state, ui, canvasManager) {
+  constructor(state, ui, canvasManager, transformationManager) {
     this.state = state;
     this.ui = ui;
     this.canvasManager = canvasManager;
-    this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
-    this.frame = this.frame.bind(this);
+    this.transformationManager = transformationManager;
+
+    this.bindPlayPauseButton();
     this.bindAddDeleteLayerButtons();
     this.bindTools();
     this.bindClearButtons();
@@ -20,13 +21,7 @@ export default class ControlPanel {
     this.updateDeleteFaderSubmenu();
     this.addNewLayer();
     this.bindStrafeLockButton();
-    this.bindVariablesInput();
     this.faderIndex = 0;
-  }
-
-  bindVariablesInput() {
-    this.ui.variableInput.update = () => this.state.variableInputValue = this.ui.variableInput.value;
-    this.ui.variableInput.addEventListener('blur', this.ui.variableInput.update);
   }
 
   bindTools() {
@@ -161,6 +156,10 @@ export default class ControlPanel {
     });
   }
 
+  bindPlayPauseButton() {
+    this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
+  }
+
   togglePlayPause() {
     this.state.isPlaying
       ? this.pause()
@@ -183,8 +182,8 @@ export default class ControlPanel {
     requestAnimationFrame(this.frame);
   }
 
-  frame() {
-    this.state.runVariablesFunction();
+  frame = () => {
+    this.transformationManager.runFrameCodeFunction();
 
     this.state.playingLayers.forEach(visibleLayer => visibleLayer.transform(this.state.layers));
 
