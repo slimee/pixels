@@ -45,9 +45,7 @@ export default class CanvasManager {
       this.updateCanvas();
       return;
     } else if (this.brush.tool === 'strafe') {
-      // Enregistrer le point de départ pour le strafe
       this.strafeStartPoint = { x, y };
-      // Créer une copie des calques
       this.strafeLayers = this.state.strafeLock
         ? this.layers.map((layer) => ({
           canvas: this.cloneCanvas(layer.offscreenCanvas),
@@ -180,16 +178,16 @@ export default class CanvasManager {
   }
 
   updateCanvas() {
-    this.canvasContext.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
+    this.canvasContext.clearRect(0, 0, this.state.width, this.state.height);
     this.layers.forEach((layer) => {
       if (layer.visible) this.canvasContext.drawImage(layer.offscreenCanvas, 0, 0)
     });
   }
 
-  resizeCanvas(newWidth, newHeight) {
-    this.ui.canvas.width = newWidth;
-    this.ui.canvas.height = newHeight;
-    this.layers.forEach(matrix => matrix.resize(newWidth, newHeight));
+  resizeCanvas() {
+    this.ui.canvas.width = this.state.width;
+    this.ui.canvas.height = this.state.height;
+    this.layers.forEach(matrix => matrix.resize(this.state.width, this.state.height));
     this.updateCanvas();
   }
 }

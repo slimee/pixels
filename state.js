@@ -4,7 +4,6 @@ export default class State {
     this.currentLayerIndex = 0;
     this.isPlaying = false;
     this.transformations = transformations;
-    this.activeTransformationLayerIndex = null;
     this.brush = {
       size: 15,
       color: '#ff0000',
@@ -18,10 +17,6 @@ export default class State {
     this.strafeLock = false;
     this.frameCode = '';
     this.pixelCode = '';
-  }
-
-  get playingLayers() {
-    return this.layers.filter(({ isPlaying }) => isPlaying);
   }
 
   get drawingLayers() {

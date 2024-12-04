@@ -184,21 +184,22 @@ export default class ControlPanel {
 
   frame = () => {
     this.transformationManager.runFrameCodeFunction();
-
-    this.state.playingLayers.forEach(visibleLayer => visibleLayer.transform(this.state.layers));
+    this.transformationManager.runPixelCodeFunction();
 
     this.canvasManager.updateCanvas();
 
     if (this.state.isPlaying) requestAnimationFrame(this.frame);
   }
 
-  bindResize() {
-    const resizeObserver = new ResizeObserver(() => {
-      const newWidth = this.ui.canvasRedim.clientWidth;
-      const newHeight = this.ui.canvasRedim.clientHeight;
-      this.canvasManager.resizeCanvas(newWidth, newHeight);
-    });
+  resize = () => {
+    this.state.width = this.ui.canvasRedim.clientWidth;
+    this.state.height = this.ui.canvasRedim.clientHeight;
+    this.canvasManager.resizeCanvas();
+  }
 
+  bindResize() {
+    this.resize();
+    const resizeObserver = new ResizeObserver(this.resize);
     resizeObserver.observe(this.ui.canvasRedim);
   }
 
@@ -312,7 +313,7 @@ export default class ControlPanel {
   }
 
   addNewLayer() {
-    const newLayer = new Layer(this.ui.canvas.width, this.ui.canvas.height, this.state);
+    const newLayer = new Layer(this.state);
     this.layers.push(newLayer);
     this.currentLayerIndex = this.layers.length - 1;
     this.updateLayersList();
@@ -416,10 +417,6 @@ export default class ControlPanel {
         layer.isDrawing = drawCheckbox.checked;
       });
 
-      const playPauseCheckbox = makeCheckbox('bx bx-play', 'bx bx-pause', layer.isPlaying, 'Lecture', () => {
-        layer.isPlaying = !layer.isPlaying;
-      });
-
       // Nom du calque
       const layerName = document.createElement('span');
       layerName.textContent = layer.name;
@@ -432,23 +429,11 @@ export default class ControlPanel {
         event.stopPropagation();
       });
 
-      // Bouton de transformation
-      const codeButton = makeCheckbox('bx bx-code-curly', 'bx bx-code-curly', false, 'code', () => {
-        if (this.state.activeTransformationLayerIndex === index) {
-          this.state.activeTransformationLayerIndex = null;
-        } else {
-          this.state.activeTransformationLayerIndex = index;
-        }
-        this.updateLayersList();
-      });
-
       // Ajouter les éléments au calque
       layerItem.appendChild(gripArea);
       layerItem.appendChild(eyeCheckbox);
       layerItem.appendChild(drawCheckbox);
-      layerItem.appendChild(playPauseCheckbox);
       layerItem.appendChild(layerName);
-      layerItem.appendChild(codeButton);
 
       // Mettre en évidence le calque sélectionné
       if (index === this.currentLayerIndex) {
@@ -456,12 +441,6 @@ export default class ControlPanel {
       }
 
       this.ui.layersList.appendChild(layerItem);
-
-      // Afficher la zone de transformation si nécessaire
-      if (this.state.activeTransformationLayerIndex === index) {
-        const transformationArea = this.createTransformationArea(layer, index);
-        this.ui.layersList.appendChild(transformationArea);
-      }
     });
   }
 
@@ -487,57 +466,8 @@ export default class ControlPanel {
       this.currentLayerIndex++;
     }
 
-    // Mettre à jour l'index de transformation active
-    if (this.state.activeTransformationLayerIndex === fromIndex) {
-      this.state.activeTransformationLayerIndex = toIndex;
-    } else if (this.state.activeTransformationLayerIndex > fromIndex && this.state.activeTransformationLayerIndex <= toIndex) {
-      this.state.activeTransformationLayerIndex--;
-    } else if (this.state.activeTransformationLayerIndex < fromIndex && this.state.activeTransformationLayerIndex >= toIndex) {
-      this.state.activeTransformationLayerIndex++;
-    }
-
     this.updateLayersList();
     this.canvasManager.updateCanvas();
-  }
-
-  createTransformationArea(layer) {
-    const transformationArea = document.createElement('div');
-    transformationArea.className = 'transformation-area';
-
-    // Zone de code de transformation
-    const transformationCodeInput = document.createElement('textarea');
-    transformationCodeInput.className = 'transformation-code';
-    transformationCodeInput.rows = 5;
-    transformationCodeInput.value = layer.code;
-    transformationCodeInput.update = () => {
-      layer.code = transformationCodeInput.value;
-      this.updateDeleteFaderSubmenu();
-    };
-    transformationCodeInput.addEventListener('blur', transformationCodeInput.update);
-
-    // Affichage des erreurs
-    const errorDisplay = document.createElement('div');
-    errorDisplay.className = 'error-display';
-    // Mettre à jour errorDisplay selon les besoins
-
-    // Liste déroulante de sélection de transformation
-    const transformationSelector = document.createElement('select');
-    transformationSelector.className = 'transformation-selector';
-    this.state.transformations.forEach(({ name, code, selected }) => {
-      transformationSelector.add(new Option(name, code, selected, selected));
-    });
-    // Ajouter les options nécessaires
-    transformationSelector.addEventListener('change', (event) => {
-      transformationCodeInput.value = event.target.value;
-      transformationCodeInput.update();
-    });
-
-    // Ajouter les éléments à la zone de transformation
-    transformationArea.appendChild(transformationCodeInput);
-    transformationArea.appendChild(errorDisplay);
-    transformationArea.appendChild(transformationSelector);
-
-    return transformationArea;
   }
 
   deleteCurrentLayer() {

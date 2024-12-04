@@ -1,94 +1,26 @@
 let i = 0;
 
 export default class Layer extends EventTarget {
-  constructor(width, height, state, name = `c${++i}`) {
+  constructor(state, name = `c${++i}`) {
     super();
-    this.width = width;
-    this.height = height;
     this.state = state;
     this.name = name;
     this.offscreenCanvas = document.createElement('canvas');
-    this.offscreenCanvas.width = width;
-    this.offscreenCanvas.height = height;
     this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
-    this.offscreenImage = this.offscreenCanvasContext.createImageData(this.width, this.height);
     this.visible = true;
-    this.isPlaying = true;
     this.isDrawing = true;
-    this.transformationFunction = null;
-    this.usedVariables = [];
-    this.state.setVariable({
-      name,
-      value: {
-        r: 0, g: 0, b: 0, a: 0, at: (x, y) => {
-          const data = this.offscreenImage.data;
-          const index = (y * this.width + x) * 4;
-          return {
-            r: data[index],
-            g: data[index + 1],
-            b: data[index + 2],
-            a: data[index + 3],
-          };
-        }
-      }
-    });
+    this.resize(this.state.width, this.state.height);
   }
 
-  transform(layers) {
-    const newData = new Uint8ClampedArray(this.offscreenImage.data.length);
-    const width = this.width;
-    const height = this.height;
-    const numLayers = layers.length;
-    const anyX = () => Math.floor(Math.random() * width);
-    const anyY = () => Math.floor(Math.random() * height);
-    const at = this.state.variables[this.name].at;
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const index = (y * width + x) * 4; // Index du pixel actuel dans l'image source
-        const r = this.offscreenImage.data[index];
-        const g = this.offscreenImage.data[index + 1];
-        const b = this.offscreenImage.data[index + 2];
-        const a = this.offscreenImage.data[index + 3];
-
-        for (let i = 0; i < numLayers; i++) {
-          const layer = layers[i];
-          const data = layer.offscreenImage.data;
-          const name = layer.name;
-          const layerVariable = this.state.variables[name];
-          layerVariable.r = data[index];
-          layerVariable.g = data[index + 1];
-          layerVariable.b = data[index + 2];
-          layerVariable.a = data[index + 3];
-        }
-
-        // Appel de la fonction de transformation
-        const {
-          x: newX,
-          y: newY,
-          r: newR,
-          g: newG,
-          b: newB,
-          a: newA,
-        } = this.transformationFunction(x, y, r, g, b, a, width, height, 255, 0, anyX, anyY, at, this.state.variables);
-
-        // Calcul des coordonnées "wrap-around"
-        const intNewX = Math.floor(newX);
-        const intNewY = Math.floor(newY);
-        const wrappedX = ((intNewX % width) + width) % width;
-        const wrappedY = ((intNewY % height) + height) % height;
-        const newIndex = (wrappedY * width + wrappedX) * 4; // Index du pixel transformé
-
-        // Écriture des nouvelles valeurs RGBA dans le tableau de données
-        newData[newIndex] = newR ?? r; // Garde r si newR est undefined
-        newData[newIndex + 1] = newG ?? g;
-        newData[newIndex + 2] = newB ?? b;
-        newData[newIndex + 3] = newA ?? a; // Transparence inchangée par défaut
-      }
-    }
-
-    this.offscreenImage.data.set(newData);
-    this.updateOffscreen();
+  at = (x, y) => {
+    const data = this.offscreenImage.data;
+    const index = (y * this.width + x) * 4;
+    return {
+      r: data[index],
+      g: data[index + 1],
+      b: data[index + 2],
+      a: data[index + 3],
+    };
   }
 
   clear() {
@@ -284,17 +216,19 @@ export default class Layer extends EventTarget {
 
   resize(width, height) {
     const newImageData = this.offscreenCanvasContext.createImageData(width, height);
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const newIndex = (y * width + x) * 4;
-        const oldX = x % this.width;
-        const oldY = y % this.height;
-        const oldIndex = (oldY * this.width + oldX) * 4;
+    if (this.offscreenImage) {
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const newIndex = (y * width + x) * 4;
+          const oldX = x % this.width;
+          const oldY = y % this.height;
+          const oldIndex = (oldY * this.width + oldX) * 4;
 
-        newImageData.data[newIndex] = this.offscreenImage.data[oldIndex];
-        newImageData.data[newIndex + 1] = this.offscreenImage.data[oldIndex + 1];
-        newImageData.data[newIndex + 2] = this.offscreenImage.data[oldIndex + 2];
-        newImageData.data[newIndex + 3] = this.offscreenImage.data[oldIndex + 3];
+          newImageData.data[newIndex] = this.offscreenImage.data[oldIndex];
+          newImageData.data[newIndex + 1] = this.offscreenImage.data[oldIndex + 1];
+          newImageData.data[newIndex + 2] = this.offscreenImage.data[oldIndex + 2];
+          newImageData.data[newIndex + 3] = this.offscreenImage.data[oldIndex + 3];
+        }
       }
     }
     this.width = width;

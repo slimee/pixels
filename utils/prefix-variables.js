@@ -67,8 +67,8 @@ function prefixVariablesInCode(code, variableNames) {
     if ((parent.type === 'FunctionDeclaration' || parent.type === 'FunctionExpression' || parent.type === 'ArrowFunctionExpression') && (parent.id === node || parent.params.includes(node))) {
       return false; // Nom ou paramètre de fonction
     }
-    if (parent.type === 'MemberExpression' && ((parent.property === node && !parent.computed) || parent.object === node)) {
-      return false; // Propriété d'un objet
+    if (parent.type === 'MemberExpression' && parent.property === node && !parent.computed) {
+      return false; // Propriété non calculée d'un membre
     }
     if (parent.type === 'Property' && parent.key === node && !parent.computed) {
       return false; // Clé d'une propriété dans un objet
