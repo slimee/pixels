@@ -6,7 +6,7 @@ import InvalidVariablesNamesError from "../errors/invalid-variables-names-error.
 function validateVariableNames(variableNames) {
   // Liste des mots-clés réservés et des objets intégrés
   const reservedWords = new Set([
-    // variable de la fonction
+    // Variables de la fonction
     'x', 'y',
     // Mots-clés réservés
     'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default',
@@ -21,7 +21,7 @@ function validateVariableNames(variableNames) {
     'console', 'window', 'document', 'undefined', 'null', 'NaN', 'Infinity',
     // Noms spéciaux
     'arguments', 'eval', 'await', 'enum', 'implements', 'interface', 'package',
-    'private', 'protected', 'public', 'static', 'yield'
+    'private', 'protected', 'public', 'static'
   ]);
 
   // Listes pour les noms de variables valides et invalides
@@ -77,9 +77,37 @@ function prefixVariablesInCode(code, variableNames) {
     return true; // Sinon, c'est une utilisation de variable
   }
 
-  // Parcourir et modifier l'AST
-  acornWalk.ancestor(ast, {
-    Identifier(node, ancestors) {
+  // Définir un visiteur de base personnalisé qui traverse les motifs
+  const customBaseVisitor = {
+    ...acornWalk.base,
+    VariableDeclarator(node, state, c) {
+      c(node.id, state);
+      if (node.init) c(node.init, state);
+    },
+    AssignmentExpression(node, state, c) {
+      c(node.left, state);
+      c(node.right, state);
+    },
+    FunctionDeclaration(node, state, c) {
+      if (node.id) c(node.id, state);
+      for (const param of node.params) c(param, state);
+      c(node.body, state);
+    },
+    FunctionExpression(node, state, c) {
+      if (node.id) c(node.id, state);
+      for (const param of node.params) c(param, state);
+      c(node.body, state);
+    },
+    ArrowFunctionExpression(node, state, c) {
+      for (const param of node.params) c(param, state);
+      c(node.body, state);
+    },
+    // Ajouter d'autres nœuds si nécessaire
+  };
+
+  // Utiliser acornWalk.fullAncestor avec la bonne signature
+  acornWalk.fullAncestor(ast, (node, state, ancestors) => {
+    if (node.type === 'Identifier') {
       const parent = ancestors[ancestors.length - 2]; // Le parent direct
 
       if (isVariableUse(node, parent)) {
@@ -100,7 +128,7 @@ function prefixVariablesInCode(code, variableNames) {
         }
       }
     }
-  });
+  }, customBaseVisitor);
 
   const codeWithVariables = astring.generate(ast);
 
