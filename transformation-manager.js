@@ -52,6 +52,7 @@ export default class TransformationManager {
   }
 
   updatePixelCodeFunction() {
+    console.log('- - - - update pixel code function on layers - - - - -', this.state.layers.map(l => l.name));
     const layerNames = this.state.layers.map(layer => layer.name);
     const variableNames = [...Object.keys(this.state.variables), ...layerNames];
 
@@ -75,47 +76,49 @@ export default class TransformationManager {
   }
 
   runPixelCodeFunction() {
-    const layers = this.state.layers;
-    const numLayers = layers.length;
+    console.log('- - - - running pixel code function on layers - - - - -', this.state.layers.map(l => l.name));
     const width = this.state.width;
     const height = this.state.height;
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const index = (y * width + x) * 4;
-        for (let i = 0; i < numLayers; i++) {
-          const layer = layers[i];
-          const data = layer.offscreenImage.data;
-          this.state.variables[layer.name] = {
-            x, y,
-            r: data[index], g: data[index + 1], b: data[index + 2], a: data[index + 3],
-            at: layer.at,
-          }
-        }
+    for (let i = 0; i < this.state.layers.length; i++) {
+      const layer = this.state.layers[i];
+      const data = layer.offscreenImage.data;
 
-        // Appel de la fonction de transformation
-        this.pixelFunction(width, height, 255, 0, this.state.variables);
+      // Créer un buffer de sortie pour l'image finale
+      const uint8Array = new Uint8ClampedArray(width * height * 4).fill(0);
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const index = (y * width + x) * 4;
 
-        for (let i = 0; i < numLayers; i++) {
-          const layer = layers[i];
-          const layerVariable = this.state.variables[layer.name];
+          // Récupérer les valeurs RGBA du pixel dans le calque actuel
+          const r = data[index];
+          const g = data[index + 1];
+          const b = data[index + 2];
+          const a = data[index + 3];
+
+          // Appel de la fonction de transformation
+          // ici c2 n'existe pas encore quand on boucle sur c1.
+          this.state.variables[layer.name] = { x, y, r, g, b, a, at: layer.at };
+          this.pixelFunction(width, height, 255, 0, this.state.variables);
+
           // Calcul des coordonnées "wrap-around"
-          const wrappedX = ((Math.floor(layerVariable.x) % width) + width) % width;
-          const wrappedY = ((Math.floor(layerVariable.y) % height) + height) % height;
-          const newIndex = (wrappedY * width + wrappedX) * 4;
+          const intNewX = Math.floor(this.state.variables[layer.name].x);
+          const intNewY = Math.floor(this.state.variables[layer.name].y);
+          const wrappedX = ((intNewX % width) + width) % width;
+          const wrappedY = ((intNewY % height) + height) % height;
+          const newIndex = (wrappedY * width + wrappedX) * 4; // Index du pixel transformé
 
-          // Écriture des nouvelles valeurs RGBA dans le tableau de données
-          const newData = new Uint8ClampedArray(layer.offscreenImage.data.length);
-          newData[newIndex] = layerVariable.r;
-          newData[newIndex + 1] = layerVariable.g;
-          newData[newIndex + 2] = layerVariable.b;
-          newData[newIndex + 3] = layerVariable.a;
-          newData[newIndex + 3] = layerVariable.a;
-          layer.offscreenImage.data.set(newData);
-          layer.updateOffscreen();
+          // Écriture des nouvelles valeurs RGBA dans le buffer de sortie
+          const layerVariable = this.state.variables[layer.name];
+          uint8Array[newIndex] = layerVariable.r;
+          uint8Array[newIndex + 1] = layerVariable.g;
+          uint8Array[newIndex + 2] = layerVariable.b;
+          uint8Array[newIndex + 3] = layerVariable.a;
         }
       }
-    }
 
+      layer.offscreenImage.data.set(uint8Array);
+      layer.updateOffscreen();
+    }
   }
 }

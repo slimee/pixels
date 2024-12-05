@@ -157,10 +157,10 @@ export default class ControlPanel {
   }
 
   bindPlayPauseButton() {
-    this.ui.playPauseButton.addEventListener('click', () => this.togglePlayPause());
+    this.ui.playPauseButton.addEventListener('click', this.togglePlayPause);
   }
 
-  togglePlayPause() {
+  togglePlayPause = () => {
     this.state.isPlaying
       ? this.pause()
       : this.play();
@@ -317,6 +317,8 @@ export default class ControlPanel {
     this.layers.push(newLayer);
     this.currentLayerIndex = this.layers.length - 1;
     this.updateLayersList();
+    this.transformationManager.updateFrameCodeFunction();
+    this.transformationManager.updatePixelCodeFunction();
   }
 
   updateLayersList() {
