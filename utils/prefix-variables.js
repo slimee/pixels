@@ -1,156 +1,166 @@
 import * as acorn from 'https://unpkg.com/acorn@8.8.1/dist/acorn.mjs';
 import * as acornWalk from 'https://unpkg.com/acorn-walk@8.2.0/dist/walk.mjs';
 import * as astring from 'https://unpkg.com/astring@1.9.0/dist/astring.mjs';
-import InvalidVariablesNamesError from "../errors/invalid-variables-names-error.js";
 
-function validateVariableNames(variableNames) {
-  // Liste des mots-clés réservés et des objets intégrés
-  const reservedWords = new Set([
-    // Variables de la fonction
-    'x', 'y',
-    // Mots-clés réservés
-    'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default',
-    'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function',
-    'if', 'import', 'in', 'instanceof', 'let', 'new', 'return', 'super', 'switch',
-    'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield',
-    // Objets intégrés
-    'Array', 'Boolean', 'Date', 'Error', 'Function', 'JSON', 'Math', 'Number',
-    'Object', 'RegExp', 'String', 'Promise', 'Symbol', 'Map', 'Set', 'WeakMap',
-    'WeakSet', 'Proxy', 'Reflect', 'Intl', 'WebAssembly', 'BigInt',
-    // Autres globales
-    'console', 'window', 'document', 'undefined', 'null', 'NaN', 'Infinity',
-    // Noms spéciaux
-    'arguments', 'eval', 'await', 'enum', 'implements', 'interface', 'package',
-    'private', 'protected', 'public', 'static'
-  ]);
+export default function prefixVariables(code, layers) {
+  const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'script' });
 
-  // Listes pour les noms de variables valides et invalides
-  const validVariableNames = [];
-  const invalidVariableNames = [];
+  // Préparation des maps pour accès direct
+  // Exemple: pour c1 on fera inputDataC1 et outputDataC1
+  const layerReadVars = {};   // { c1: 'inputDataC1', ... }
+  const layerWriteVars = {};  // { c1: 'outputDataC1', ... }
 
-  // Vérifier chaque nom de variable
-  variableNames.forEach(varName => {
-    if (reservedWords.has(varName)) {
-      invalidVariableNames.push(varName);
-    } else {
-      validVariableNames.push(varName);
+  layers.forEach(layer => {
+    layerReadVars[layer] = `input${layer}`;
+    layerWriteVars[layer] = `output${layer}`;
+  });
+
+  // Fonctions utilitaires pour l’AST
+  function isLayerName(name) {
+    return layers.includes(name);
+  }
+
+  function replaceMemberExpression(node) {
+    // On gère les accès du type cN.x, cN.r, etc.
+    if (node.object.type === 'Identifier' && isLayerName(node.object.name)) {
+      const layer = node.object.name;
+      if (node.property.type === 'Identifier') {
+        const prop = node.property.name;
+        // cN.x, cN.y, cN.r, cN.g, cN.b, cN.a
+        if (['x', 'y', 'r', 'g', 'b', 'a'].includes(prop)) {
+          // Remplacer par cN_x, cN_y, cN_r ...
+          return {
+            type: 'Identifier',
+            name: `${layer}_${prop}`
+          };
+        } else if (prop === 'at') {
+          // cN.at(...) est géré plus tard (au niveau des CallExpression)
+          return node;
+        }
+      }
+    }
+    return node;
+  }
+
+  function transformAtCall(node) {
+    // cN.at(px, py).r
+    // on doit repérer ce pattern : (CallExpression (MemberExpression cN.at) (args)) . r/g/b/a
+    // On s’attend à un MemberExpression parent qui accède .r/g/b/a
+    // Ou un Assignment d’un canal
+    // node est le MemberExpression cN.at(...)
+    if (node.callee.type === 'MemberExpression' &&
+      node.callee.object.type === 'Identifier' &&
+      isLayerName(node.callee.object.name) &&
+      node.callee.property.name === 'at') {
+      // node.arguments : [px, py]
+      const layer = node.callee.object.name;
+      const px = node.arguments[0];
+      const py = node.arguments[1];
+      return { layer, px, py };
+    }
+    return null;
+  }
+
+  // On va parcourir l’AST et transformer
+  acornWalk.simple(ast, {
+    MemberExpression(node) {
+      // Remplacer les cN.x par cN_x
+      Object.assign(node, replaceMemberExpression(node));
+    },
+    CallExpression(node) {
+      // repérer cN.at(px,py)
+      const atInfo = transformAtCall(node);
+      if (atInfo) {
+        // On laisse tel quel, c'est au parent (MemberExpression ou Assignment) de le gérer
+      }
     }
   });
 
-  return {
-    validVariableNames,
-    invalidVariableNames
-  };
-}
+  // Deuxième passe pour gérer cN.at(px, py).r etc.
+  // On a besoin de fullAncestor pour voir le parent
+  acornWalk.fullAncestor(ast, (node, ancestors) => {
+    if (node.type === 'MemberExpression' &&
+      node.object.type === 'CallExpression') {
+      const callNode = node.object;
+      const atInfo = transformAtCall(callNode);
+      if (atInfo) {
+        // cN.at(px, py).r
+        const channel = node.property.name; // 'r', 'g', 'b', 'a'
 
-function prefixVariablesInCode(code, variableNames) {
-  // Parser le code en un AST
-  const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'script' });
+        // Lecture: getPixelChannel(inputDataCN, width, height, px, py, 'r')
+        // Écriture: setPixelChannel(outputDataCN, width, height, px, py, 'r', value)
 
-  const variablesSet = new Set(variableNames);
-  const usedVariables = new Set();
-  const allVariablesUsed = new Set();
+        // Pour savoir si c'est une écriture, on regarde le parent :
+        const parent = ancestors[ancestors.length - 2];
+        let isWrite = false;
+        if (parent.type === 'AssignmentExpression' && parent.left === node) {
+          isWrite = true;
+        }
 
-  const builtInVariables = new Set([
-    // Objets intégrés et globales communes
-    'Array', 'Boolean', 'Date', 'Error', 'Function', 'JSON', 'Math', 'Number',
-    'Object', 'RegExp', 'String', 'Promise', 'Symbol', 'Map', 'Set', 'WeakMap',
-    'WeakSet', 'Proxy', 'Reflect', 'Intl', 'WebAssembly', 'BigInt',
-    'console', 'window', 'document', 'undefined', 'null', 'NaN', 'Infinity'
-  ]);
-
-  function isVariableUse(node, parent) {
-    // Détermine si le nœud est une utilisation de variable (et non une déclaration ou une propriété)
-    if (parent.type === 'VariableDeclarator' && parent.id === node) {
-      return false; // Déclaration de variable
-    }
-    if ((parent.type === 'FunctionDeclaration' || parent.type === 'FunctionExpression' || parent.type === 'ArrowFunctionExpression') && (parent.id === node || parent.params.includes(node))) {
-      return false; // Nom ou paramètre de fonction
-    }
-    if (parent.type === 'MemberExpression' && parent.property === node && !parent.computed) {
-      return false; // Propriété non calculée d'un membre
-    }
-    if (parent.type === 'Property' && parent.key === node && !parent.computed) {
-      return false; // Clé d'une propriété dans un objet
-    }
-    // Ajouter d'autres cas si nécessaire
-    return true; // Sinon, c'est une utilisation de variable
-  }
-
-  // Définir un visiteur de base personnalisé qui traverse les motifs
-  const customBaseVisitor = {
-    ...acornWalk.base,
-    VariableDeclarator(node, state, c) {
-      c(node.id, state);
-      if (node.init) c(node.init, state);
-    },
-    AssignmentExpression(node, state, c) {
-      c(node.left, state);
-      c(node.right, state);
-    },
-    FunctionDeclaration(node, state, c) {
-      if (node.id) c(node.id, state);
-      for (const param of node.params) c(param, state);
-      c(node.body, state);
-    },
-    FunctionExpression(node, state, c) {
-      if (node.id) c(node.id, state);
-      for (const param of node.params) c(param, state);
-      c(node.body, state);
-    },
-    ArrowFunctionExpression(node, state, c) {
-      for (const param of node.params) c(param, state);
-      c(node.body, state);
-    },
-    // Ajouter d'autres nœuds si nécessaire
-  };
-
-  // Utiliser acornWalk.fullAncestor avec la bonne signature
-  acornWalk.fullAncestor(ast, (node, state, ancestors) => {
-    if (node.type === 'Identifier') {
-      const parent = ancestors[ancestors.length - 2]; // Le parent direct
-
-      if (isVariableUse(node, parent)) {
-        allVariablesUsed.add(node.name); // Collecter toutes les variables utilisées
-      }
-
-      if (variablesSet.has(node.name)) {
-        usedVariables.add(node.name); // Stocker la variable utilisée
-
-        if (isVariableUse(node, parent)) {
-          // Remplacer l'identifiant par variables.identifiant
+        if (isWrite) {
+          // cN.at(px,py).r = value => setPixelChannel(outputDataCN, width, height, px, py, 'r', value)
+          Object.assign(parent, {
+            type: 'CallExpression',
+            callee: { type: 'Identifier', name: 'setPixelChannel' },
+            arguments: [
+              { type: 'Identifier', name: layerWriteVars[atInfo.layer] },
+              { type: 'Identifier', name: 'width' },
+              { type: 'Identifier', name: 'height' },
+              atInfo.px,
+              atInfo.py,
+              { type: 'Literal', value: channel },
+              parent.right
+            ]
+          });
+        } else {
+          // Lecture
           Object.assign(node, {
-            type: 'MemberExpression',
-            object: { type: 'Identifier', name: 'variables' },
-            property: { type: 'Identifier', name: node.name },
-            computed: false
+            type: 'CallExpression',
+            callee: { type: 'Identifier', name: 'getPixelChannel' },
+            arguments: [
+              { type: 'Identifier', name: layerReadVars[atInfo.layer] },
+              { type: 'Identifier', name: 'width' },
+              { type: 'Identifier', name: 'height' },
+              atInfo.px,
+              atInfo.py,
+              { type: 'Literal', value: channel }
+            ]
           });
         }
       }
     }
-  }, customBaseVisitor);
+  });
 
-  const codeWithVariables = astring.generate(ast);
+  // Construction du préambule
+  let initCode = '';
+  layers.forEach(layer => {
+    initCode += `
+      let ${layer}_x = x;
+      let ${layer}_y = y;
+      let ${layer}Index = (y * width + x)*4;
+      let ${layer}_r = ${layerReadVars[layer]}[${layer}Index];
+      let ${layer}_g = ${layerReadVars[layer]}[${layer}Index+1];
+      let ${layer}_b = ${layerReadVars[layer]}[${layer}Index+2];
+      let ${layer}_a = ${layerReadVars[layer]}[${layer}Index+3];
+    `;
+  });
 
-  // Calculer les variables non préfixées
-  const unprefixedVariables = Array.from(allVariablesUsed)
-    .filter(varName => !usedVariables.has(varName) && !builtInVariables.has(varName));
+  const userCode = astring.generate(ast);
 
-  return {
-    codeWithVariables,
-    usedVariables: Array.from(usedVariables),
-    unprefixedVariables
-  };
-}
+  // Construction du postambule (réécriture dans output)
+  let finalCode = '';
+  layers.forEach(layer => {
+    finalCode += `
+      {
+        let finalIndex = (wrapY(${layer}_y, height) * width + wrapX(${layer}_x, width))*4;
+        ${layer}Index = finalIndex;
+        ${layerWriteVars[layer]}[finalIndex] = ${layer}_r;
+        ${layerWriteVars[layer]}[finalIndex+1] = ${layer}_g;
+        ${layerWriteVars[layer]}[finalIndex+2] = ${layer}_b;
+        ${layerWriteVars[layer]}[finalIndex+3] = ${layer}_a;
+      }
+    `;
+  });
 
-export default function prefixVariables(code, variables) {
-
-  const variableNames = variables.map(v => v.trim()).filter(v => v);
-  const { validVariableNames, invalidVariableNames } = validateVariableNames(variableNames);
-
-  if (invalidVariableNames.length) {
-    throw new InvalidVariablesNamesError(invalidVariableNames);
-  }
-
-  return prefixVariablesInCode(code, validVariableNames);
+  return `${initCode}${userCode}${finalCode}`;
 }

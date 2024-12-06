@@ -20,23 +20,23 @@ export default class TransformationManager {
   }
 
   updateFrameCodeFunction() {
-    const variableNames = Object.keys(this.state.variables);
-    const {
-      codeWithVariables,
-      usedVariables,
-      unprefixedVariables,
-    } = prefixVariables(this.state.frameCode, variableNames);
-
-    console.log('');
-    console.log(' - - - - frame code - - - - ');
-    console.log('variable names:', variableNames);
-    console.log('code before:', this.state.frameCode);
-    console.log('usedVariables:', usedVariables);
-    console.log('unprefixedVariables:', unprefixedVariables);
-    console.log('state.variables:', this.state.variables);
-    console.log('code transformed:', codeWithVariables);
-
-    this.frameFunction = new Function('variables', `${codeWithVariables}`);
+    // const variableNames = Object.keys(this.state.variables);
+    // const {
+    //   codeWithVariables,
+    //   usedVariables,
+    //   unprefixedVariables,
+    // } = prefixVariables(this.state.frameCode, variableNames);
+    //
+    // console.log('');
+    // console.log(' - - - - frame code - - - - ');
+    // console.log('variable names:', variableNames);
+    // console.log('code before:', this.state.frameCode);
+    // console.log('usedVariables:', usedVariables);
+    // console.log('unprefixedVariables:', unprefixedVariables);
+    // console.log('state.variables:', this.state.variables);
+    // console.log('code transformed:', codeWithVariables);
+    //
+    // this.frameFunction = new Function('variables', `${codeWithVariables}`);
   }
 
   runFrameCodeFunction() {
@@ -52,98 +52,85 @@ export default class TransformationManager {
   }
 
   updatePixelCodeFunction() {
-    console.log('- - - - update pixel code function on layers - - - - -', this.state.layers.map(l => l.name));
+    console.log('');
+    console.log(' - - - - update pixel code function - - - - ')
     const layerNames = this.state.layers.map(layer => layer.name);
     const variableNames = [...Object.keys(this.state.variables), ...layerNames];
 
-    const {
-      codeWithVariables,
-      usedVariables,
-      unprefixedVariables
-    } = prefixVariables(this.state.pixelCode, variableNames);
-    console.log('');
-    console.log(' - - - - pixel code - - - - ')
+    const codeWithVariables = prefixVariables(this.state.pixelCode, variableNames);
     console.log('variable names:', variableNames);
     console.log('layer code before:', this.state.pixelCode);
-    console.log('usedVariables:', usedVariables);
-    console.log('unprefixedVariables:', unprefixedVariables);
     console.log('state.variables:', this.state.variables);
     console.log('code transformed:', codeWithVariables);
 
+    const argsNames = ['width', 'height', 'x', 'y', 'wrapX', 'wrapY'];
+    this.state.layers.forEach((layer) => {
+      argsNames.push(`input${layer.name}`, `output${layer.name}`);
+    });
 
-    this.usedVariables = usedVariables;
-    this.pixelFunction = new Function('width', 'height', 'max', 'min', 'variables', `${codeWithVariables}`);
+    this.pixelFunction = new Function(...argsNames, `${codeWithVariables}`);
   }
 
   runPixelCodeFunction() {
-    console.log('- - - - running pixel code function - - - - -', this.state.layers.map(l => l.name));
-
     const { width, height, layers } = this.state;
-    const numLayers = layers.length;
-
-    // Récupération des données source
     const originalDataArrays = layers.map(layer => layer.offscreenImage.data);
-
-    // Création des buffers de sortie pour chaque calque
     const outputDataArrays = layers.map(layer =>
       new Uint8ClampedArray(layer.offscreenImage.data.length)
     );
 
-    // Dictionnaire de variables. Clé = nom du calque. Valeur = { x, y, r, g, b, a, at }
-    const variables = {};
-    for (let i = 0; i < numLayers; i++) {
-      variables[layers[i].name] = { x: 0, y: 0, r: 0, g: 0, b: 0, a: 0, at: layers[i].at };
-    }
+    const argsValues = [width, height, 0, 0, this.wrapX, this.wrapY];
+    layers.forEach((layer, i) => {
+      argsValues.push(originalDataArrays[i], outputDataArrays[i]);
+    });
 
-    // Boucle sur tous les pixels
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const index = (y * width + x) * 4;
-
-        // Remplir 'variables' avec les données de chaque calque
-        for (let i = 0; i < numLayers; i++) {
-          const layer = layers[i];
-          const data = originalDataArrays[i];
-
-          variables[layer.name].x = x;
-          variables[layer.name].y = y;
-          variables[layer.name].r = data[index];
-          variables[layer.name].g = data[index + 1];
-          variables[layer.name].b = data[index + 2];
-          variables[layer.name].a = data[index + 3];
-        }
-
-        // Appel de la pixelFunction
-        this.pixelFunction(width, height, 255, 0, variables);
-
-        // Après la modification, écrire dans les buffers de sortie
-        for (let i = 0; i < numLayers; i++) {
-          const layer = layers[i];
-          const v = variables[layer.name];
-
-          // Calcul des coordonnées wrap-around
-          const intNewX = Math.floor(v.x);
-          const intNewY = Math.floor(v.y);
-          const wrappedX = ((intNewX % width) + width) % width;
-          const wrappedY = ((intNewY % height) + height) % height;
-          const newIndex = (wrappedY * width + wrappedX) * 4;
-
-          // Ecriture dans le buffer de sortie
-          const outData = outputDataArrays[i];
-          outData[newIndex] = v.r;
-          outData[newIndex + 1] = v.g;
-          outData[newIndex + 2] = v.b;
-          outData[newIndex + 3] = v.a;
-        }
+    for (let py = 0; py < height; py++) {
+      for (let px = 0; px < width; px++) {
+        argsValues[2] = px; // x
+        argsValues[3] = py; // y
+        this.pixelFunction(...argsValues);
       }
     }
 
-    // Mise à jour des calques avec les données finales
-    for (let i = 0; i < numLayers; i++) {
-      const layer = layers[i];
+    layers.forEach((layer, i) => {
       const outData = outputDataArrays[i];
       layer.offscreenImage.data.set(outData);
       layer.updateOffscreen();
+    });
+  }
+
+  wrapX(x, width) {
+    return ((x % width) + width) % width;
+  }
+
+  wrapY(y, height) {
+    return ((y % height) + height) % height;
+  }
+
+  channelOffset(channel) {
+    switch (channel) {
+      case 'r':
+        return 0;
+      case 'g':
+        return 1;
+      case 'b':
+        return 2;
+      case 'a':
+        return 3;
     }
+    throw new Error('Invalid channel ' + channel);
+  }
+
+  getPixelChannel(layerData, width, height, x, y, channel) {
+    const wx = this.wrapX(x, width);
+    const wy = this.wrapY(y, height);
+    const index = (wy * width + wx) * 4 + this.channelOffset(channel);
+    return layerData[index];
+  }
+
+  setPixelChannel(layerData, width, height, x, y, channel, value) {
+    const wx = this.wrapX(x, width);
+    const wy = this.wrapY(y, height);
+    const index = (wy * width + wx) * 4 + this.channelOffset(channel);
+    layerData[index] = value;
   }
 }
