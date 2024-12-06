@@ -10,6 +10,7 @@ export default class ControlPanel {
     this.transformationManager = transformationManager;
 
     this.bindPlayPauseButton();
+    this.bindTestButton();
     this.bindAddDeleteLayerButtons();
     this.bindTools();
     this.bindClearButtons();
@@ -160,6 +161,15 @@ export default class ControlPanel {
     this.ui.playPauseButton.addEventListener('click', this.togglePlayPause);
   }
 
+  bindTestButton() {
+    this.ui.testButton.addEventListener('click', this.testAnimation);
+  }
+
+  testAnimation = () => {
+    this.state.isPlaying = false;
+    this.frame();
+  }
+
   togglePlayPause = () => {
     this.state.isPlaying
       ? this.pause()
@@ -185,7 +195,6 @@ export default class ControlPanel {
   frame = () => {
     this.transformationManager.runFrameCodeFunction();
     this.transformationManager.runPixelCodeFunction();
-
     this.canvasManager.updateCanvas();
 
     if (this.state.isPlaying) requestAnimationFrame(this.frame);
