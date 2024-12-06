@@ -2,7 +2,7 @@ import * as acorn from 'https://unpkg.com/acorn@8.8.1/dist/acorn.mjs';
 import * as acornWalk from 'https://unpkg.com/acorn-walk@8.2.0/dist/walk.mjs';
 import * as astring from 'https://unpkg.com/astring@1.9.0/dist/astring.mjs';
 
-export default function prefixVariables(code, layers) {
+export default function preparePixelFunction(code, layers) {
   const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'script' });
 
   // Préparation des maps pour accès direct

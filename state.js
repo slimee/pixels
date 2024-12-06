@@ -28,14 +28,12 @@ export default class State {
   }
 
   setVariable({ oldName, name, value }) {
-    delete this.variables[oldName];
+    this.deleteVariable(oldName);
     this.variables[name] = value;
-    this.layers.forEach(layer => layer.updateTransformationFunction());
   }
 
   deleteVariable(name) {
     delete this.variables[name];
-    this.layers.forEach(layer => layer.updateTransformationFunction());
   }
 
   isVariableUsed(name) {

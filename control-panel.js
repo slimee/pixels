@@ -253,6 +253,7 @@ export default class ControlPanel {
       this.state.setVariable(state);
       this.updateDeleteFaderSubmenu();
       this.transformationManager.updateFrameCodeFunction();
+      this.transformationManager.updatePixelCodeFunction();
     };
     this.ui.faderContainer.appendChild(makeFader(state, onChange));
     this.transformationManager.updateFrameCodeFunction();

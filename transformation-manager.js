@@ -1,4 +1,5 @@
-import prefixVariables from "./utils/prefix-variables.js";
+import preparePixelFunction from "./utils/prepare-pixel-function.js";
+import prepareFrameFunction from "./utils/prepare-frame-function.js";
 
 export default class TransformationManager {
   constructor(ui, state) {
@@ -20,23 +21,23 @@ export default class TransformationManager {
   }
 
   updateFrameCodeFunction() {
-    // const variableNames = Object.keys(this.state.variables);
-    // const {
-    //   codeWithVariables,
-    //   usedVariables,
-    //   unprefixedVariables,
-    // } = prefixVariables(this.state.frameCode, variableNames);
-    //
-    // console.log('');
-    // console.log(' - - - - frame code - - - - ');
-    // console.log('variable names:', variableNames);
-    // console.log('code before:', this.state.frameCode);
-    // console.log('usedVariables:', usedVariables);
-    // console.log('unprefixedVariables:', unprefixedVariables);
-    // console.log('state.variables:', this.state.variables);
-    // console.log('code transformed:', codeWithVariables);
-    //
-    // this.frameFunction = new Function('variables', `${codeWithVariables}`);
+    const variableNames = Object.keys(this.state.variables);
+    const {
+      preparedFrameFunction,
+      usedVariables,
+      unprefixedVariables,
+    } = prepareFrameFunction(this.state.frameCode, variableNames);
+
+    console.log('');
+    console.log(' - - - - frame code - - - - ');
+    console.log('variable names:', variableNames);
+    console.log('code before:', this.state.frameCode);
+    console.log('usedVariables:', usedVariables);
+    console.log('unprefixedVariables:', unprefixedVariables);
+    console.log('state.variables:', this.state.variables);
+    console.log('code transformed:', preparedFrameFunction);
+
+    this.frameFunction = new Function('variables', `${preparedFrameFunction}`);
   }
 
   runFrameCodeFunction() {
@@ -57,18 +58,18 @@ export default class TransformationManager {
     const layerNames = this.state.layers.map(layer => layer.name);
     const variableNames = [...Object.keys(this.state.variables), ...layerNames];
 
-    const codeWithVariables = prefixVariables(this.state.pixelCode, variableNames);
+    const preparedPixelCode = preparePixelFunction(this.state.pixelCode, variableNames);
     console.log('variable names:', variableNames);
     console.log('layer code before:', this.state.pixelCode);
     console.log('state.variables:', this.state.variables);
-    console.log('code transformed:', codeWithVariables);
+    console.log('pixel code transformed:', preparedPixelCode);
 
     const argsNames = ['width', 'height', 'x', 'y', 'wrapX', 'wrapY'];
     this.state.layers.forEach((layer) => {
       argsNames.push(`input${layer.name}`, `output${layer.name}`);
     });
 
-    this.pixelFunction = new Function(...argsNames, `${codeWithVariables}`);
+    this.pixelFunction = new Function(...argsNames, `${preparedPixelCode}`);
   }
 
   runPixelCodeFunction() {
