@@ -76,48 +76,73 @@ export default class TransformationManager {
   }
 
   runPixelCodeFunction() {
-    console.log('- - - - running pixel code function on layers - - - - -', this.state.layers.map(l => l.name));
-    const width = this.state.width;
-    const height = this.state.height;
+    console.log('- - - - running pixel code function - - - - -', this.state.layers.map(l => l.name));
 
-    for (let i = 0; i < this.state.layers.length; i++) {
-      const layer = this.state.layers[i];
-      const data = layer.offscreenImage.data;
+    const { width, height, layers } = this.state;
+    const numLayers = layers.length;
 
-      // Créer un buffer de sortie pour l'image finale
-      const uint8Array = new Uint8ClampedArray(width * height * 4).fill(0);
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          const index = (y * width + x) * 4;
+    // Récupération des données source
+    const originalDataArrays = layers.map(layer => layer.offscreenImage.data);
 
-          // Récupérer les valeurs RGBA du pixel dans le calque actuel
-          const r = data[index];
-          const g = data[index + 1];
-          const b = data[index + 2];
-          const a = data[index + 3];
+    // Création des buffers de sortie pour chaque calque
+    const outputDataArrays = layers.map(layer =>
+      new Uint8ClampedArray(layer.offscreenImage.data.length)
+    );
 
-          // Appel de la fonction de transformation
-          // ici c2 n'existe pas encore quand on boucle sur c1.
-          this.state.variables[layer.name] = { x, y, r, g, b, a, at: layer.at };
-          this.pixelFunction(width, height, 255, 0, this.state.variables);
+    // Dictionnaire de variables. Clé = nom du calque. Valeur = { x, y, r, g, b, a, at }
+    const variables = {};
+    for (let i = 0; i < numLayers; i++) {
+      variables[layers[i].name] = { x: 0, y: 0, r: 0, g: 0, b: 0, a: 0, at: layers[i].at };
+    }
 
-          // Calcul des coordonnées "wrap-around"
-          const intNewX = Math.floor(this.state.variables[layer.name].x);
-          const intNewY = Math.floor(this.state.variables[layer.name].y);
+    // Boucle sur tous les pixels
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const index = (y * width + x) * 4;
+
+        // Remplir 'variables' avec les données de chaque calque
+        for (let i = 0; i < numLayers; i++) {
+          const layer = layers[i];
+          const data = originalDataArrays[i];
+
+          variables[layer.name].x = x;
+          variables[layer.name].y = y;
+          variables[layer.name].r = data[index];
+          variables[layer.name].g = data[index + 1];
+          variables[layer.name].b = data[index + 2];
+          variables[layer.name].a = data[index + 3];
+        }
+
+        // Appel de la pixelFunction
+        this.pixelFunction(width, height, 255, 0, variables);
+
+        // Après la modification, écrire dans les buffers de sortie
+        for (let i = 0; i < numLayers; i++) {
+          const layer = layers[i];
+          const v = variables[layer.name];
+
+          // Calcul des coordonnées wrap-around
+          const intNewX = Math.floor(v.x);
+          const intNewY = Math.floor(v.y);
           const wrappedX = ((intNewX % width) + width) % width;
           const wrappedY = ((intNewY % height) + height) % height;
-          const newIndex = (wrappedY * width + wrappedX) * 4; // Index du pixel transformé
+          const newIndex = (wrappedY * width + wrappedX) * 4;
 
-          // Écriture des nouvelles valeurs RGBA dans le buffer de sortie
-          const layerVariable = this.state.variables[layer.name];
-          uint8Array[newIndex] = layerVariable.r;
-          uint8Array[newIndex + 1] = layerVariable.g;
-          uint8Array[newIndex + 2] = layerVariable.b;
-          uint8Array[newIndex + 3] = layerVariable.a;
+          // Ecriture dans le buffer de sortie
+          const outData = outputDataArrays[i];
+          outData[newIndex] = v.r;
+          outData[newIndex + 1] = v.g;
+          outData[newIndex + 2] = v.b;
+          outData[newIndex + 3] = v.a;
         }
       }
+    }
 
-      layer.offscreenImage.data.set(uint8Array);
+    // Mise à jour des calques avec les données finales
+    for (let i = 0; i < numLayers; i++) {
+      const layer = layers[i];
+      const outData = outputDataArrays[i];
+      layer.offscreenImage.data.set(outData);
       layer.updateOffscreen();
     }
   }
