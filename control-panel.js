@@ -10,6 +10,7 @@ export default class ControlPanel {
     this.transformationManager = transformationManager;
 
     this.bindPlayPauseButton();
+    this.bindTestButton();
     this.bindAddDeleteLayerButtons();
     this.bindTools();
     this.bindClearButtons();
@@ -160,6 +161,15 @@ export default class ControlPanel {
     this.ui.playPauseButton.addEventListener('click', this.togglePlayPause);
   }
 
+  bindTestButton() {
+    this.ui.testButton.addEventListener('click', this.testAnimation);
+  }
+
+  testAnimation = () => {
+    this.state.isPlaying = false;
+    this.frame();
+  }
+
   togglePlayPause = () => {
     this.state.isPlaying
       ? this.pause()
@@ -185,7 +195,6 @@ export default class ControlPanel {
   frame = () => {
     this.transformationManager.runFrameCodeFunction();
     this.transformationManager.runPixelCodeFunction();
-
     this.canvasManager.updateCanvas();
 
     if (this.state.isPlaying) requestAnimationFrame(this.frame);
@@ -252,11 +261,10 @@ export default class ControlPanel {
     const onChange = () => {
       this.state.setVariable(state);
       this.updateDeleteFaderSubmenu();
-      this.transformationManager.updateFrameCodeFunction();
-      this.transformationManager.updatePixelCodeFunction();
+      this.transformationManager.updateCodeFunctions();
     };
     this.ui.faderContainer.appendChild(makeFader(state, onChange));
-    this.transformationManager.updateFrameCodeFunction();
+    this.transformationManager.updateCodeFunctions();
   }
 
   updateDeleteFaderSubmenu() {
@@ -318,8 +326,7 @@ export default class ControlPanel {
     this.layers.push(newLayer);
     this.currentLayerIndex = this.layers.length - 1;
     this.updateLayersList();
-    this.transformationManager.updateFrameCodeFunction();
-    this.transformationManager.updatePixelCodeFunction();
+    this.transformationManager.updateCodeFunctions();
   }
 
   updateLayersList() {
@@ -409,6 +416,7 @@ export default class ControlPanel {
 
         this.moveLayer(this.draggedLayerIndex, targetIndex);
         this.draggedLayerIndex = null;
+        this.transformationManager.updateCodeFunctions();
       });
 
       const eyeCheckbox = makeCheckbox('bx bxs-show', 'bx bxs-hide', layer.visible, 'Cacher le calque', () => {

@@ -2,7 +2,7 @@ import * as acorn from 'https://unpkg.com/acorn@8.8.1/dist/acorn.mjs';
 import * as acornWalk from 'https://unpkg.com/acorn-walk@8.2.0/dist/walk.mjs';
 import * as astring from 'https://unpkg.com/astring@1.9.0/dist/astring.mjs';
 
-export default function preparePixelFunction(code, layers) {
+export default function preparePixelFunction(code, layerNames) {
   const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'script' });
 
   // Préparation des maps pour accès direct
@@ -10,14 +10,14 @@ export default function preparePixelFunction(code, layers) {
   const layerReadVars = {};   // { c1: 'inputDataC1', ... }
   const layerWriteVars = {};  // { c1: 'outputDataC1', ... }
 
-  layers.forEach(layer => {
+  layerNames.forEach(layer => {
     layerReadVars[layer] = `input${layer}`;
     layerWriteVars[layer] = `output${layer}`;
   });
 
   // Fonctions utilitaires pour l’AST
   function isLayerName(name) {
-    return layers.includes(name);
+    return layerNames.includes(name);
   }
 
   function replaceMemberExpression(node) {
@@ -133,7 +133,7 @@ export default function preparePixelFunction(code, layers) {
 
   // Construction du préambule
   let initCode = '';
-  layers.forEach(layer => {
+  layerNames.forEach(layer => {
     initCode += `
       let ${layer}_x = x;
       let ${layer}_y = y;
@@ -149,7 +149,7 @@ export default function preparePixelFunction(code, layers) {
 
   // Construction du postambule (réécriture dans output)
   let finalCode = '';
-  layers.forEach(layer => {
+  layerNames.forEach(layer => {
     finalCode += `
       {
         let finalIndex = (wrapY(${layer}_y, height) * width + wrapX(${layer}_x, width))*4;

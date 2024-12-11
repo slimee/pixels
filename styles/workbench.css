@@ -9,6 +9,21 @@ body, html {
     color: white;
     align-items: center;
     padding-top: 10px;
+    padding-left: 10px;
+}
+
+.icon {
+    height: 32px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.icon:hover {
+    transform: scale(1.1);
+}
+
+.icon:active {
+    transform: scale(0.9);
 }
 
 .toolbar button {
@@ -16,7 +31,6 @@ body, html {
     border: none;
     color: white;
     margin: 10px 0;
-    cursor: pointer;
 }
 
 .canvas-container {
