@@ -35,10 +35,7 @@ export default class CanvasManager {
     const x = this.state.mouse.x;
     const y = this.state.mouse.y;
     this.state.lastPoint = { x, y };
-
-    this.state.drawingLayers.forEach(layer => layer.paintImage('https://picsum.photos/200/300', this.brush));
-    this.updateCanvas();
-
+    
     if (this.brush.tool === 'magic-fill') {
       this.state.drawingLayers.forEach(layer => layer.magicFillRegion(x, y, this.brush.color));
       this.updateCanvas();
