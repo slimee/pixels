@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+    <!-- Fond pastel -->
+    <rect width="24" height="24" rx="3" fill="#FCFCFC"/>
+
+    <!-- Groupe contenant le calque vert, déplacé vers le bas -->
+    <g transform="translate(0,6)">
+        <path
+                d="M22 7.999a1 1 0 0 0-.516-.874l-9.022-5a1.003 1.003 0 0 0-.968 0l-8.978 4.96a1 1 0 0 0-.003 1.748l9.022 5.04a.995.995 0 0 0 .973.001l8.978-5A1 1 0 0 0 22 7.999zm-9.977 3.855L5.06 7.965l6.917-3.822 6.964 3.859-6.918 3.852z"
+                fill="#BCEAB7"
+        />
+    </g>
+
+    <!-- Gomme bicolore (rose et bleue), légèrement inclinée, placée au-dessus du calque -->
+    <g transform="translate(-1,10)">
+        <g transform="rotate(-30)">
+            <!-- Partie rose de la gomme -->
+            <rect x="8" y="3" width="12" height="8" rx="1" fill="#F2B7C5"/>
+            <!-- Partie bleue de la gomme -->
+            <rect x="15" y="3" width="7" height="8" rx="1" fill="#B3D9E9"/>
+        </g>
+    </g>
+</svg>
