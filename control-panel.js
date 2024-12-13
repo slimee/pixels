@@ -1,6 +1,6 @@
 import makeFader from './components/make-fader.js';
 import Layer from './layer.js';
-import makeCheckbox from "./components/make-checkbox.js";
+import makeSvgCheckbox from "./components/make-svg-checkbox.js";
 
 export default class ControlPanel {
   constructor(state, ui, canvasManager, transformationManager) {
@@ -103,9 +103,6 @@ export default class ControlPanel {
   }
 
   bindMouse() {
-    document.addEventListener('mousedown', () => {
-
-    });
     document.addEventListener('mousemove', event => {
       this.state.mouse.prevX = this.state.mouse.x;
       this.state.mouse.prevY = this.state.mouse.y;
@@ -419,12 +416,12 @@ export default class ControlPanel {
         this.transformationManager.updateCodeFunctions();
       });
 
-      const eyeCheckbox = makeCheckbox('bx bxs-show', 'bx bxs-hide', layer.visible, 'Cacher le calque', () => {
-        layer.visible = eyeCheckbox.checked;
+      const eyeBox = makeSvgCheckbox('icon-eye', 'icon-eye-closed', layer.visible, 'Cacher le calque', () => {
+        layer.visible = eyeBox.checked;
         this.canvasManager.updateCanvas();
       });
 
-      const drawCheckbox = makeCheckbox('bx bxs-paint', 'bx bx-paint', false, 'Dessiner sur ce calque', () => {
+      const drawCheckbox = makeSvgCheckbox('paint', 'no-paint', false, 'Dessiner sur ce calque', () => {
         layer.isDrawing = drawCheckbox.checked;
       });
 
@@ -442,7 +439,7 @@ export default class ControlPanel {
 
       // Ajouter les éléments au calque
       layerItem.appendChild(gripArea);
-      layerItem.appendChild(eyeCheckbox);
+      layerItem.appendChild(eyeBox);
       layerItem.appendChild(drawCheckbox);
       layerItem.appendChild(layerName);
 

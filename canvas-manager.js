@@ -11,18 +11,6 @@ export default class CanvasManager {
     this.initializeControls();
   }
 
-  get brush() {
-    return this.state.brush;
-  }
-
-  get layers() {
-    return this.state.layers;
-  }
-
-  get currentLayer() {
-    return this.state.currentLayer;
-  }
-
   initializeControls() {
     this.initCanvasMouseEvents();
   }
@@ -35,38 +23,70 @@ export default class CanvasManager {
     const x = this.state.mouse.x;
     const y = this.state.mouse.y;
     this.state.lastPoint = { x, y };
-    
-    if (this.brush.tool === 'magic-fill') {
-      this.state.drawingLayers.forEach(layer => layer.magicFillRegion(x, y, this.brush.color));
+
+    if (this.state.brush.tool === 'magic-fill') {
+      this.state.drawingLayers.forEach(layer => layer.magicFillRegion(x, y, this.state.brush.color));
       this.updateCanvas();
       return;
-    } else if (this.brush.tool === 'fill') {
-      this.state.drawingLayers.forEach(layer => layer.fillRegion(x, y, this.brush.color));
+    } else if (this.state.brush.tool === 'fill') {
+      this.state.drawingLayers.forEach(layer => layer.fillRegion(x, y, this.state.brush.color));
       this.updateCanvas();
       return;
-    } else if (this.brush.tool === 'strafe') {
+    } else if (this.state.brush.tool === 'strafe') {
       this.strafeStartPoint = { x, y };
-      this.strafeLayers = this.state.strafeLock
-        ? this.layers.map((layer) => ({
-          canvas: this.cloneCanvas(layer.offscreenCanvas),
-          layer: layer,
-        }))
-        : [
-          {
-            canvas: this.cloneCanvas(this.currentLayer.offscreenCanvas),
-            layer: this.currentLayer,
-          },
-        ];
-    } else if (this.brush.shape === 'segment') {
+      this.updateStrafeLayers();
+    } else if (this.state.brush.shape === 'segment') {
       this.startPoint = { x, y };
     } else {
       // Pour les autres pinceaux, on dessine immédiatement au mousedown
-      this.state.drawingLayers.forEach(layer => layer.drawAt(x, y, this.brush));
+      this.state.drawingLayers.forEach(layer => layer.paint(x, y, this.state.brush));
       this.updateCanvas();
     }
 
-    this.mouseMoveInterval = setInterval(this.handleMouseMove, 1000 / this.brush.speed);
+    this.mouseMoveInterval = setInterval(this.handleMouseMove, 1000 / this.state.brush.speed);
     document.addEventListener('mouseup', this.handleMouseUp);
+  }
+
+  handleMouseMove = () => {
+    const x = this.state.mouse.x;
+    const y = this.state.mouse.y;
+
+    if (this.state.brush.tool === 'strafe') {
+      // Calculer le delta
+      const dx = x - this.strafeStartPoint.x;
+      const dy = y - this.strafeStartPoint.y;
+
+      const width = this.state.currentLayer.width;
+      const height = this.state.currentLayer.height;
+
+      // Ajuster dx et dy pour qu'ils soient dans [0, width) et [0, height)
+      const shiftX = ((-dx % width) + width) % width;
+      const shiftY = ((-dy % height) + height) % height;
+
+      this.performStrafe(shiftX, shiftY);
+    } else if (this.state.brush.shape === 'segment' && this.state.brush.tool === 'continousstate.brush') {
+      // Dessin continu avec le pinceau "segment"
+      if (this.state.lastPoint) {
+        this.state.brush.startX = this.state.lastPoint.x;
+        this.state.brush.startY = this.state.lastPoint.y;
+        this.state.brush.endX = x;
+        this.state.brush.endY = y;
+        this.state.drawingLayers.forEach(layer => layer.paint(x, y, { ...this.state.brush }));
+        this.state.lastPoint = { x, y };
+      }
+    } else if (this.state.brush.tool === 'continousstate.brush') {
+      // Dessin continu avec les autres pinceaux
+      this.state.drawingLayers.forEach(layer => layer.paint(x, y, this.state.brush));
+    }
+    this.updateCanvas();
+  }
+
+  handleMouseUp = () => {
+    this.strafeStartPoint = null;
+    this.startPoint = null;
+
+    clearInterval(this.mouseMoveInterval);
+    document.removeEventListener('mouseup', this.handleMouseUp);
   }
 
   cloneCanvas(sourceCanvas) {
@@ -78,67 +98,27 @@ export default class CanvasManager {
     return clone;
   }
 
-  handleMouseMove = () => {
-    const x = this.state.mouse.x;
-    const y = this.state.mouse.y;
-
-    if (this.brush.tool === 'strafe') {
-      // Calculer le delta
-      const dx = x - this.strafeStartPoint.x;
-      const dy = y - this.strafeStartPoint.y;
-
-      const width = this.currentLayer.width;
-      const height = this.currentLayer.height;
-
-      // Ajuster dx et dy pour qu'ils soient dans [0, width) et [0, height)
-      const shiftX = ((-dx % width) + width) % width;
-      const shiftY = ((-dy % height) + height) % height;
-
-      this.performStrafe(shiftX, shiftY);
-    } else if (this.brush.shape === 'segment' && this.brush.tool === 'continousBrush') {
-      // Dessin continu avec le pinceau "segment"
-      if (this.state.lastPoint) {
-        this.brush.startX = this.state.lastPoint.x;
-        this.brush.startY = this.state.lastPoint.y;
-        this.brush.endX = x;
-        this.brush.endY = y;
-        this.state.drawingLayers.forEach(layer => layer.drawAt(x, y, { ...this.brush }));
-        this.state.lastPoint = { x, y };
-      }
-    } else if (this.state.brush.tool === 'continousBrush') {
-      // Dessin continu avec les autres pinceaux
-      this.state.drawingLayers.forEach(layer => layer.drawAt(x, y, this.brush));
-    }
-    this.updateCanvas();
+  paint(x, y, brush) {
+    this.state.drawingLayers.forEach(layer => layer.paint(x, y, brush));
   }
 
-  handleMouseUp = () => {
-    if (this.brush.shape === 'strafe') {
-      // Effacer les variables temporaires
-      this.strafeStartPoint = null;
-      this.strafeCanvas = null;
-    }
+  strafe(x, y) {
+    this.updateStrafeLayers();
+    this.performStrafe(x, y);
+  }
 
-    const x = this.state.mouse.x;
-    const y = this.state.mouse.y;
-
-    if (this.brush.shape === 'segment') {
-      if (this.brush.tool === 'continousBrush') {
-        // En mode dessin continu, on réinitialise state.lastPoint
-        this.state.lastPoint = null;
-      } else if (this.startPoint) {
-        // En mode normal, on dessine le segment une fois le bouton relâché
-        this.brush.startX = this.startPoint.x;
-        this.brush.startY = this.startPoint.y;
-        this.brush.endX = x;
-        this.brush.endY = y;
-        this.drawAt(x, y, { ...this.brush });
-        this.startPoint = null;
-      }
-    }
-
-    clearInterval(this.mouseMoveInterval);
-    document.removeEventListener('mouseup', this.handleMouseUp);
+  updateStrafeLayers() {
+    this.strafeLayers = this.strafeLayers || this.state.strafeLock
+      ? this.state.layers.map((layer) => ({
+        canvas: this.cloneCanvas(layer.offscreenCanvas),
+        layer: layer,
+      }))
+      : [
+        {
+          canvas: this.cloneCanvas(this.state.currentLayer.offscreenCanvas),
+          layer: this.state.currentLayer,
+        },
+      ];
   }
 
   performStrafe(shiftX, shiftY) {
@@ -168,18 +148,18 @@ export default class CanvasManager {
   }
 
   clearAllLayers() {
-    this.layers.forEach(matrix => matrix.clear());
+    this.state.layers.forEach(matrix => matrix.clear());
     this.updateCanvas();
   }
 
   clearCurrentLayer() {
-    this.currentLayer.clear();
+    this.state.currentLayer.clear();
     this.updateCanvas();
   }
 
   updateCanvas() {
     this.canvasContext.clearRect(0, 0, this.state.width, this.state.height);
-    this.layers.forEach((layer) => {
+    this.state.layers.forEach((layer) => {
       if (layer.visible) this.canvasContext.drawImage(layer.offscreenCanvas, 0, 0)
     });
   }
@@ -187,7 +167,7 @@ export default class CanvasManager {
   resizeCanvas() {
     this.ui.canvas.width = this.state.width;
     this.ui.canvas.height = this.state.height;
-    this.layers.forEach(matrix => matrix.resize(this.state.width, this.state.height));
+    this.state.layers.forEach(matrix => matrix.resize(this.state.width, this.state.height));
     this.updateCanvas();
   }
 }

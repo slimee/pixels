@@ -2,9 +2,10 @@ import preparePixelFunction from "./utils/prepare-pixel-function.js";
 import prepareFrameFunction from "./utils/prepare-frame-function.js";
 
 export default class TransformationManager {
-  constructor(ui, state) {
+  constructor(ui, state, commands) {
     this.ui = ui;
     this.state = state;
+    this.commands = commands;
 
     this.bindFrameCodeInput();
     this.frameFunction = () => null;
@@ -20,57 +21,6 @@ export default class TransformationManager {
     this.ui.frameCodeInput.addEventListener('blur', this.ui.frameCodeInput.update);
   }
 
-  prepareFrameCode(code, variables) {
-    const variableNames = Object.keys(variables);
-    const {
-      preparedFrameFunction,
-      usedVariables,
-      unprefixedVariables,
-    } = prepareFrameFunction(code, variableNames);
-
-    console.log('');
-    console.log(' - - - - frame code - - - - ');
-    console.log('variable names:', variableNames);
-    console.log('code before:', code);
-    console.log('usedVariables:', usedVariables);
-    console.log('unprefixedVariables:', unprefixedVariables);
-    console.log('variables:', variables);
-    console.log('code transformed:', preparedFrameFunction);
-
-    return preparedFrameFunction;
-  }
-
-  preparePixelCode(code) {
-    console.log('');
-    console.log(' - - - - update pixel code function - - - - ')
-    const layerNames = this.state.layers.map(layer => layer.name);
-    const preparedPixelCode = preparePixelFunction(code, layerNames);
-    console.log('layer names:', layerNames);
-    console.log('layer code before:', code);
-    console.log('state.variables:', this.state.variables);
-    console.log('pixel code transformed:', preparedPixelCode);
-
-    const argsNames = ['width', 'height', 'x', 'y', 'wrapX', 'wrapY', 'variables'];
-    this.state.layers.forEach((layer) => {
-      argsNames.push(`input${layer.name}`, `output${layer.name}`);
-    });
-    return { preparedPixelCode, argsNames };
-  }
-
-  updateCodeFunctions() {
-    this.updateFrameCodeFunction();
-    this.updatePixelCodeFunction();
-  }
-
-  updateFrameCodeFunction() {
-    const preparedFrameFunction = this.prepareFrameCode(this.state.frameCode, this.state.variables);
-    this.frameFunction = new Function('variables', `${preparedFrameFunction}`);
-  }
-
-  runFrameCodeFunction() {
-    this.frameFunction(this.state.variables);
-  }
-
   bindPixelCodeInput() {
     this.ui.pixelCodeInput.update = () => {
       this.state.pixelCode = this.ui.pixelCodeInput.value;
@@ -79,10 +29,62 @@ export default class TransformationManager {
     this.ui.pixelCodeInput.addEventListener('blur', this.ui.pixelCodeInput.update);
   }
 
+  updateCodeFunctions() {
+    this.updateFrameCodeFunction();
+    this.updatePixelCodeFunction();
+  }
+
+  prepareFrameCode(code, variables) {
+    const variableNames = Object.keys(variables);
+    const {
+      preparedFrameFunction,
+      usedVariables,
+      unprefixedVariables,
+    } = prepareFrameFunction(code, variableNames);
+
+    // console.log('');
+    // console.log(' - - - - frame code - - - - ');
+    // console.log('variable names:', variableNames);
+    // console.log('code before:', code);
+    // console.log('usedVariables:', usedVariables);
+    // console.log('unprefixedVariables:', unprefixedVariables);
+    // console.log('variables:', variables);
+    // console.log('code transformed:', preparedFrameFunction);
+
+    return preparedFrameFunction;
+  }
+
+  preparePixelCode(code) {
+    // console.log('');
+    // console.log(' - - - - update pixel code function - - - - ')
+    const layerNames = this.state.layers.map(layer => layer.name);
+    const preparedPixelCode = preparePixelFunction(code, layerNames);
+    // console.log('layer names:', layerNames);
+    // console.log('layer code before:', code);
+    // console.log('state.variables:', this.state.variables);
+    // console.log('pixel code transformed:', preparedPixelCode);
+
+    const argsNames = ['width', 'height', 'x', 'y', 'wrapX', 'wrapY', 'variables'];
+    this.state.layers.forEach((layer) => {
+      argsNames.push(`input${layer.name}`, `output${layer.name}`);
+    });
+    return { preparedPixelCode, argsNames };
+  }
+
+  updateFrameCodeFunction() {
+    const preparedFrameFunction = this.prepareFrameCode(this.state.frameCode, this.state.variables);
+    this.frameFunction = new Function('width', 'height', 'mouse', 'paint', 'strafe', 'variables', `${preparedFrameFunction}`);
+  }
+
   updatePixelCodeFunction() {
     const preparedFrameCode = this.prepareFrameCode(this.state.pixelCode, this.state.variables);
     const { argsNames, preparedPixelCode } = this.preparePixelCode(preparedFrameCode);
     this.pixelFunction = new Function(...argsNames, `${preparedPixelCode}`);
+  }
+
+  runFrameCodeFunction() {
+    const { width, height, mouse } = this.state;
+    this.frameFunction(width, height, mouse, this.commands.paint, this.commands.strafe, this.state.variables);
   }
 
   runPixelCodeFunction() {
@@ -110,6 +112,7 @@ export default class TransformationManager {
       layer.offscreenImage.data.set(outData);
       layer.updateOffscreen();
     });
+    console.log('runPixelCodeFunction done');
   }
 
   wrapX(x, width) {

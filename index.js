@@ -3,6 +3,7 @@ import State from './state.js';
 import CanvasManager from "./canvas-manager.js";
 import ControlPanel from "./control-panel.js";
 import TransformationManager from "./transformation-manager.js";
+import Commands from "./commands.js";
 
 document.addEventListener('DOMContentLoaded', start);
 
@@ -14,6 +15,7 @@ async function start() {
   const state = new State(transformations);
   const ui = new UI();
   const canvasManager = new CanvasManager(state, ui);
-  const transformationManager = new TransformationManager(ui, state);
+  const commands = new Commands(state, ui, canvasManager);
+  const transformationManager = new TransformationManager(ui, state, commands);
   new ControlPanel(state, ui, canvasManager, transformationManager);
 }

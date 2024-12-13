@@ -195,10 +195,6 @@ export default class Layer extends EventTarget {
     this.updateOffscreen();
   }
 
-  drawAt(x, y, brush) {
-    this.paint(x, y, brush);
-  }
-
   wrapCoordinate(value, max) {
     return ((value % max) + max) % max;
   }

@@ -100,11 +100,6 @@ body {
     background-color: #D8D8D8;
 }
 
-.layer-item input[type="checkbox"] {
-    margin-right: 5px;
-    display: none;
-}
-
 
 .layer-item span {
     flex-grow: 1;
@@ -121,6 +116,11 @@ body {
     height: 16px;
     margin-right: 5px;
     cursor: pointer;
+}
+
+.layer-item input[type="checkbox"] {
+    margin-right: 5px;
+    display: none;
 }
 
 .checkbox {
@@ -143,8 +143,16 @@ body {
     display: none;
 }
 
+.checkbox input:checked ~ svg .show {
+    display: inline;
+}
+
 .checkbox input:checked ~ .show {
     display: inline;
+}
+
+.checkbox input:checked ~ svg .hide {
+    display: none;
 }
 
 .checkbox input:checked ~ .hide {
