@@ -11,4 +11,12 @@ export default class Commands {
   strafe = (x, y) => {
     this.canvasManager.strafe(x, y);
   }
+
+  clear = (layerName) => {
+    this.canvasManager.clear(layerName);
+  }
+
+  copy = (layerFrom, layerTo) => {
+    this.canvasManager.copy(layerFrom, layerTo);
+  }
 }

@@ -194,7 +194,12 @@ export default class ControlPanel {
     this.transformationManager.runPixelCodeFunction();
     this.canvasManager.updateCanvas();
 
-    if (this.state.isPlaying) requestAnimationFrame(this.frame);
+    if (this.state.isPlaying) {
+      this.state.frame++;
+      requestAnimationFrame(this.frame);
+    } else {
+      this.state.frame = 0;
+    }
   }
 
   resize = () => {

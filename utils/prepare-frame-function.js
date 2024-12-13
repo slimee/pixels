@@ -7,7 +7,7 @@ function validateVariableNames(variableNames) {
   // Liste des mots-clés réservés et des objets intégrés
   const reservedWords = new Set([
     // Variables de la fonction
-    'x', 'y',
+    // 'x', 'y',
     // Mots-clés réservés
     'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default',
     'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function',

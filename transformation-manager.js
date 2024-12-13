@@ -35,6 +35,14 @@ export default class TransformationManager {
   }
 
   prepareFrameCode(code, variables) {
+    // if(isFrame(301)) clear(c1);
+    // else if(isFrame(100)) brush.size = 30;
+    // else brush.size = 10;
+    //
+    // const x = Math.round(width * Math.random());
+    // const y = Math.round(height * Math.random());
+    //
+    // paint(x,y);
     const variableNames = Object.keys(variables);
     const {
       preparedFrameFunction,
@@ -42,14 +50,14 @@ export default class TransformationManager {
       unprefixedVariables,
     } = prepareFrameFunction(code, variableNames);
 
-    // console.log('');
-    // console.log(' - - - - frame code - - - - ');
-    // console.log('variable names:', variableNames);
-    // console.log('code before:', code);
-    // console.log('usedVariables:', usedVariables);
-    // console.log('unprefixedVariables:', unprefixedVariables);
-    // console.log('variables:', variables);
-    // console.log('code transformed:', preparedFrameFunction);
+    console.log('');
+    console.log(' - - - - frame code - - - - ');
+    console.log('variable names:', variableNames);
+    console.log('code before:', code);
+    console.log('usedVariables:', usedVariables);
+    console.log('unprefixedVariables:', unprefixedVariables);
+    console.log('variables:', variables);
+    console.log('code transformed:', preparedFrameFunction);
 
     return preparedFrameFunction;
   }
@@ -73,7 +81,7 @@ export default class TransformationManager {
 
   updateFrameCodeFunction() {
     const preparedFrameFunction = this.prepareFrameCode(this.state.frameCode, this.state.variables);
-    this.frameFunction = new Function('width', 'height', 'mouse', 'paint', 'strafe', 'variables', `${preparedFrameFunction}`);
+    this.frameFunction = new Function('clear', 'isFrame', 'frame', 'width', 'height', 'brush', 'mouse', 'paint', 'strafe', 'variables', `${preparedFrameFunction}`);
   }
 
   updatePixelCodeFunction() {
@@ -83,8 +91,8 @@ export default class TransformationManager {
   }
 
   runFrameCodeFunction() {
-    const { width, height, mouse } = this.state;
-    this.frameFunction(width, height, mouse, this.commands.paint, this.commands.strafe, this.state.variables);
+    const { isFrame, frame, width, height, mouse, brush } = this.state;
+    this.frameFunction(this.commands.clear, isFrame, frame, width, height, brush, mouse, this.commands.paint, this.commands.strafe, this.state.variables);
   }
 
   runPixelCodeFunction() {
@@ -112,7 +120,6 @@ export default class TransformationManager {
       layer.offscreenImage.data.set(outData);
       layer.updateOffscreen();
     });
-    console.log('runPixelCodeFunction done');
   }
 
   wrapX(x, width) {

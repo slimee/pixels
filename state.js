@@ -17,6 +17,11 @@ export default class State {
     this.strafeLock = false;
     this.frameCode = '';
     this.pixelCode = '';
+    this.frame = 0;
+  }
+
+  isFrame = (modulo) => {
+    return this.frame % modulo === 0;
   }
 
   get drawingLayers() {
