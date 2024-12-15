@@ -6,7 +6,7 @@ export default class CanvasManager {
     this.canvasContext = this.ui.canvas.getContext('2d');
     this.startPoint = null;
     this.draggedLayerIndex = null;
-    this.mouseMoveInterval = null;
+    this.drawInterval = null;
 
     this.initializeControls();
   }
@@ -43,11 +43,11 @@ export default class CanvasManager {
       this.updateCanvas();
     }
 
-    this.mouseMoveInterval = setInterval(this.handleMouseMove, 1000 / this.state.brush.speed);
+    this.drawInterval = setInterval(this.handleDrawInterval.bind(this), 1000 / this.state.brush.speed);
     document.addEventListener('mouseup', this.handleMouseUp);
   }
 
-  handleMouseMove = () => {
+  handleDrawInterval() {
     const x = this.state.mouse.x;
     const y = this.state.mouse.y;
 
@@ -64,7 +64,7 @@ export default class CanvasManager {
       const shiftY = ((-dy % height) + height) % height;
 
       this.performStrafe(shiftX, shiftY);
-    } else if (this.state.brush.shape === 'segment' && this.state.brush.tool === 'continousstate.brush') {
+    } else if (this.state.brush.shape === 'segment' && this.state.brush.tool === 'continousBrush') {
       // Dessin continu avec le pinceau "segment"
       if (this.state.lastPoint) {
         this.state.brush.startX = this.state.lastPoint.x;
@@ -74,7 +74,7 @@ export default class CanvasManager {
         this.state.drawingLayers.forEach(layer => layer.paint(x, y, { ...this.state.brush }));
         this.state.lastPoint = { x, y };
       }
-    } else if (this.state.brush.tool === 'continousstate.brush') {
+    } else if (this.state.brush.tool === 'continousBrush') {
       // Dessin continu avec les autres pinceaux
       this.state.drawingLayers.forEach(layer => layer.paint(x, y, this.state.brush));
     }
@@ -85,7 +85,7 @@ export default class CanvasManager {
     this.strafeStartPoint = null;
     this.startPoint = null;
 
-    clearInterval(this.mouseMoveInterval);
+    clearInterval(this.drawInterval);
     document.removeEventListener('mouseup', this.handleMouseUp);
   }
 
