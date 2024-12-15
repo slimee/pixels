@@ -1,6 +1,7 @@
 import makeFader from './components/make-fader.js';
 import Layer from './layer.js';
 import makeSvgCheckbox from "./components/make-svg-checkbox.js";
+import hexToRGBA from "./utils/hex-to-rgba.js";
 
 export default class ControlPanel {
   constructor(state, ui, canvasManager, transformationManager) {
@@ -128,8 +129,8 @@ export default class ControlPanel {
       this.state.brush.size = parseInt(this.ui.brushSizeInput.value, 10);
     });
 
-    const updateBrush = (color) => {
-      this.state.brush.color = color;
+    const updateBrush = (hexColor) => {
+      this.state.brush.color = hexToRGBA(hexColor);
     };
     updateBrush('#000000FF');
     Coloris({
@@ -138,6 +139,7 @@ export default class ControlPanel {
       themeMode: 'dark',
       onChange: updateBrush,
       defaultColor: '#000000FF',
+
     });
     document.querySelector('#color-picker').dispatchEvent(new Event('input', { bubbles: true }));
 

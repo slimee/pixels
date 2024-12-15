@@ -28,22 +28,10 @@ export default class Layer extends EventTarget {
     this.updateOffscreen();
   }
 
-  hexToRGBA(hex) {
-    let c = hex.slice(1);
-    if (c.length === 6) c += 'FF';
-    const num = parseInt(c, 16);
-    return {
-      r: (num >> 24) & 255,
-      g: (num >> 16) & 255,
-      b: (num >> 8) & 255,
-      a: num & 255
-    };
-  }
-
   paint(x, y, brush) {
     const color = brush.tool === 'eraser'
       ? { r: 0, g: 0, b: 0, a: 0 }  // Transparent color for eraser
-      : this.hexToRGBA(brush.color);
+      : brush.color;
 
     const halfSize = Math.floor(brush.size / 2);
 
@@ -74,8 +62,7 @@ export default class Layer extends EventTarget {
     }
   }
 
-  paintAll(hexColor) {
-    const { r, g, b, a } = this.hexToRGBA(hexColor);
+  paintAll({ r, g, b, a }) {
     const rgbaValue = (a << 24) | (b << 16) | (g << 8) | r;
     const data32 = new Uint32Array(this.offscreenImage.data.buffer);
     data32.fill(rgbaValue);
@@ -130,8 +117,7 @@ export default class Layer extends EventTarget {
     this.paintAll(targetColor);
   }
 
-  magicFillRegion(x, y, hexTargetColor) {
-    const targetColor = this.hexToRGBA(hexTargetColor);
+  magicFillRegion(x, y, targetColor) {
     const canvasData = this.offscreenImage.data;
     const width = this.width;
     const height = this.height;

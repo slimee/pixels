@@ -19,4 +19,15 @@ export default class Commands {
   copy = (layerFrom, layerTo) => {
     this.canvasManager.copy(layerFrom, layerTo);
   }
+
+  save = () => {
+    const data = {
+      pixelCode: this.state.pixelCode,
+      frameCode: this.state.frameCode,
+      currentLayerIndex: this.state.currentLayerIndex,
+      brush: this.state.brush,
+      frame: this.state.frame,
+    }
+    localStorage.setItem('data', JSON.stringify(data));
+  }
 }
