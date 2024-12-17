@@ -63,19 +63,21 @@ export default class TransformationManager {
   }
 
   preparePixelCode(code) {
-    // console.log('');
-    // console.log(' - - - - update pixel code function - - - - ')
+    console.log('');
+    console.log(' - - - - update pixel code function - - - - ')
     const layerNames = this.state.layers.map(layer => layer.name);
     const preparedPixelCode = preparePixelFunction(code, layerNames);
-    // console.log('layer names:', layerNames);
-    // console.log('layer code before:', code);
-    // console.log('state.variables:', this.state.variables);
-    // console.log('pixel code transformed:', preparedPixelCode);
+    console.log('layer names:', layerNames);
+    console.log('layer code before:', code);
+    console.log('state.variables:', this.state.variables);
+    console.log('pixel code transformed:', preparedPixelCode);
 
-    const argsNames = ['width', 'height', 'x', 'y', 'wrapX', 'wrapY', 'variables'];
+    const argsNames = ['getPixelChannel', 'setPixelChannel', 'width', 'height', 'x', 'y', 'wrapX', 'wrapY', 'variables'];
     this.state.layers.forEach((layer) => {
       argsNames.push(`input${layer.name}`, `output${layer.name}`);
     });
+
+    console.log('argsNames:', argsNames);
     return { preparedPixelCode, argsNames };
   }
 
@@ -102,15 +104,15 @@ export default class TransformationManager {
       new Uint8ClampedArray(layer.offscreenImage.data.length)
     );
 
-    const argsValues = [width, height, 0, 0, this.wrapX, this.wrapY, this.state.variables];
+    const argsValues = [this.getPixelChannel, this.setPixelChannel, width, height, 0, 0, this.wrapX, this.wrapY, this.state.variables];
     layers.forEach((layer, i) => {
       argsValues.push(originalDataArrays[i], outputDataArrays[i]);
     });
 
     for (let py = 0; py < height; py++) {
       for (let px = 0; px < width; px++) {
-        argsValues[2] = px; // x
-        argsValues[3] = py; // y
+        argsValues[4] = px; // x
+        argsValues[5] = py; // y
         this.pixelFunction(...argsValues);
       }
     }
@@ -144,14 +146,14 @@ export default class TransformationManager {
     throw new Error('Invalid channel ' + channel);
   }
 
-  getPixelChannel(layerData, width, height, x, y, channel) {
+  getPixelChannel = (layerData, width, height, x, y, channel) => {
     const wx = this.wrapX(x, width);
     const wy = this.wrapY(y, height);
     const index = (wy * width + wx) * 4 + this.channelOffset(channel);
     return layerData[index];
   }
 
-  setPixelChannel(layerData, width, height, x, y, channel, value) {
+  setPixelChannel = (layerData, width, height, x, y, channel, value) => {
     const wx = this.wrapX(x, width);
     const wy = this.wrapY(y, height);
     const index = (wy * width + wx) * 4 + this.channelOffset(channel);
