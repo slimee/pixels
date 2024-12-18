@@ -128,6 +128,9 @@ export default class ControlPanel {
     this.ui.brushSizeInput.addEventListener('input', () => {
       this.state.brush.size = parseInt(this.ui.brushSizeInput.value, 10);
     });
+    this.state.on('brush.size.change', (size) => {
+      this.ui.brushSizeInput.value = size;
+    });
 
     const updateBrush = (hexColor) => {
       this.state.brush.color = hexToRGBA(hexColor);
@@ -330,6 +333,7 @@ export default class ControlPanel {
     this.layers.push(newLayer);
     this.currentLayerIndex = this.layers.length - 1;
     this.updateLayersList();
+    this.state.setVariable({ name: newLayer.name, value: newLayer });
     this.transformationManager.updateCodeFunctions();
   }
 

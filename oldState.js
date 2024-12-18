@@ -1,4 +1,4 @@
-export default class State {
+export default class OldState {
   constructor(transformations) {
     this.layers = [];
     this.currentLayerIndex = 0;

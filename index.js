@@ -1,5 +1,5 @@
 import UI from './ui.js';
-import State from './state.js';
+import OldState from './oldState.js';
 import CanvasManager from "./canvas-manager.js";
 import ControlPanel from "./control-panel.js";
 import TransformationManager from "./transformation-manager.js";
@@ -12,7 +12,7 @@ async function start() {
     .then(response => response.json())
     .catch(error => console.error('Erreur lors du chargement des transformations:', error));
 
-  const state = new State(transformations);
+  const state = new OldState(transformations);
   const ui = new UI();
   const canvasManager = new CanvasManager(state, ui);
   const commands = new Commands(state, ui, canvasManager);
