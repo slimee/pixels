@@ -1,5 +1,6 @@
 import State from '../components/state.js';
 
+
 function conflictTest() {
   const reactive = {
     foo: 'bar',
