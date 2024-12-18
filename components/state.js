@@ -99,14 +99,42 @@ class State {
     }
   }
 
-  // Sérialiser uniquement les propriétés réactives
-  serialize() {
+  // Accès et modification via une chaîne JSON
+  get stringState() {
     const reactiveState = {};
     for (const key in this) {
       if (this.hasOwnProperty(key) && typeof this[key] !== 'function' && typeof this[key] !== 'object') {
         reactiveState[key] = this[key];
+      } else if (typeof this[key] === 'object' && this[key] !== null) {
+        reactiveState[key] = this._serializeObject(this[key]);
       }
     }
     return JSON.stringify(reactiveState);
+  }
+
+  set stringState(jsonString) {
+    try {
+      const parsedState = JSON.parse(jsonString);
+
+      // Réinitialiser uniquement les propriétés réactives
+      this._initializeReactiveProperties(parsedState);
+    } catch (error) {
+      console.error('Invalid JSON string:', error);
+    }
+  }
+
+  // Méthode privée pour sérialiser un objet réactif
+  _serializeObject(obj) {
+    const result = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key) && typeof obj[key] !== 'function') {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+          result[key] = this._serializeObject(obj[key]);
+        } else {
+          result[key] = obj[key];
+        }
+      }
+    }
+    return result;
   }
 }
