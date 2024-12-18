@@ -1,8 +1,10 @@
-class State {
+export default class State {
   constructor(initialState = {}, nonReactiveProperties = {}) {
     this._listeners = {}; // Gestionnaires d'événements
-    this._initializeReactiveProperties(initialState); // Propriétés réactives
-    this._initializeNonReactiveProperties(nonReactiveProperties); // Propriétés non réactives
+
+    // Initialiser les propriétés
+    this._initializeReactiveProperties(initialState);
+    this._initializeNonReactiveProperties(nonReactiveProperties);
   }
 
   // Ajouter un écouteur
@@ -28,19 +30,34 @@ class State {
   }
 
   // Initialiser les propriétés réactives
-  _initializeReactiveProperties(obj, basePath = '') {
+  _initializeReactiveProperties(obj, basePath = '', parent = this) {
     for (const [key, value] of Object.entries(obj)) {
       const propertyPath = basePath ? `${basePath}.${key}` : key;
 
+      // Vérification de conflit
+      if (parent.hasOwnProperty(key)) {
+        throw new Error(`Conflict detected: The property "${key}" already exists as a non-reactive property.`);
+      }
+
       if (typeof value === 'object' && value !== null) {
-        // Sous-objet : récursion pour créer les sous-propriétés
-        this[key] = {};
-        this._initializeReactiveProperties(value, propertyPath);
+        // Sous-objet : créer récursivement les sous-propriétés
+        const nestedObject = {};
+        Object.defineProperty(parent, key, {
+          get() {
+            return nestedObject;
+          },
+          set() {
+            throw new Error(`Cannot overwrite nested reactive object "${key}"`);
+          },
+          enumerable: true,
+        });
+
+        this._initializeReactiveProperties(value, propertyPath, nestedObject);
       } else {
         // Propriété primitive : ajouter un getter et un setter
         let internalValue = value;
 
-        Object.defineProperty(this, key, {
+        Object.defineProperty(parent, key, {
           get() {
             return internalValue;
           },
@@ -59,6 +76,11 @@ class State {
   // Initialiser les propriétés non réactives
   _initializeNonReactiveProperties(obj) {
     for (const [key, value] of Object.entries(obj)) {
+      // Vérification de conflit
+      if (this.hasOwnProperty(key)) {
+        throw new Error(`Conflict detected: The property "${key}" already exists as a reactive property.`);
+      }
+
       this[key] = value; // Ajouter la propriété directement
     }
   }
@@ -76,6 +98,15 @@ class State {
       }
       current = current[key];
     });
+
+    // Vérification de conflit
+    if (current.hasOwnProperty(lastKey)) {
+      throw new Error(
+        `Conflict detected: The property "${lastKey}" already exists as ${
+          typeof current[lastKey] === 'function' ? 'non-reactive' : 'reactive'
+        }.`
+      );
+    }
 
     if (reactive) {
       // Ajouter une propriété réactive
@@ -97,44 +128,5 @@ class State {
       // Ajouter une propriété non réactive
       current[lastKey] = value;
     }
-  }
-
-  // Accès et modification via une chaîne JSON
-  get stringState() {
-    const reactiveState = {};
-    for (const key in this) {
-      if (this.hasOwnProperty(key) && typeof this[key] !== 'function' && typeof this[key] !== 'object') {
-        reactiveState[key] = this[key];
-      } else if (typeof this[key] === 'object' && this[key] !== null) {
-        reactiveState[key] = this._serializeObject(this[key]);
-      }
-    }
-    return JSON.stringify(reactiveState);
-  }
-
-  set stringState(jsonString) {
-    try {
-      const parsedState = JSON.parse(jsonString);
-
-      // Réinitialiser uniquement les propriétés réactives
-      this._initializeReactiveProperties(parsedState);
-    } catch (error) {
-      console.error('Invalid JSON string:', error);
-    }
-  }
-
-  // Méthode privée pour sérialiser un objet réactif
-  _serializeObject(obj) {
-    const result = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key) && typeof obj[key] !== 'function') {
-        if (typeof obj[key] === 'object' && obj[key] !== null) {
-          result[key] = this._serializeObject(obj[key]);
-        } else {
-          result[key] = obj[key];
-        }
-      }
-    }
-    return result;
   }
 }
