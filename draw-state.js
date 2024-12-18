@@ -1,23 +1,8 @@
-export default class OldState {
-  constructor(transformations) {
-    this.layers = [];
-    this.currentLayerIndex = 0;
-    this.isPlaying = false;
-    this.transformations = transformations;
-    this.brush = {
-      size: 15,
-      color: '#ff0000',
-      shape: 'circle',
-      speed: 60,
-      tool: 'brush',
-    };
-    this.lastPoint = null;
-    this.variables = {};
-    this.mouse = { x: 0, y: 0, prevX: 0, prevY: 0 };
-    this.strafeLock = false;
-    this.frameCode = '';
-    this.pixelCode = '';
-    this.frame = 0;
+import State from "./components/state.js";
+
+export default class DrawState extends State {
+  constructor(reactive, nonReactive) {
+    super(reactive, nonReactive);
   }
 
   isFrame = (modulo) => {
