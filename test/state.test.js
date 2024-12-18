@@ -31,18 +31,14 @@ function testState() {
   };
   const state = new State(reactive, nonReactive);
 
-  if (state.foo !== 'bar') {
-    console.error('Test 1 failed');
-  }
-  if (state.baz !== 'qux') {
-    console.error('Test 2 failed');
-  }
-  if (state.nested.hello !== 'world') {
-    console.error('Test 3 failed');
-  }
-  if (state.nested2.bonjour !== 'monde') {
-    console.error('Test 4 failed');
-  }
+  if (state.foo !== 'bar') console.error('Test 1 failed');
+  else console.error('Test 1 passed');
+  if (state.baz !== 'qux') console.error('Test 2 failed');
+  else console.error('Test 2 passed');
+  if (state.nested.hello !== 'world') console.error('Test 3 failed');
+  else console.error('Test 3 passed');
+  if (state.nested2.bonjour !== 'monde') console.error('Test 4 failed');
+  else console.error('Test 4 passed');
 }
 
 function testOn() {
@@ -73,7 +69,7 @@ function testOn2() {
   const state = new State(reactive, nonReactive);
   try {
     state.on('too', value => {
-      console.error('Test on nonreactive failed');
+      console.error('.on non reactive triggered: failed');
     })
     console.error('Test on nonreactive failed');
   } catch (error) {
@@ -81,7 +77,26 @@ function testOn2() {
   }
 }
 
+// testOn3 is a test on .on with a reactive nested property
+function testOn3() {
+  const reactive = {
+    nested: {
+      hello: 'world',
+    },
+  };
+  const state = new State(reactive);
+  state.on('nested.hello', value => {
+    if (value !== 'bow') {
+      console.error('Test on3 failed');
+    } else {
+      console.error('Test on3 passed');
+    }
+  });
+  state.nested.hello = 'bow';
+}
+
 conflictTest();
 testState();
 testOn();
 testOn2();
+testOn3();

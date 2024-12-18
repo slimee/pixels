@@ -9,6 +9,9 @@ export default class State {
 
   // Ajouter un écouteur
   on(propertyPath, callback) {
+    if (!this._isPathReactive(propertyPath)) {
+      throw new Error(`The path "${propertyPath}" is not a reactive property.`);
+    }
     if (!this._listeners[propertyPath]) {
       this._listeners[propertyPath] = [];
     }
@@ -27,6 +30,29 @@ export default class State {
     if (this._listeners[propertyPath]) {
       this._listeners[propertyPath].forEach(callback => callback(value));
     }
+  }
+
+  // Vérifier si un chemin est réactif
+  _isPathReactive(propertyPath) {
+    const keys = propertyPath.split('.');
+    let current = this;
+
+    for (const key of keys) {
+      // Vérifier si la propriété existe
+      if (!current || !Object.prototype.hasOwnProperty.call(current, key)) {
+        return false; // Le chemin n'existe pas
+      }
+
+      // Vérifier si la propriété est bien accessible
+      const descriptor = Object.getOwnPropertyDescriptor(current, key);
+      if (!descriptor || typeof descriptor.get !== 'function' || typeof descriptor.set !== 'function') {
+        return false; // La propriété n'est pas réactive
+      }
+
+      // Naviguer dans l'objet imbriqué
+      current = current[key];
+    }
+    return true; // Le chemin est réactif
   }
 
   // Initialiser les propriétés réactives
