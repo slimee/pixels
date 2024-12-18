@@ -82,6 +82,7 @@ export default class State {
       } else {
         // Propriété primitive : ajouter un getter et un setter
         let internalValue = value;
+        const instance = this; // Capturer une référence explicite à l'instance de State
 
         Object.defineProperty(parent, key, {
           get() {
@@ -90,7 +91,7 @@ export default class State {
           set(newValue) {
             if (internalValue !== newValue) {
               internalValue = newValue;
-              this._emit(propertyPath, newValue); // Émettre un événement
+              instance._emit(propertyPath, newValue); // Émettre un événement dans le bon contexte
             }
           },
           enumerable: true, // Permet la sérialisation et les boucles
@@ -108,51 +109,6 @@ export default class State {
       }
 
       this[key] = value; // Ajouter la propriété directement
-    }
-  }
-
-  // Ajouter dynamiquement une propriété (réactive ou non)
-  addProperty(propertyPath, value, reactive = true) {
-    const keys = propertyPath.split('.');
-    const lastKey = keys.pop();
-    let current = this;
-
-    // Naviguer jusqu'à l'objet parent
-    keys.forEach(key => {
-      if (!current[key]) {
-        current[key] = {};
-      }
-      current = current[key];
-    });
-
-    // Vérification de conflit
-    if (current.hasOwnProperty(lastKey)) {
-      throw new Error(
-        `Conflict detected: The property "${lastKey}" already exists as ${
-          typeof current[lastKey] === 'function' ? 'non-reactive' : 'reactive'
-        }.`
-      );
-    }
-
-    if (reactive) {
-      // Ajouter une propriété réactive
-      let internalValue = value;
-
-      Object.defineProperty(current, lastKey, {
-        get() {
-          return internalValue;
-        },
-        set(newValue) {
-          if (internalValue !== newValue) {
-            internalValue = newValue;
-            this._emit(propertyPath, newValue); // Émettre un événement
-          }
-        },
-        enumerable: true, // Permet la sérialisation et les boucles
-      });
-    } else {
-      // Ajouter une propriété non réactive
-      current[lastKey] = value;
     }
   }
 }
