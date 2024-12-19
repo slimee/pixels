@@ -18,7 +18,7 @@ export default class TransformationManager {
   bindFrameCodeInput() {
     this.ui.frameCodeInput.update = () => {
       this.state.frameCode = this.ui.frameCodeInput.value;
-      this.updateFrameCodeFunction();
+      this.prepareFrameCodeFunction();
     }
     this.ui.frameCodeInput.addEventListener('blur', this.ui.frameCodeInput.update);
   }
@@ -26,14 +26,14 @@ export default class TransformationManager {
   bindPixelCodeInput() {
     this.ui.pixelCodeInput.update = () => {
       this.state.pixelCode = this.ui.pixelCodeInput.value;
-      this.updatePixelCodeFunction();
+      this.preparePixelCodeFunction();
     }
     this.ui.pixelCodeInput.addEventListener('blur', this.ui.pixelCodeInput.update);
   }
 
   updateCodeFunctions() {
-    this.updateFrameCodeFunction();
-    this.updatePixelCodeFunction();
+    this.prepareFrameCodeFunction();
+    this.preparePixelCodeFunction();
   }
 
   prepareFrameCode(code, variables) {
@@ -64,7 +64,7 @@ export default class TransformationManager {
     return preparedFrameFunction;
   }
 
-  updateFrameCodeFunction() {
+  prepareFrameCodeFunction() {
     const preparedFrameFunction = this.prepareFrameCode(this.state.frameCode, this.state.variables);
     this.frameFunction = new Function('clear', 'isFrame', 'frame', 'width', 'height', 'brush', 'mouse', 'paint', 'strafe', `${preparedFrameFunction}`);
   }
@@ -75,7 +75,7 @@ export default class TransformationManager {
   }
 
 
-  updatePixelCodeFunction() {
+  preparePixelCodeFunction() {
     console.log('');
     console.log(' - - - - update pixel code function - - - - ')
 
