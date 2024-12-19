@@ -1,11 +1,13 @@
 import preparePixelFunction from "./utils/prepare-pixel-function.js";
 import prepareFrameFunction from "./utils/prepare-frame-function.js";
+import TransformationHelper from "./transformation-helper.js";
 
 export default class TransformationManager {
   constructor(ui, state, commands) {
     this.ui = ui;
     this.state = state;
     this.commands = commands;
+    this.helper = new TransformationHelper();
 
     this.bindFrameCodeInput();
     this.frameFunction = () => null;
@@ -62,39 +64,35 @@ export default class TransformationManager {
     return preparedFrameFunction;
   }
 
-  preparePixelCode(code) {
+  updateFrameCodeFunction() {
+    const preparedFrameFunction = this.prepareFrameCode(this.state.frameCode, this.state.variables);
+    this.frameFunction = new Function('clear', 'isFrame', 'frame', 'width', 'height', 'brush', 'mouse', 'paint', 'strafe', `${preparedFrameFunction}`);
+  }
+
+  runFrameCodeFunction() {
+    const { isFrame, frame, width, height, mouse, brush } = this.state;
+    this.frameFunction(this.commands.clear, isFrame, frame, width, height, brush, mouse, this.commands.paint, this.commands.strafe);
+  }
+
+
+  updatePixelCodeFunction() {
     console.log('');
     console.log(' - - - - update pixel code function - - - - ')
     const layerNames = this.state.layers.map(layer => layer.name);
-    const preparedPixelCode = preparePixelFunction(code, layerNames);
+    const preparedPixelCode = preparePixelFunction(this.state.pixelCode, layerNames);
     console.log('layer names:', layerNames);
-    console.log('layer code before:', code);
+    console.log('layer code before:', this.state.pixelCode);
     console.log('state.variables:', this.state.variables);
     console.log('pixel code transformed:', preparedPixelCode);
 
-    const argsNames = ['getPixelChannel', 'setPixelChannel', 'width', 'height', 'x', 'y', 'wrapX', 'wrapY', 'variables'];
+    const argsNames = ['x', 'y', 'width', 'height', 'getPixelChannel', 'setPixelChannel', 'wrapX', 'wrapY'];
     this.state.layers.forEach((layer) => {
       argsNames.push(`input${layer.name}`, `output${layer.name}`);
     });
 
     console.log('argsNames:', argsNames);
-    return { preparedPixelCode, argsNames };
-  }
 
-  updateFrameCodeFunction() {
-    const preparedFrameFunction = this.prepareFrameCode(this.state.frameCode, this.state.variables);
-    this.frameFunction = new Function('clear', 'isFrame', 'frame', 'width', 'height', 'brush', 'mouse', 'paint', 'strafe', 'variables', `${preparedFrameFunction}`);
-  }
-
-  updatePixelCodeFunction() {
-    const preparedFrameCode = this.prepareFrameCode(this.state.pixelCode, this.state.variables);
-    const { argsNames, preparedPixelCode } = this.preparePixelCode(preparedFrameCode);
     this.pixelFunction = new Function(...argsNames, `${preparedPixelCode}`);
-  }
-
-  runFrameCodeFunction() {
-    const { isFrame, frame, width, height, mouse, brush } = this.state;
-    this.frameFunction(this.commands.clear, isFrame, frame, width, height, brush, mouse, this.commands.paint, this.commands.strafe, this.state.variables);
   }
 
   runPixelCodeFunction() {
@@ -103,8 +101,8 @@ export default class TransformationManager {
     const outputDataArrays = layers.map(layer =>
       new Uint8ClampedArray(layer.offscreenImage.data.length)
     );
-
-    const argsValues = [this.getPixelChannel, this.setPixelChannel, width, height, 0, 0, this.wrapX, this.wrapY, this.state.variables];
+    const { getPixelChannel, setPixelChannel, wrapX, wrapY } = this.helper;
+    const argsValues = [0, 0, width, height, getPixelChannel, setPixelChannel, wrapX, wrapY];
     layers.forEach((layer, i) => {
       argsValues.push(originalDataArrays[i], outputDataArrays[i]);
     });
@@ -122,41 +120,5 @@ export default class TransformationManager {
       layer.offscreenImage.data.set(outData);
       layer.updateOffscreen();
     });
-  }
-
-  wrapX(x, width) {
-    return ((x % width) + width) % width;
-  }
-
-  wrapY(y, height) {
-    return ((y % height) + height) % height;
-  }
-
-  channelOffset(channel) {
-    switch (channel) {
-      case 'r':
-        return 0;
-      case 'g':
-        return 1;
-      case 'b':
-        return 2;
-      case 'a':
-        return 3;
-    }
-    throw new Error('Invalid channel ' + channel);
-  }
-
-  getPixelChannel = (layerData, width, height, x, y, channel) => {
-    const wx = this.wrapX(x, width);
-    const wy = this.wrapY(y, height);
-    const index = (wy * width + wx) * 4 + this.channelOffset(channel);
-    return layerData[index];
-  }
-
-  setPixelChannel = (layerData, width, height, x, y, channel, value) => {
-    const wx = this.wrapX(x, width);
-    const wy = this.wrapY(y, height);
-    const index = (wy * width + wx) * 4 + this.channelOffset(channel);
-    layerData[index] = value;
   }
 }

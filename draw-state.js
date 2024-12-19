@@ -1,7 +1,29 @@
 import State from "./components/state.js";
 
 export default class DrawState extends State {
-  constructor(reactive, nonReactive) {
+  constructor(transformations) {
+    const reactive = {
+      brush: {
+        size: 15,
+        color: '#ff0000',
+        shape: 'circle',
+        speed: 60,
+        tool: 'brush',
+      },
+    };
+    const nonReactive = {
+      currentLayerIndex: 0,
+      isPlaying: false,
+      transformations,
+      variables: {},
+      lastPoint: null,
+      layers: [],
+      mouse: { x: 0, y: 0, prevX: 0, prevY: 0 },
+      strafeLock: false,
+      frameCode: '',
+      pixelCode: '',
+      frame: 0,
+    };
     super(reactive, nonReactive);
   }
 

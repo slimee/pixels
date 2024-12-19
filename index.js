@@ -12,29 +12,7 @@ async function start() {
     .then(response => response.json())
     .catch(error => console.error('Erreur lors du chargement des transformations:', error));
 
-  const reactive = {
-    brush: {
-      size: 15,
-      color: '#ff0000',
-      shape: 'circle',
-      speed: 60,
-      tool: 'brush',
-    },
-  }
-  const nonReactive = {
-    currentLayerIndex: 0,
-    isPlaying: false,
-    transformations,
-    variables: {},
-    lastPoint: null,
-    layers: [],
-    mouse: { x: 0, y: 0, prevX: 0, prevY: 0 },
-    strafeLock: false,
-    frameCode: '',
-    pixelCode: '',
-    frame: 0,
-  }
-  const state = new DrawState(reactive, nonReactive);
+  const state = new DrawState(transformations);
   const ui = new UI();
   const canvasManager = new CanvasManager(state, ui);
   const commands = new Commands(state, ui, canvasManager);
