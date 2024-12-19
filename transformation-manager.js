@@ -78,15 +78,19 @@ export default class TransformationManager {
   updatePixelCodeFunction() {
     console.log('');
     console.log(' - - - - update pixel code function - - - - ')
+
     const layerNames = this.state.layers.map(layer => layer.name);
     const preparedPixelCode = preparePixelFunction(this.state.pixelCode, layerNames);
+
     console.log('layer names:', layerNames);
     console.log('layer code before:', this.state.pixelCode);
     console.log('pixel code transformed:', preparedPixelCode);
 
+    const coords = ['x', 'y', 'width', 'height'];
+    const helpers = ['getPixelChannel', 'setPixelChannel', 'wrapX', 'wrapY'];
     const inputCN = layerNames.map(name => `input${name}`);
     const outputCN = layerNames.map(name => `output${name}`);
-    const argsNames = ['x', 'y', 'width', 'height', 'getPixelChannel', 'setPixelChannel', 'wrapX', 'wrapY', ...inputCN, ...outputCN];
+    const argsNames = [...coords, ...helpers, ...inputCN, ...outputCN];
 
     console.log('argsNames:', argsNames);
     this.pixelFunction = new Function(...argsNames, `${preparedPixelCode}`);
@@ -94,18 +98,16 @@ export default class TransformationManager {
 
   runPixelCodeFunction() {
     const { width, height, layers } = this.state;
-    const inputCN = layers.map(layer => layer.offscreenImage.data);
-    const outputCN = layers.map(layer =>
-      new Uint8ClampedArray(layer.offscreenImage.data.length)
-    );
     const { getPixelChannel, setPixelChannel, wrapX, wrapY } = this.helper;
-    const argsValues = [0, 0, width, height, getPixelChannel, setPixelChannel, wrapX, wrapY, ...inputCN, ...outputCN];
+    const coords = [width, height];
+    const helpers = [getPixelChannel, setPixelChannel, wrapX, wrapY]
+    const inputCN = layers.map(layer => layer.offscreenImage.data);
+    const outputCN = layers.map(layer => new Uint8ClampedArray(layer.offscreenImage.data.length));
+    const argsValues = [...coords, ...helpers, ...inputCN, ...outputCN];
 
-    for (let py = 0; py < height; py++) {
-      for (let px = 0; px < width; px++) {
-        argsValues[0] = px; // x
-        argsValues[1] = py; // y
-        this.pixelFunction(...argsValues);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        this.pixelFunction(x, y, ...argsValues);
       }
     }
 
