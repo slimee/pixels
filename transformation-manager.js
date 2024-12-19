@@ -82,41 +82,35 @@ export default class TransformationManager {
     const preparedPixelCode = preparePixelFunction(this.state.pixelCode, layerNames);
     console.log('layer names:', layerNames);
     console.log('layer code before:', this.state.pixelCode);
-    console.log('state.variables:', this.state.variables);
     console.log('pixel code transformed:', preparedPixelCode);
 
-    const argsNames = ['x', 'y', 'width', 'height', 'getPixelChannel', 'setPixelChannel', 'wrapX', 'wrapY'];
-    this.state.layers.forEach((layer) => {
-      argsNames.push(`input${layer.name}`, `output${layer.name}`);
-    });
+    const inputCN = layerNames.map(name => `input${name}`);
+    const outputCN = layerNames.map(name => `output${name}`);
+    const argsNames = ['x', 'y', 'width', 'height', 'getPixelChannel', 'setPixelChannel', 'wrapX', 'wrapY', ...inputCN, ...outputCN];
 
     console.log('argsNames:', argsNames);
-
     this.pixelFunction = new Function(...argsNames, `${preparedPixelCode}`);
   }
 
   runPixelCodeFunction() {
     const { width, height, layers } = this.state;
-    const originalDataArrays = layers.map(layer => layer.offscreenImage.data);
-    const outputDataArrays = layers.map(layer =>
+    const inputCN = layers.map(layer => layer.offscreenImage.data);
+    const outputCN = layers.map(layer =>
       new Uint8ClampedArray(layer.offscreenImage.data.length)
     );
     const { getPixelChannel, setPixelChannel, wrapX, wrapY } = this.helper;
-    const argsValues = [0, 0, width, height, getPixelChannel, setPixelChannel, wrapX, wrapY];
-    layers.forEach((layer, i) => {
-      argsValues.push(originalDataArrays[i], outputDataArrays[i]);
-    });
+    const argsValues = [0, 0, width, height, getPixelChannel, setPixelChannel, wrapX, wrapY, ...inputCN, ...outputCN];
 
     for (let py = 0; py < height; py++) {
       for (let px = 0; px < width; px++) {
-        argsValues[4] = px; // x
-        argsValues[5] = py; // y
+        argsValues[0] = px; // x
+        argsValues[1] = py; // y
         this.pixelFunction(...argsValues);
       }
     }
 
     layers.forEach((layer, i) => {
-      const outData = outputDataArrays[i];
+      const outData = outputCN[i];
       layer.offscreenImage.data.set(outData);
       layer.updateOffscreen();
     });
