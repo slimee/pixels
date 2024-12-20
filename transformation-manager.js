@@ -1,5 +1,4 @@
 import preparePixelFunction from "./utils/prepare-pixel-function.js";
-import prepareFrameFunction from "./utils/prepare-frame-function.js";
 import TransformationHelper from "./transformation-helper.js";
 
 export default class TransformationManager {
@@ -36,7 +35,7 @@ export default class TransformationManager {
     this.preparePixelCodeFunction();
   }
 
-  prepareFrameCode(code, variables) {
+  prepareFrameCodeFunction() {
     // if(isFrame(301)) clear(c1);
     // else if(isFrame(100)) brush.size = 30;
     // else brush.size = 10;
@@ -45,33 +44,23 @@ export default class TransformationManager {
     // const y = Math.round(height * Math.random());
     //
     // paint(x,y);
-    const variableNames = Object.keys(variables);
-    const {
-      preparedFrameFunction,
-      usedVariables,
-      unprefixedVariables,
-    } = prepareFrameFunction(code, variableNames);
+    const commands = Object.keys(this.commands);
+    const layers = this.state.layers.map(({ name }) => name);
+    const faders = Object.keys(this.state.faders);
+    const args = [...commands, ...layers, ...faders, 'anyX', 'anyY', 'isFrame', 'frame', 'width', 'height', 'mouse', 'brush'];
 
-    console.log('');
-    console.log(' - - - - frame code - - - - ');
-    console.log('variable names:', variableNames);
-    console.log('code before:', code);
-    console.log('usedVariables:', usedVariables);
-    console.log('unprefixedVariables:', unprefixedVariables);
-    console.log('variables:', variables);
-    console.log('code transformed:', preparedFrameFunction);
+    console.log('- - - - frame code - - - - -')
+    console.log('args:', args);
+    console.log('code:', this.state.frameCode);
 
-    return preparedFrameFunction;
-  }
-
-  prepareFrameCodeFunction() {
-    const preparedFrameFunction = this.prepareFrameCode(this.state.frameCode, this.state.variables);
-    this.frameFunction = new Function('clear', 'isFrame', 'frame', 'width', 'height', 'brush', 'mouse', 'paint', 'strafe', `${preparedFrameFunction}`);
+    this.frameFunction = new Function(...args, `${this.state.frameCode}`);
   }
 
   runFrameCodeFunction() {
+    const commands = Object.values(this.commands);
+    const faders = Object.values(this.state.faders);
     const { isFrame, frame, width, height, mouse, brush } = this.state;
-    this.frameFunction(this.commands.clear, isFrame, frame, width, height, brush, mouse, this.commands.paint, this.commands.strafe);
+    this.frameFunction(...commands, ...this.state.layers, ...faders, this.state.anyX, this.state.anyY, isFrame, frame, width, height, brush, mouse);
   }
 
 
@@ -87,27 +76,28 @@ export default class TransformationManager {
     console.log('pixel code transformed:', preparedPixelCode);
 
     const coords = ['x', 'y', 'width', 'height'];
-    const helpers = ['getPixelChannel', 'setPixelChannel', 'wrapX', 'wrapY'];
+    const helpers = Object.keys(this.helper);
+    const layers = this.state.layers.map(({ name }) => name);
+    const faders = Object.keys(this.state.faders);
     const inputCN = layerNames.map(name => `input${name}`);
     const outputCN = layerNames.map(name => `output${name}`);
-    const argsNames = [...coords, ...helpers, ...inputCN, ...outputCN];
+    const argsNames = [...coords, ...helpers, ...layers, ...faders, ...inputCN, ...outputCN];
 
     console.log('argsNames:', argsNames);
+
     this.pixelFunction = new Function(...argsNames, `${preparedPixelCode}`);
   }
 
   runPixelCodeFunction() {
     const { width, height, layers } = this.state;
-    const { getPixelChannel, setPixelChannel, wrapX, wrapY } = this.helper;
-    const coords = [width, height];
-    const helpers = [getPixelChannel, setPixelChannel, wrapX, wrapY]
+    const helpers = Object.values(this.helper);
+    const faders = Object.values(this.state.faders);
     const inputCN = layers.map(layer => layer.offscreenImage.data);
     const outputCN = layers.map(layer => new Uint8ClampedArray(layer.offscreenImage.data.length));
-    const argsValues = [...coords, ...helpers, ...inputCN, ...outputCN];
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        this.pixelFunction(x, y, ...argsValues);
+        this.pixelFunction(x, y, width, height, ...helpers, ...this.state.layers, ...faders, ...inputCN, ...outputCN);
       }
     }
 

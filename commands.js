@@ -30,4 +30,8 @@ export default class Commands {
     }
     localStorage.setItem('data', JSON.stringify(data));
   }
+
+  invert = (c1, c2) => {
+    c1.invert(c2);
+  }
 }

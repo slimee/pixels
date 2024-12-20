@@ -10,6 +10,7 @@ export default class DrawState extends State {
         speed: 60,
         tool: 'brush',
       },
+      faders: [],
     };
     const nonReactive = {
       currentLayerIndex: 0,
@@ -57,5 +58,13 @@ export default class DrawState extends State {
       .map((layer, index) => ({ layer, index }))
       .filter(({ layer }) => layer.usedVariables && layer.usedVariables.includes(name))
       .map(({ index }) => index);
+  }
+
+  get anyX() {
+    return Math.round(Math.random() * this.width);
+  }
+
+  get anyY() {
+    return Math.round(Math.random() * this.height);
   }
 }

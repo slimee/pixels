@@ -112,9 +112,87 @@ function testNestedReactive() {
   state.nested.hello = 'bow';
 }
 
+function testAddPropertyValue() {
+  const state = new State({
+    faders: {
+      pan: { left: 0, right: 100 },
+    },
+  });
+
+  state.addProperty('faders.toto', 'waou');
+  if (state.faders.toto === 'waou') console.log('testAddPropertyValue value OK');
+  state.on('faders.toto', newValue => {
+    if (newValue === 75) console.log('testAddPropertyValue event OK');
+  });
+  state.faders.toto = 75;
+}
+
+function testAddPropertyObject() {
+  const state = new State({
+    faders: {
+      pan: { left: 0, right: 100 },
+    },
+  });
+
+  state.addProperty('faders.volume', { min: 0, max: 100, value: 50 });
+  state.on('faders.volume.value', newValue => {
+    if (newValue === 75) console.log('testAddPropertyObject OK');
+  });
+
+  state.faders.volume.value = 75;
+}
+
+function testAddPropertyEvent() {
+  const state = new State({
+    faders: {
+      pan: { left: 0, right: 100 },
+    },
+  });
+
+  let flag = 4;
+
+  state.on('faders.+', (value) => {
+    if (value.max === 100) flag = 5;
+  })
+
+  state.on('faders.-', (value) => {
+    if (value.max === 100) flag = 6;
+  })
+
+  state.addProperty('faders.volume', { min: 0, max: 100, value: 50 });
+  if (flag === 5) console.log('testAddPropertyEvent on add OK')
+  else console.log('testAddPropertyEvent on add KO');
+
+  state.removeProperty('faders.volume');
+  if (flag === 6) console.log('testAddPropertyEvent on remove OK')
+  else console.log('testAddPropertyEvent on remove KO');
+}
+
+function testRemoveOneProperty() {
+  const state = new State({
+    faders: {
+      pan: { left: 0, right: 100 },
+    },
+  });
+  let flag = 2;
+
+  state.on('faders.pan', pan => {
+    if (!pan) flag = 5;
+  })
+
+  state.removeProperty('faders.pan');
+  if (flag === 5) console.log('testRemoveOneProperty OK');
+  else console.log('testRemoveOneProperty KO')
+}
+
+
 conflictTest();
 testValues();
 testNestedValues();
 testOnWithReactive();
 testOnWithNonReactive();
 testNestedReactive();
+testAddPropertyValue();
+testAddPropertyObject();
+testAddPropertyEvent();
+testRemoveOneProperty();

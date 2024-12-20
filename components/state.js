@@ -9,7 +9,7 @@ export default class State {
 
   // Ajouter un écouteur
   on(propertyPath, callback) {
-    if (!this._isPathReactive(propertyPath)) {
+    if (!this._isPathReactive(propertyPath) && !propertyPath.endsWith('.+') && !propertyPath.endsWith('.-')) {
       throw new Error(`The path "${propertyPath}" is not a reactive property.`);
     }
     if (!this._listeners[propertyPath]) {
@@ -76,6 +76,7 @@ export default class State {
             throw new Error(`Cannot overwrite nested reactive object "${key}"`);
           },
           enumerable: true,
+          configurable: true,
         });
 
         this._initializeReactiveProperties(value, propertyPath, nestedObject);
@@ -95,6 +96,7 @@ export default class State {
             }
           },
           enumerable: true, // Permet la sérialisation et les boucles
+          configurable: true,
         });
       }
     }
@@ -110,5 +112,103 @@ export default class State {
 
       this[key] = value; // Ajouter la propriété directement
     }
+  }
+
+  // Ajouter dynamiquement une propriété (réactive ou non)
+  addProperty(propertyPath, value, reactive = true) {
+    const keys = propertyPath.split('.');
+    const lastKey = keys.pop();
+    let current = this;
+
+    // Naviguer jusqu'à l'objet parent
+    keys.forEach(key => {
+      if (!current[key]) {
+        current[key] = {};
+      }
+      current = current[key];
+    });
+
+    // Vérification de conflit
+    if (current.hasOwnProperty(lastKey)) {
+      throw new Error(
+        `Conflict detected: The property "${lastKey}" already exists as ${
+          typeof current[lastKey] === 'function' ? 'non-reactive' : 'reactive'
+        }.`
+      );
+    }
+
+    if (reactive) {
+      if (typeof value === 'object' && value !== null) {
+        // Ajouter un objet réactif
+        const nestedObject = {};
+        Object.defineProperty(current, lastKey, {
+          get() {
+            return nestedObject;
+          },
+          set() {
+            throw new Error(`Cannot overwrite nested reactive object "${lastKey}"`);
+          },
+          enumerable: true,
+          configurable: true,
+        });
+
+        // Initialiser récursivement les propriétés réactives
+        this._initializeReactiveProperties(value, `${propertyPath}`, nestedObject);
+      } else {
+        // Ajouter une propriété réactive simple
+        let internalValue = value;
+        const instance = this; // Capturer explicitement le contexte de State
+
+        Object.defineProperty(current, lastKey, {
+          get() {
+            return internalValue;
+          },
+          set(newValue) {
+            if (internalValue !== newValue) {
+              internalValue = newValue;
+              instance._emit(propertyPath, newValue); // Émettre un événement dans le bon contexte
+            }
+          },
+          enumerable: true, // Permet la sérialisation et les boucles
+          configurable: true,
+        });
+      }
+    } else {
+      // Ajouter une propriété non réactive
+      current[lastKey] = value;
+    }
+
+    // Émettre un événement d'ajout
+    this._emit(`${keys.join('.')}.+`, value);
+  }
+
+  // Supprimer dynamiquement une propriété
+  removeProperty(propertyPath) {
+    const keys = propertyPath.split('.');
+    const lastKey = keys.pop();
+    let current = this;
+
+    // Naviguer jusqu'à l'objet parent
+    keys.forEach(key => {
+      if (!current[key]) {
+        throw new Error(`The path "${propertyPath}" does not exist.`);
+      }
+      current = current[key];
+    });
+
+    // Vérification d'existence
+    if (!current.hasOwnProperty(lastKey)) {
+      throw new Error(`The property "${lastKey}" does not exist.`);
+    }
+
+    // Sauvegarder la valeur avant suppression pour l'événement
+    const value = current[lastKey];
+
+    // Supprimer la propriété
+    delete current[lastKey];
+
+    // Émettre un événement de suppression
+    this._emit(propertyPath, undefined);
+    this._emit(`${keys.join('.')}.-`, value);
   }
 }

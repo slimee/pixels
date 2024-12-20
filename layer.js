@@ -7,6 +7,7 @@ export default class Layer extends EventTarget {
     this.name = name;
     this.offscreenCanvas = document.createElement('canvas');
     this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
+    this.offscreenImage = null;
     this.visible = true;
     this.isDrawing = true;
     this.resize(this.state.width, this.state.height);
@@ -28,7 +29,7 @@ export default class Layer extends EventTarget {
     this.updateOffscreen();
   }
 
-  paint(x, y, brush) {
+  paint(x, y, brush = this.state.brush) {
     const color = brush.tool === 'eraser'
       ? { r: 0, g: 0, b: 0, a: 0 }  // Transparent color for eraser
       : brush.color;
@@ -219,5 +220,17 @@ export default class Layer extends EventTarget {
     this.offscreenCanvas.width = width;
     this.offscreenCanvas.height = height;
     this.updateOffscreen();
+  }
+
+  invert(other) {
+    const offscreenCanvas = this.offscreenCanvas;
+    const offscreenCanvasContext = this.offscreenCanvasContext;
+    const offscreenImage = this.offscreenImage;
+    this.offscreenCanvas = other.offscreenCanvas;
+    this.offscreenCanvasContext = other.offscreenCanvasContext;
+    this.offscreenImage = other.offscreenImage;
+    other.offscreenCanvas = offscreenCanvas;
+    other.offscreenCanvasContext = offscreenCanvasContext;
+    other.offscreenImage = offscreenImage;
   }
 }

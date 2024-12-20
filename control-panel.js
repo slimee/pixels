@@ -1,7 +1,7 @@
-import makeFader from './components/make-fader.js';
 import Layer from './layer.js';
 import makeSvgCheckbox from "./components/make-svg-checkbox.js";
 import hexToRGBA from "./utils/hex-to-rgba.js";
+import makeNewFader from "./components/make-new-fader.js";
 
 export default class ControlPanel {
   constructor(state, ui, canvasManager, transformationManager) {
@@ -20,7 +20,6 @@ export default class ControlPanel {
     this.bindResize();
     this.bindFader();
     this.bindMouse();
-    this.updateDeleteFaderSubmenu();
     this.addNewLayer();
     this.bindStrafeLockButton();
     this.faderIndex = 0;
@@ -220,6 +219,23 @@ export default class ControlPanel {
   }
 
   bindFader() {
+    this.state.on('faders.-', () => {
+      this.transformationManager.updateCodeFunctions();
+    });
+    this.state.on('faders.+', faderState => {
+      const fader = makeNewFader(this.ui.faderContainer, faderState);
+
+      fader.on('value', (value) => {
+        this.state.faders[faderState.name].value = value;
+      })
+
+      this.state.on(`faders.${faderState.name}.value`, (value) => {
+        fader.value = value;
+      });
+
+      this.transformationManager.updateCodeFunctions();
+    })
+
     this.ui.addFaderButton.addEventListener('click', () => {
       this.openFaderModal();
     });
@@ -242,7 +258,6 @@ export default class ControlPanel {
     if (name && !isNaN(min) && !isNaN(max)) {
       // Créer le fader avec les valeurs saisies
       this.addFader(name, min, max);
-      this.updateDeleteFaderSubmenu();
       // Fermer la modale
       this.closeFaderModal();
     } else {
@@ -265,67 +280,7 @@ export default class ControlPanel {
 
   addFader(name, min = -30, max = 30) {
     const state = { name, min, max, value: (min + max) / 2 };
-    const onChange = () => {
-      this.state.setVariable(state);
-      this.updateDeleteFaderSubmenu();
-      this.transformationManager.updateCodeFunctions();
-    };
-    this.ui.faderContainer.appendChild(makeFader(state, onChange));
-    this.transformationManager.updateCodeFunctions();
-  }
-
-  updateDeleteFaderSubmenu() {
-    const submenu = this.ui.deleteFaderSubmenu;
-    submenu.innerHTML = ''; // Vider le sous-menu
-
-    const variables = Object.keys(this.state.variables);
-
-    if (variables.length === 0) {
-      const emptyItem = document.createElement('a');
-      emptyItem.textContent = 'Aucun fader';
-      submenu.appendChild(emptyItem);
-      return;
-    }
-
-    variables.forEach(variableName => {
-      const menuItem = document.createElement('li');
-      const link = document.createElement('a');
-      link.href = '#';
-      link.textContent = variableName;
-
-      const isUsed = this.state.isVariableUsed(variableName);
-
-      if (isUsed) {
-        link.classList.add('disabled');
-        const layersUsingVar = this.state.getLayersUsingVariable(variableName);
-        link.textContent += ` (Utilisé dans calque(s): ${layersUsingVar.map(i => this.state.layers[i].name).join(', ')})`;
-        link.addEventListener('click', (e) => e.preventDefault()); // Empêcher le clic
-      } else {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.deleteFader(variableName);
-        });
-      }
-
-      menuItem.appendChild(link);
-      submenu.appendChild(menuItem);
-    });
-  }
-
-  deleteFader(variableName) {
-    // Supprimer le fader de l'état
-    this.state.deleteVariable(variableName);
-
-    // Supprimer le fader de l'interface
-    const faderElements = Array.from(this.ui.faderContainer.children);
-    faderElements.forEach(faderEl => {
-      const input = faderEl.querySelector('.fader-name-input');
-      if (input && input.value === variableName) {
-        this.ui.faderContainer.removeChild(faderEl);
-      }
-    });
-
-    this.updateDeleteFaderSubmenu(); // Mettre à jour le sous-menu
+    this.state.addProperty(`faders.${name}`, state);
   }
 
   addNewLayer() {
