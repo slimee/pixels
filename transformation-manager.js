@@ -94,10 +94,13 @@ export default class TransformationManager {
     const faders = Object.values(this.state.faders);
     const inputCN = layers.map(layer => layer.offscreenImage.data);
     const outputCN = layers.map(layer => new Uint8ClampedArray(layer.offscreenImage.data.length));
+    const args = [0, 0, width, height, ...helpers, ...this.state.layers, ...faders, ...inputCN, ...outputCN]
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        this.pixelFunction(x, y, width, height, ...helpers, ...this.state.layers, ...faders, ...inputCN, ...outputCN);
+        args[0] = x;
+        args[1] = y;
+        this.pixelFunction(...args);
       }
     }
 
