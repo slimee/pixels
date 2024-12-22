@@ -7,6 +7,10 @@ export default class Storage {
     localStorage.setItem(key, JSON.stringify(data));
   }
 
+  get(key) {
+    return JSON.parse(localStorage.getItem(key));
+  }
+
   drop(key) {
     localStorage.removeItem(key);
   }

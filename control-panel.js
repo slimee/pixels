@@ -2,6 +2,7 @@ import Layer from './layer.js';
 import makeSvgCheckbox from "./components/make-svg-checkbox.js";
 import hexToRGBA from "./utils/hex-to-rgba.js";
 import makeNewFader from "./components/make-new-fader.js";
+import ProjectStorage from "./utils/project-storage";
 
 export default class ControlPanel {
   constructor(state, ui, canvasManager, transformationManager) {
@@ -10,6 +11,7 @@ export default class ControlPanel {
     this.canvasManager = canvasManager;
     this.transformationManager = transformationManager;
 
+    this.bindLoadSave();
     this.bindPlayPauseButton();
     this.bindTestButton();
     this.bindAddDeleteLayerButtons();
@@ -23,6 +25,15 @@ export default class ControlPanel {
     this.addNewLayer();
     this.bindStrafeLockButton();
     this.faderIndex = 0;
+  }
+
+  bindLoadSave() {
+    this.ui.saveButton.addEventListener('click', () => {
+      this.save();
+    });
+    this.ui.loadButton.addEventListener('click', () => {
+      this.load();
+    });
   }
 
   bindTools() {
@@ -464,5 +475,21 @@ export default class ControlPanel {
     }
     this.updateLayersList();
     this.canvasManager.updateCanvas();
+  }
+
+  save() {
+    new ProjectStorage().saveProject('p1', this.getProject());
+  }
+
+  load() {
+    this.applyProject(new ProjectStorage().getProject());
+  }
+
+  getProject() {
+    return this.state.toJSON();
+  }
+
+  applyProject(state) {
+    this.state.fromJSON(state);
   }
 }

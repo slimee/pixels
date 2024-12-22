@@ -7,6 +7,33 @@ export default class State {
     this._initializeNonReactiveProperties(nonReactiveProperties);
   }
 
+  static fromJSON(jsonString) {
+    const parsed = JSON.parse(jsonString);
+    const initialState = parsed.reactive || {};
+    const nonReactiveProperties = parsed.nonReactive || {};
+    return new State(initialState, nonReactiveProperties);
+  }
+
+  toJSON() {
+    const serialize = (obj) => {
+      const result = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          if (typeof obj[key] === 'object' && obj[key] !== null) {
+            result[key] = serialize(obj[key]);
+          } else {
+            result[key] = obj[key];
+          }
+        }
+      }
+      return result;
+    };
+
+    const reactiveState = serialize(this);
+    const nonReactiveState = serialize(this._nonReactiveProperties || {});
+    return JSON.stringify({ reactive: reactiveState, nonReactive: nonReactiveState });
+  }
+
   // Ajouter un écouteur
   on(propertyPath, callback) {
     if (!this._isPathReactive(propertyPath) && !propertyPath.endsWith('.+') && !propertyPath.endsWith('.-')) {
@@ -67,19 +94,23 @@ export default class State {
 
       if (typeof value === 'object' && value !== null) {
         // Sous-objet : créer récursivement les sous-propriétés
-        const nestedObject = {};
+        let internalValue = {};
+        this._initializeReactiveProperties(value, propertyPath, internalValue);
+
+        const instance = this; // Capturer une référence explicite à l'instance de State
         Object.defineProperty(parent, key, {
           get() {
-            return nestedObject;
+            return internalValue;
           },
-          set() {
-            throw new Error(`Cannot overwrite nested reactive object "${key}"`);
+          set(newValue) {
+            if (internalValue !== newValue) {
+              internalValue = newValue;
+              instance._emit(propertyPath, newValue);
+            }
           },
           enumerable: true,
           configurable: true,
         });
-
-        this._initializeReactiveProperties(value, propertyPath, nestedObject);
       } else {
         // Propriété primitive : ajouter un getter et un setter
         let internalValue = value;
@@ -95,7 +126,7 @@ export default class State {
               instance._emit(propertyPath, newValue); // Émettre un événement dans le bon contexte
             }
           },
-          enumerable: true, // Permet la sérialisation et les boucles
+          enumerable: true,
           configurable: true,
         });
       }
@@ -104,13 +135,14 @@ export default class State {
 
   // Initialiser les propriétés non réactives
   _initializeNonReactiveProperties(obj) {
+    this._nonReactiveProperties = {};
     for (const [key, value] of Object.entries(obj)) {
       // Vérification de conflit
       if (this.hasOwnProperty(key)) {
         throw new Error(`Conflict detected: The property "${key}" already exists as a reactive property.`);
       }
-
-      this[key] = value; // Ajouter la propriété directement
+      this[key] = value;
+      this._nonReactiveProperties[key] = value;
     }
   }
 

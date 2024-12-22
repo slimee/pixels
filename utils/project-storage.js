@@ -1,3 +1,5 @@
+import Storage from "./storage.js";
+
 export default class ProjectStorage {
   projectsKey = 'projects';
   projectKey = (projectName) => `project-${projectName}`
@@ -7,11 +9,15 @@ export default class ProjectStorage {
     return this.storage.load(this.projectsKey) || [];
   }
 
-  addProject(projectName, data) {
+  saveProject(projectName, data) {
     const projects = this.listProjects();
     projects.unshift(projectName);
     this.storage.save(this.projectsKey, projects);
     this.storage.save(this.projectKey(), data);
+  }
+
+  getProject(projectName) {
+    return this.storage.get(projectName);
   }
 
   dropProject(projectName) {

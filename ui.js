@@ -1,5 +1,7 @@
 export default class UI {
   constructor() {
+    this.saveButton = document.getElementById('saveButton');
+    this.loadButton = document.getElementById('loadButton');
     // Menu bar
     this.brushSizeInput = document.getElementById('size');
     this.colorPicker = document.getElementById('color-picker');
@@ -30,7 +32,6 @@ export default class UI {
 
     this.faderContainer = document.getElementById('fader-container');
     this.addFaderButton = document.getElementById('addFaderButton');
-    this.deleteFaderSubmenu = document.getElementById('deleteFaderSubmenu');
 
     this.frameCodeInput = document.getElementById('frameCodeInput');
     this.pixelCodeInput = document.getElementById('pixelCodeInput');
