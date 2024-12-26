@@ -2,7 +2,7 @@ import Layer from './layer.js';
 import makeSvgCheckbox from "./components/make-svg-checkbox.js";
 import hexToRGBA from "./utils/hex-to-rgba.js";
 import makeNewFader from "./components/make-new-fader.js";
-import ProjectStorage from "./utils/project-storage";
+import ProjectStorage from "./utils/project-storage.js";
 
 export default class ControlPanel {
   constructor(state, ui, canvasManager, transformationManager) {
