@@ -205,9 +205,13 @@ export default class ControlPanel {
   }
 
   frame = () => {
-    this.transformationManager.runFrameCodeFunction();
-    this.transformationManager.runPixelCodeFunction();
-    this.canvasManager.updateCanvas();
+    try {
+      this.transformationManager.runFrameCodeFunction();
+      this.transformationManager.runPixelCodeFunction();
+      this.canvasManager.updateCanvas();
+    } catch (e) {
+      console.error(e);
+    }
 
     if (this.state.isPlaying) {
       this.state.frame++;
@@ -398,7 +402,7 @@ export default class ControlPanel {
         this.canvasManager.updateCanvas();
       });
 
-      const drawCheckbox = makeSvgCheckbox('paint', 'no-paint', false, 'Dessiner sur ce calque', () => {
+      const drawCheckbox = makeSvgCheckbox('paint', 'no-paint', layer.isDrawing, 'Dessiner sur ce calque', () => {
         layer.isDrawing = drawCheckbox.checked;
       });
 

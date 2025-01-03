@@ -49,17 +49,6 @@ export default class DrawState extends State {
     delete this.variables[name];
   }
 
-  isVariableUsed(name) {
-    return this.layers.some(layer => layer.usedVariables && layer.usedVariables.includes(name));
-  }
-
-  getLayersUsingVariable(name) {
-    return this.layers
-      .map((layer, index) => ({ layer, index }))
-      .filter(({ layer }) => layer.usedVariables && layer.usedVariables.includes(name))
-      .map(({ index }) => index);
-  }
-
   get anyX() {
     return Math.round(Math.random() * this.width);
   }
