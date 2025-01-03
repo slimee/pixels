@@ -105,14 +105,6 @@ export default class ControlPanel {
     return this.state.layers;
   }
 
-  get currentLayerIndex() {
-    return this.state.currentLayerIndex;
-  }
-
-  set currentLayerIndex(index) {
-    this.state.currentLayerIndex = index;
-  }
-
   bindMouse() {
     document.addEventListener('mousemove', event => {
       this.state.mouse.prevX = this.state.mouse.x;
@@ -301,7 +293,7 @@ export default class ControlPanel {
   addNewLayer() {
     const newLayer = new Layer(this.state);
     this.layers.push(newLayer);
-    this.currentLayerIndex = this.layers.length - 1;
+    this.state.currentLayerIndex = this.layers.length - 1;
     this.updateLayersList();
     this.state.setVariable({ name: newLayer.name, value: newLayer });
     this.transformationManager.updateCodeFunctions();
@@ -413,7 +405,7 @@ export default class ControlPanel {
         layer.name = layerName.value;
       });
       layerName.addEventListener('click', (event) => {
-        this.currentLayerIndex = index;
+        this.state.currentLayerIndex = index;
         this.updateLayersList();
         event.stopPropagation();
       });
@@ -425,7 +417,7 @@ export default class ControlPanel {
       layerItem.appendChild(layerName);
 
       // Mettre en évidence le calque sélectionné
-      if (index === this.currentLayerIndex) {
+      if (index === this.state.currentLayerIndex) {
         layerItem.classList.add('selected');
       }
 
@@ -447,12 +439,12 @@ export default class ControlPanel {
     layers.splice(toIndex, 0, layer);
 
     // Mettre à jour currentLayerIndex si nécessaire
-    if (this.currentLayerIndex === fromIndex) {
-      this.currentLayerIndex = toIndex;
-    } else if (this.currentLayerIndex > fromIndex && this.currentLayerIndex <= toIndex) {
-      this.currentLayerIndex--;
-    } else if (this.currentLayerIndex < fromIndex && this.currentLayerIndex >= toIndex) {
-      this.currentLayerIndex++;
+    if (this.state.currentLayerIndex === fromIndex) {
+      this.state.currentLayerIndex = toIndex;
+    } else if (this.state.currentLayerIndex > fromIndex && this.state.currentLayerIndex <= toIndex) {
+      this.state.currentLayerIndex--;
+    } else if (this.state.currentLayerIndex < fromIndex && this.state.currentLayerIndex >= toIndex) {
+      this.state.currentLayerIndex++;
     }
 
     this.updateLayersList();
@@ -461,9 +453,9 @@ export default class ControlPanel {
 
   deleteCurrentLayer() {
     if (this.layers.length > 1) {
-      this.layers.splice(this.currentLayerIndex, 1);
-      if (this.currentLayerIndex >= this.layers.length) {
-        this.currentLayerIndex = this.layers.length - 1;
+      this.layers.splice(this.state.currentLayerIndex, 1);
+      if (this.state.currentLayerIndex >= this.layers.length) {
+        this.state.currentLayerIndex = this.layers.length - 1;
       }
       this.updateLayersList();
       this.canvasManager.updateCanvas();
@@ -472,9 +464,9 @@ export default class ControlPanel {
 
   deleteAllLayers() {
     while (this.layers.length > 1) {
-      this.layers.splice(this.currentLayerIndex, 1);
-      if (this.currentLayerIndex >= this.layers.length) {
-        this.currentLayerIndex = this.layers.length - 1;
+      this.layers.splice(this.state.currentLayerIndex, 1);
+      if (this.state.currentLayerIndex >= this.layers.length) {
+        this.state.currentLayerIndex = this.layers.length - 1;
       }
     }
     this.updateLayersList();
