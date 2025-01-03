@@ -14,7 +14,7 @@ export default class ControlPanel {
     this.bindLoadSave();
     this.bindPlayPauseButton();
     this.bindTestButton();
-    this.bindAddDeleteLayerButtons();
+    this.bindLayers();
     this.bindTools();
     this.bindClearButtons();
     this.bindBrush();
@@ -115,7 +115,12 @@ export default class ControlPanel {
     });
   }
 
-  bindAddDeleteLayerButtons() {
+  bindLayers() {
+    this.state.on('currentLayerIndex', (currentLayerIndex) => {
+      this.state.layers.forEach((layer, index) => {
+        layer.isDrawing = index === currentLayerIndex;
+      });
+    });
     this.ui.addLayerButton.addEventListener("click", () => this.addNewLayer());
     this.ui.deleteLayerButton.addEventListener("click", () => this.deleteCurrentLayer());
     this.ui.deleteAllLayersButton.addEventListener("click", () => this.deleteAllLayers());

@@ -11,9 +11,9 @@ export default class DrawState extends State {
         tool: 'brush',
       },
       faders: [],
+      currentLayerIndex: 0,
     };
     const nonReactive = {
-      currentLayerIndex: 0,
       isPlaying: false,
       transformations,
       variables: {},
