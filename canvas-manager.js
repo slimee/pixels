@@ -123,7 +123,8 @@ export default class CanvasManager {
 
   copy(layerFrom, layerTo) {
     const fromData = layerFrom.offscreenCanvasContext.getImageData(0, 0, layerFrom.width, layerFrom.height);
-    layerTo.offscreenCanvasContext.putImageData(fromData, 0, 0);
+    layerTo.offscreenImage.data.set(fromData.data);
+    layerTo.updateOffscreen();
     this.updateCanvas();
   }
 
