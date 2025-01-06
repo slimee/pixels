@@ -1,9 +1,15 @@
 export default class TransformationHelper {
-  wrapX = (x, width) => {
+  constructor(state) {
+    this.state = state;
+  }
+
+  wrapX = x => {
+    const { width } = this.state;
     return ((x % width) + width) % width;
   }
 
-  wrapY = (y, height) => {
+  wrapY = y => {
+    const { height } = this.state;
     return ((y % height) + height) % height;
   }
 
@@ -22,15 +28,15 @@ export default class TransformationHelper {
   }
 
   getPixelChannel = (layerData, width, height, x, y, channel) => {
-    const wx = this.wrapX(x, width);
-    const wy = this.wrapY(y, height);
+    const wx = this.wrapX(x);
+    const wy = this.wrapY(y);
     const index = (wy * width + wx) * 4 + this.channelOffset(channel);
     return layerData[index];
   }
 
   setPixelChannel = (layerData, width, height, x, y, channel, value) => {
-    const wx = this.wrapX(x, width);
-    const wy = this.wrapY(y, height);
+    const wx = this.wrapX(x);
+    const wy = this.wrapY(y);
     const index = (wy * width + wx) * 4 + this.channelOffset(channel);
     layerData[index] = value;
   }

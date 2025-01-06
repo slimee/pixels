@@ -4,31 +4,20 @@ export default class Commands {
     this.canvasManager = canvasManager;
   }
 
-  paint = (x, y) => {
-    this.canvasManager.paint(x, y, this.state.brush);
+  paint = (layer, x, y) => {
+    this.canvasManager.paint(layer, x, y, this.state.brush);
   }
 
-  strafe = (x, y) => {
-    this.canvasManager.strafe(x, y);
+  move = (layer, x, y) => {
+    this.canvasManager.move(layer, x, y);
   }
 
-  clear = (layerName) => {
-    this.canvasManager.clear(layerName);
+  clear = (layer) => {
+    this.canvasManager.clear(layer);
   }
 
   copy = (layerFrom, layerTo) => {
     this.canvasManager.copy(layerFrom, layerTo);
-  }
-
-  save = () => {
-    const data = {
-      pixelCode: this.state.pixelCode,
-      frameCode: this.state.frameCode,
-      currentLayerIndex: this.state.currentLayerIndex,
-      brush: this.state.brush,
-      frame: this.state.frame,
-    }
-    localStorage.setItem('data', JSON.stringify(data));
   }
 
   invert = (c1, c2) => {

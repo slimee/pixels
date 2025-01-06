@@ -24,8 +24,7 @@ export default class UI {
     // Controls palette
     this.playPauseButton = document.getElementById('playPauseButton');
     this.testButton = document.getElementById('testButton');
-    this.strafeToolButton = document.getElementById('strafeToolButton');
-    this.strafeLockButton = document.getElementById('strafeLockButton');
+    this.moveButton = document.getElementById('moveButton');
 
     this.clearButton = document.getElementById('clearButton');
     this.clearAllButton = document.getElementById('clearAllButton');

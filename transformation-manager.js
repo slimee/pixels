@@ -1,12 +1,11 @@
 import preparePixelFunction from "./utils/prepare-pixel-function.js";
-import TransformationHelper from "./transformation-helper.js";
 
 export default class TransformationManager {
-  constructor(ui, state, commands) {
+  constructor(ui, state, commands, helper) {
     this.ui = ui;
     this.state = state;
     this.commands = commands;
-    this.helper = new TransformationHelper();
+    this.helper = helper;
 
     this.bindFrameCodeInput();
     this.frameFunction = () => null;
@@ -45,9 +44,10 @@ export default class TransformationManager {
     //
     // paint(x,y);
     const commands = Object.keys(this.commands);
+    const helpers = Object.keys(this.helper);
     const layers = this.state.layers.map(({ name }) => name);
     const faders = Object.keys(this.state.faders);
-    const args = [...commands, ...layers, ...faders, 'anyX', 'anyY', 'isFrame', 'frame', 'width', 'height', 'mouse', 'brush'];
+    const args = [...commands, ...helpers, ...layers, ...faders, 'anyX', 'anyY', 'isFrame', 'frame', 'frameTotal', 'width', 'height', 'brush', 'mouse'];
 
     console.log('- - - - frame code - - - - -')
     console.log('args:', args);
@@ -58,9 +58,10 @@ export default class TransformationManager {
 
   runFrameCodeFunction() {
     const commands = Object.values(this.commands);
+    const helpers = Object.values(this.helper);
     const faders = Object.values(this.state.faders);
-    const { isFrame, frame, width, height, mouse, brush } = this.state;
-    this.frameFunction(...commands, ...this.state.layers, ...faders, this.state.anyX, this.state.anyY, isFrame, frame, width, height, brush, mouse);
+    const { isFrame, frame, frameTotal, width, height, mouse, brush } = this.state;
+    this.frameFunction(...commands, ...helpers, ...this.state.layers, ...faders, this.state.anyX, this.state.anyY, isFrame, frame, frameTotal, width, height, brush, mouse);
   }
 
 
@@ -75,7 +76,7 @@ export default class TransformationManager {
     console.log('layer code before:', this.state.pixelCode);
     console.log('pixel code transformed:', preparedPixelCode);
 
-    const coords = ['x', 'y', 'width', 'height'];
+    const coords = ['x', 'y', 'width', 'height', 'mouse'];
     const helpers = Object.keys(this.helper);
     const layers = this.state.layers.map(({ name }) => name);
     const faders = Object.keys(this.state.faders);
@@ -89,12 +90,12 @@ export default class TransformationManager {
   }
 
   runPixelCodeFunction() {
-    const { width, height, layers } = this.state;
+    const { width, height, layers, mouse } = this.state;
     const helpers = Object.values(this.helper);
     const faders = Object.values(this.state.faders);
-    const inputCN = layers.map(layer => layer.offscreenImage.data);
-    const outputCN = layers.map(layer => new Uint8ClampedArray(layer.offscreenImage.data.length));
-    const args = [0, 0, width, height, ...helpers, ...this.state.layers, ...faders, ...inputCN, ...outputCN]
+    const inputCN = layers.map(layer => layer.getImageData());
+    const outputCN = layers.map(layer => new Uint8ClampedArray(layer.getImageData().length));
+    const args = [0, 0, width, height, mouse, ...helpers, ...this.state.layers, ...faders, ...inputCN, ...outputCN];
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -106,8 +107,8 @@ export default class TransformationManager {
 
     layers.forEach((layer, i) => {
       const outData = outputCN[i];
-      layer.offscreenImage.data.set(outData);
-      layer.updateOffscreen();
+      layer.setImageData(outData);
+      layer.putImageDataToCanvasContext();
     });
   }
 }

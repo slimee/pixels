@@ -12,18 +12,19 @@ export default class DrawState extends State {
       },
       faders: [],
       currentLayerIndex: 0,
+      codeButton: [],
     };
     const nonReactive = {
       isPlaying: false,
       transformations,
       variables: {},
-      lastPoint: null,
       layers: [],
       mouse: { x: 0, y: 0, prevX: 0, prevY: 0 },
-      strafeLock: false,
+      moveLock: false,
       frameCode: '',
       pixelCode: '',
       frame: 0,
+      frameTotal: 0,
     };
     super(reactive, nonReactive);
   }

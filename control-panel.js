@@ -11,6 +11,7 @@ export default class ControlPanel {
     this.canvasManager = canvasManager;
     this.transformationManager = transformationManager;
 
+    this.bindCodeButton();
     this.bindLoadSave();
     this.bindPlayPauseButton();
     this.bindTestButton();
@@ -23,8 +24,18 @@ export default class ControlPanel {
     this.bindFader();
     this.bindMouse();
     this.addNewLayer();
-    this.bindStrafeLockButton();
     this.faderIndex = 0;
+    this.draggedLayerIndex = null;
+  }
+
+  bindCodeButton() {
+    // this.ui.codeButton.addEventListener('click', () => {
+    //   const name = `b1`;
+    //   this.state.codeButton[name] = { name };
+    // });
+    // this.state.on('codeButton.+', (codeButtonState) => {
+    //   addToCodeButtonBar(makeCodebutton(codeButtonState));
+    // });
   }
 
   bindLoadSave() {
@@ -39,8 +50,8 @@ export default class ControlPanel {
   bindTools() {
     this.toolButtons = document.querySelectorAll('#tools button');
 
-    this.ui.strafeToolButton.addEventListener('click', () => {
-      this.selectTool('strafe');
+    this.ui.moveButton.addEventListener('click', () => {
+      this.selectTool('move');
     });
     this.ui.brushButton.addEventListener('click', () => {
       this.selectTool('brush');
@@ -56,23 +67,6 @@ export default class ControlPanel {
     });
   }
 
-  bindStrafeLockButton() {
-    const updateStrateLockButton = () => {
-      if (this.state.strafeLock) {
-        this.ui.strafeLockButton.classList.add('active');
-        this.ui.strafeLockButton.innerHTML = "<i class='bx bx-lock'></i>";
-      } else {
-        this.ui.strafeLockButton.classList.remove('active');
-        this.ui.strafeLockButton.innerHTML = "<i class='bx bx-lock-open'></i>";
-      }
-    }
-    this.ui.strafeLockButton.addEventListener('click', () => {
-      this.state.strafeLock = !this.state.strafeLock;
-      updateStrateLockButton();
-    });
-    updateStrateLockButton();
-  }
-
   selectTool(toolName) {
     this.toolButtons.forEach((button) => {
       button.classList.remove('active');
@@ -80,8 +74,8 @@ export default class ControlPanel {
 
     this.state.brush.tool = toolName;
 
-    if (toolName === 'strafe') {
-      this.ui.strafeToolButton.classList.add('active');
+    if (toolName === 'move') {
+      this.ui.moveButton.classList.add('active');
     }
     if (toolName === 'magic-fill') {
       this.ui.magicFillButton.classList.add('active');
@@ -212,6 +206,7 @@ export default class ControlPanel {
 
     if (this.state.isPlaying) {
       this.state.frame++;
+      this.state.frameTotal++;
       requestAnimationFrame(this.frame);
     } else {
       this.state.frame = 0;

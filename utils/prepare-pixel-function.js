@@ -152,7 +152,7 @@ export default function preparePixelFunction(code, layerNames) {
   layerNames.forEach(layer => {
     finalCode += `
       {
-        let finalIndex = (wrapY(${layer}_y, height) * width + wrapX(${layer}_x, width))*4;
+        let finalIndex = (wrapY(${layer}_y) * width + wrapX(${layer}_x))*4;
         ${layer}Index = finalIndex;
         ${layerWriteVars[layer]}[finalIndex] = ${layer}_r;
         ${layerWriteVars[layer]}[finalIndex+1] = ${layer}_g;
