@@ -76,13 +76,14 @@ export default class TransformationManager {
     console.log('layer code before:', this.state.pixelCode);
     console.log('pixel code transformed:', preparedPixelCode);
 
-    const coords = ['x', 'y', 'width', 'height', 'mouse'];
+    const coords = ['x', 'y'];
     const helpers = Object.keys(this.helper);
     const layers = this.state.layers.map(({ name }) => name);
     const faders = Object.keys(this.state.faders);
     const inputCN = layerNames.map(name => `input${name}`);
     const outputCN = layerNames.map(name => `output${name}`);
-    const argsNames = [...coords, ...helpers, ...layers, ...faders, ...inputCN, ...outputCN];
+    const state = ['isFrame', 'frame', 'frameTotal', 'width', 'height', 'brush', 'mouse'];
+    const argsNames = [...coords, ...helpers, ...layers, ...faders, ...inputCN, ...outputCN, ...state];
 
     console.log('argsNames:', argsNames);
 
@@ -90,12 +91,14 @@ export default class TransformationManager {
   }
 
   runPixelCodeFunction() {
-    const { width, height, layers, mouse } = this.state;
+    const { layers } = this.state;
     const helpers = Object.values(this.helper);
     const faders = Object.values(this.state.faders);
     const inputCN = layers.map(layer => layer.getImageData());
     const outputCN = layers.map(layer => new Uint8ClampedArray(layer.getImageData().length));
-    const args = [0, 0, width, height, mouse, ...helpers, ...this.state.layers, ...faders, ...inputCN, ...outputCN];
+    const { isFrame, frame, frameTotal, width, height, brush, mouse } = this.state;
+    const state = [isFrame, frame, frameTotal, width, height, brush, mouse];
+    const args = [0, 0, ...helpers, ...this.state.layers, ...faders, ...inputCN, ...outputCN, ...state];
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
