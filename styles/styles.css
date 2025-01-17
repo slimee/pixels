@@ -14,7 +14,6 @@ body {
 }
 
 .palette-container {
-    width: 300px;
     max-height: 100%;
     background-color: #f0f0f0;
     overflow: hidden;
@@ -211,7 +210,6 @@ body {
 }
 
 .controls-palette {
-    width: 300px;
     background-color: #323232;
     color: #ffffff;
     padding: 10px;

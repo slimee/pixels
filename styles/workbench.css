@@ -4,12 +4,11 @@ body, html {
 }
 
 .toolbar {
-    width: 300px;
-    background-color: #343a40;
     color: white;
-    align-items: center;
     padding-top: 10px;
     padding-left: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
 .icon {

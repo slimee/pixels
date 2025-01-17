@@ -41,62 +41,42 @@
 </div>
 
 <div class="main-container">
-    <div class="palette-container" id="paletteContainer">
+    <div class="palette-container">
         <div class="toolbar">
             <img src="icons/liste.svg" alt="Logo" class="icon"/>
+            <button id="save" icon="save" @click="save"></button>
             <svg id="saveButton" class="icon">
                 <use href="sprite.svg#save"></use>
             </svg>
             <svg id="loadButton" class="icon">
-                <use href="sprite.svg#save"></use>
+                <use href="sprite.svg#open"></use>
             </svg>
-            <div>
-                <button id="brushButton" title="Pinceau"><i class='bx bx-paint'></i></button>
-                <button id="continousBrushButton" title="Rouleau"><i class='bx bxs-brush'></i></button>
-                <button id="fillBucketButton" title="Pot de peinture"><i class='bx bx-paint-roll'></i></button>
-                <button id="magicFillButton" title="Baguette magique"><i class='bx bxs-magic-wand'></i></button>
-                <button id="eraserButton" title="Gomme"><i class='bx bx-eraser'></i></button>
-            </div>
-            <div>
-                <input type="range" id="size" min="1" max="500" value="10">
-                <input type="text" id="color-picker" data-coloris>
-            </div>
-
-            <div>
-                <i class='bx bxs-shapes'></i>
-                <select id="shape">
-                    <option value="circle" selected>Cercle</option>
-                    <option value="square">Carré</option>
-                    <option value="triangle">Triangle</option>
-                    <option value="segment">Segment</option>
-                </select>
-            </div>
-
-            <div id="move-toolbar">
-                <span title="Déplacer le calque">
-                    <svg id="moveButton" class="icon">
-                        <use href="sprite.svg#move"></use>
-                    </svg>
-                </span>
-            </div>
-
-            <div id="layer-toolbar">
-                <img id="addLayerButton" src="icons/layer-add.svg" alt="Logo" class="icon"/>
-                <img id="clearButton" src="icons/layer-erase.svg" alt="Logo" class="icon"/>
-                <img id="clearAllButton" src="icons/layers-erase.svg" alt="Logo" class="icon"/>
-                <button id="deleteLayerButton" title="Supprimer le calque"><i class='bx bx-trash'></i></button>
-                <button id="deleteAllLayersButton" title="Supprimer tout les calques"><i class='bx bxs-trash'></i>
-                </button>
-            </div>
-
-            <div id="transform-toolbar">
-                <button id="playPauseButton"><i id="playPauseIcon" class='bx bx-play'></i></button>
-                <button id="testButton"><i id="testIcon" class='bx bxs-flask'></i></button>
-                <button id="addFaderButton" title="Ajouter un fader"><i id="faderIcon" class='bx bx-candles'></i>
-                </button>
-                <i class='bx bx-trash' title="Supprimer un fader"></i>
-                <ul class="submenu" id="deleteFaderSubmenu"></ul>
-            </div>
+            <button id="brushButton" title="Pinceau"><i class='bx bx-paint'></i></button>
+            <button id="continousBrushButton" title="Rouleau"><i class='bx bxs-brush'></i></button>
+            <button id="fillBucketButton" title="Pot de peinture"><i class='bx bx-paint-roll'></i></button>
+            <button id="magicFillButton" title="Baguette magique"><i class='bx bxs-magic-wand'></i></button>
+            <button id="eraserButton" title="Gomme"><i class='bx bx-eraser'></i></button>
+            <input type="range" id="size" min="1" max="500" value="10">
+            <input type="text" id="color-picker" data-coloris>
+            <i class='bx bxs-shapes'></i>
+            <select id="shape">
+                <option value="circle" selected>Cercle</option>
+                <option value="square">Carré</option>
+                <option value="triangle">Triangle</option>
+                <option value="segment">Segment</option>
+            </select>
+            <span title="Déplacer le calque"><svg id="moveButton" class="icon"><use href="sprite.svg#move"></use></svg></span>
+            <img id="addLayerButton" src="icons/layer-add.svg" alt="Logo" class="icon"/>
+            <img id="clearButton" src="icons/layer-erase.svg" alt="Logo" class="icon"/>
+            <img id="clearAllButton" src="icons/layers-erase.svg" alt="Logo" class="icon"/>
+            <button id="deleteLayerButton" title="Supprimer le calque"><i class='bx bx-trash'></i></button>
+            <button id="deleteAllLayersButton" title="Supprimer tout les calques"><i class='bx bxs-trash'></i></button>
+            <button id="playPauseButton"><i id="playPauseIcon" class='bx bx-play'></i></button>
+            <button id="testButton"><i id="testIcon" class='bx bxs-flask'></i></button>
+            <button id="addFaderButton" title="Ajouter un fader"><i id="faderIcon" class='bx bx-candles'></i>
+            </button>
+            <i class='bx bx-trash' title="Supprimer un fader"></i>
+            <ul class="submenu" id="deleteFaderSubmenu"></ul>
         </div>
         <div class="palette-content">
             <div class="layers-section">
