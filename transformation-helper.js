@@ -40,4 +40,18 @@ export default class TransformationHelper {
     const index = (wy * width + wx) * 4 + this.channelOffset(channel);
     layerData[index] = value;
   }
+
+  repeat = (times, command) => {
+    for (let i = 0; i < times; i++) {
+      command();
+    }
+  }
+
+  anyX = () => {
+    return Math.round(Math.random() * this.state.width);
+  }
+
+  anyY = () => {
+    return Math.round(Math.random() * this.state.height);
+  }
 }

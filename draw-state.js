@@ -49,12 +49,4 @@ export default class DrawState extends State {
   deleteVariable(name) {
     delete this.variables[name];
   }
-
-  get anyX() {
-    return Math.round(Math.random() * this.width);
-  }
-
-  get anyY() {
-    return Math.round(Math.random() * this.height);
-  }
 }

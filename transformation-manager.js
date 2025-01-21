@@ -47,7 +47,7 @@ export default class TransformationManager {
     const helpers = Object.keys(this.helper);
     const layers = this.state.layers.map(({ name }) => name);
     const faders = Object.keys(this.state.faders);
-    const args = [...commands, ...helpers, ...layers, ...faders, 'anyX', 'anyY', 'isFrame', 'frame', 'frameTotal', 'width', 'height', 'brush', 'mouse'];
+    const args = [...commands, ...helpers, ...layers, ...faders, 'isFrame', 'frame', 'frameTotal', 'width', 'height', 'brush', 'mouse'];
 
     console.log('- - - - frame code - - - - -')
     console.log('args:', args);
@@ -61,7 +61,7 @@ export default class TransformationManager {
     const helpers = Object.values(this.helper);
     const faders = Object.values(this.state.faders);
     const { isFrame, frame, frameTotal, width, height, mouse, brush } = this.state;
-    this.frameFunction(...commands, ...helpers, ...this.state.layers, ...faders, this.state.anyX, this.state.anyY, isFrame, frame, frameTotal, width, height, brush, mouse);
+    this.frameFunction(...commands, ...helpers, ...this.state.layers, ...faders, isFrame, frame, frameTotal, width, height, brush, mouse);
   }
 
 
