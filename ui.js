@@ -3,7 +3,7 @@ export default class UI {
     this.saveButton = document.getElementById('saveButton');
     this.loadButton = document.getElementById('loadButton');
     // Menu bar
-    this.brushSizeInput = document.getElementById('size');
+    this.brushSizeInput = document.getElementById('brushSizeInput');
     this.colorPicker = document.getElementById('color-picker');
     this.brushButton = document.getElementById('brushButton');
     this.continousBrushButton = document.getElementById('continousBrushButton');

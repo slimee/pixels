@@ -56,10 +56,10 @@
             <button id="fillBucketButton" title="Pot de peinture"><i class='bx bx-paint-roll'></i></button>
             <button id="magicFillButton" title="Baguette magique"><i class='bx bxs-magic-wand'></i></button>
             <button id="eraserButton" title="Gomme"><i class='bx bx-eraser'></i></button>
-            <input type="range" id="size" min="1" max="500" value="10">
-            <input type="text" id="color-picker" data-coloris>
+            <input id="brushSizeInput" class="icon" type="number" min="1" max="500" value="10">
+            <input id="color-picker" class="icon" type="text" data-coloris>
             <i class='bx bxs-shapes'></i>
-            <select id="shape">
+            <select id="shape" class="icon">
                 <option value="circle" selected>Cercle</option>
                 <option value="square">Carré</option>
                 <option value="triangle">Triangle</option>
@@ -75,9 +75,11 @@
             <button id="testButton"><i id="testIcon" class='bx bxs-flask'></i></button>
             <button id="addFaderButton" title="Ajouter un fader"><i id="faderIcon" class='bx bx-candles'></i>
             </button>
-            <i class='bx bx-trash' title="Supprimer un fader"></i>
-            <ul class="submenu" id="deleteFaderSubmenu"></ul>
         </div>
+    </div>
+    <div class="palette-container">
+
+        <span>Layouts</span>
         <div class="palette-content">
             <div class="layers-section">
                 <div id="layersList">
@@ -86,9 +88,9 @@
             </div>
         </div>
         <div id="fader-container"></div>
-        <span>frame code:</span>
+        <span>Frame code:</span>
         <textarea id="frameCodeInput" class="code-input"></textarea>
-        <span>pixel code:</span>
+        <span>Pixel code:</span>
         <textarea id="pixelCodeInput" class="code-input"></textarea>
     </div>
     <div id="canvas-container" class="canvas-container">

@@ -514,15 +514,6 @@ a.disabled {
     text-decoration: none;
 }
 
-/* Style pour les liens désactivés dans le sous-menu de suppression des faders */
-#deleteFaderSubmenu a.disabled {
-    color: gray !important;
-    pointer-events: none;
-    cursor: default;
-    text-decoration: none;
-}
-
-
 #tools button {
     padding: 5px;
     margin: 2px;

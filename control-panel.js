@@ -126,7 +126,7 @@ export default class ControlPanel {
   }
 
   bindBrush() {
-    this.ui.brushSizeInput.addEventListener('input', () => {
+    this.ui.brushSizeInput.addEventListener('change', () => {
       this.state.brush.size = parseInt(this.ui.brushSizeInput.value, 10);
     });
     this.state.on('brush.size', (size) => {
