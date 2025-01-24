@@ -8,8 +8,8 @@ export default function makeSvgCheckbox(symbol, symbol2, checked, title, onChang
         <label class="checkbox" for="${id}" title="${title}">
             <input type="checkbox" id="${id}" ${checked ? 'checked' : ''}>
             <svg class="icon">
-                <use href="sprite.svg#${symbol}" class="show"></use>
-                <use href="sprite.svg#${symbol2}" class="hide"></use>
+                <use href="svg.svg#${symbol}" class="show"></use>
+                <use href="svg.svg#${symbol2}" class="hide"></use>
             </svg>
         </label>
       `);

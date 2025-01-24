@@ -46,14 +46,20 @@
             <img src="icons/liste.svg" alt="Logo" class="icon"/>
             <button id="save" icon="save" @click="save"></button>
             <svg id="saveButton" class="icon">
-                <use href="sprite.svg#save"></use>
+                <use href="svg.svg#save"></use>
             </svg>
             <svg id="loadButton" class="icon">
-                <use href="sprite.svg#open"></use>
+                <use href="svg.svg#open"></use>
             </svg>
-            <button id="brushButton" title="Pinceau"><i class='bx bx-paint'></i></button>
-            <button id="continousBrushButton" title="Rouleau"><i class='bx bxs-brush'></i></button>
-            <button id="fillBucketButton" title="Pot de peinture"><i class='bx bx-paint-roll'></i></button>
+            <svg id="brushButton" class="icon">
+                <use href="svg.svg#brush"></use>
+            </svg>
+            <svg id="continousBrushButton" class="icon">
+                <use href="svg.svg#continous"></use>
+            </svg>
+            <svg id="fillBucketButton" class="icon">
+                <use href="svg.svg#pot"></use>
+            </svg>
             <button id="magicFillButton" title="Baguette magique"><i class='bx bxs-magic-wand'></i></button>
             <button id="eraserButton" title="Gomme"><i class='bx bx-eraser'></i></button>
             <input id="brushSizeInput" class="icon" type="number" min="1" max="500" value="10">
@@ -65,8 +71,10 @@
                 <option value="triangle">Triangle</option>
                 <option value="segment">Segment</option>
             </select>
-            <span title="Déplacer le calque"><svg id="moveButton" class="icon"><use href="sprite.svg#move"></use></svg></span>
             <img id="addLayerButton" src="icons/layer-add.svg" alt="Logo" class="icon"/>
+            <svg id="moveButton" class="icon">
+                <use href="svg.svg#move"></use>
+            </svg>
             <img id="clearButton" src="icons/layer-erase.svg" alt="Logo" class="icon"/>
             <img id="clearAllButton" src="icons/layers-erase.svg" alt="Logo" class="icon"/>
             <button id="deleteLayerButton" title="Supprimer le calque"><i class='bx bx-trash'></i></button>

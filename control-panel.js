@@ -394,7 +394,7 @@ export default class ControlPanel {
         this.canvasManager.updateCanvas();
       });
 
-      const drawCheckbox = makeSvgCheckbox('paint', 'no-paint', layer.isDrawing, 'Dessiner sur ce calque', () => {
+      const drawCheckbox = makeSvgCheckbox('brush', 'no-paint', layer.isDrawing, 'Dessiner sur ce calque', () => {
         layer.isDrawing = drawCheckbox.checked;
       });
 
