@@ -43,8 +43,9 @@
 <div class="main-container">
     <div class="palette-container">
         <div class="toolbar">
-            <img src="icons/liste.svg" alt="Logo" class="icon"/>
-            <button id="save" icon="save" @click="save"></button>
+            <svg id="tutoButton" class="icon">
+                <use href="svg.svg#tuto"></use>
+            </svg>
             <svg id="saveButton" class="icon">
                 <use href="svg.svg#save"></use>
             </svg>
@@ -60,8 +61,12 @@
             <svg id="fillBucketButton" class="icon">
                 <use href="svg.svg#pot"></use>
             </svg>
-            <button id="magicFillButton" title="Baguette magique"><i class='bx bxs-magic-wand'></i></button>
-            <button id="eraserButton" title="Gomme"><i class='bx bx-eraser'></i></button>
+            <svg id="magicFillButton" class="icon">
+                <use href="svg.svg#magic"></use>
+            </svg>
+            <svg id="eraserButton" class="icon">
+                <use href="svg.svg#eraser"></use>
+            </svg>
             <input id="brushSizeInput" class="icon" type="number" min="1" max="500" value="10">
             <input id="color-picker" class="icon" type="text" data-coloris>
             <i class='bx bxs-shapes'></i>
@@ -71,13 +76,17 @@
                 <option value="triangle">Triangle</option>
                 <option value="segment">Segment</option>
             </select>
-            <img id="addLayerButton" src="icons/layer-add.svg" alt="Logo" class="icon"/>
+            <svg id="addLayerButton" class="icon">
+                <use href="svg.svg#layer-add"></use>
+            </svg>
             <svg id="moveButton" class="icon">
                 <use href="svg.svg#move"></use>
             </svg>
             <img id="clearButton" src="icons/layer-erase.svg" alt="Logo" class="icon"/>
             <img id="clearAllButton" src="icons/layers-erase.svg" alt="Logo" class="icon"/>
-            <button id="deleteLayerButton" title="Supprimer le calque"><i class='bx bx-trash'></i></button>
+            <svg id="deleteLayerButton" class="icon">
+                <use href="svg.svg#delete-layer"></use>
+            </svg>
             <button id="deleteAllLayersButton" title="Supprimer tout les calques"><i class='bx bxs-trash'></i></button>
             <button id="playPauseButton"><i id="playPauseIcon" class='bx bx-play'></i></button>
             <button id="testButton"><i id="testIcon" class='bx bxs-flask'></i></button>
