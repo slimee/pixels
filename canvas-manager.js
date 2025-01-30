@@ -97,11 +97,6 @@ export default class CanvasManager {
     this.state.drawingLayers.forEach(layer => layer.move(dx, dy));
   }
 
-  clearAllLayers() {
-    this.state.layers.forEach(matrix => matrix.clear());
-    this.updateCanvas();
-  }
-
   clear(layer) {
     layer.clear();
     this.updateCanvas();

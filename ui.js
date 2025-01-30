@@ -4,6 +4,7 @@ export default class UI {
     this.loadButton = document.getElementById('loadButton');
     // Menu bar
     this.brushSizeInput = document.getElementById('brushSizeInput');
+    this.brushRepeatInput = document.getElementById('brushRepeatInput');
     this.colorPicker = document.getElementById('color-picker');
     this.brushButton = document.getElementById('brushButton');
     this.continousBrushButton = document.getElementById('continousBrushButton');
@@ -19,7 +20,6 @@ export default class UI {
     this.layersList = document.getElementById('layersList');
     this.addLayerButton = document.getElementById('addLayerButton');
     this.deleteLayerButton = document.getElementById('deleteLayerButton');
-    this.deleteAllLayersButton = document.getElementById('deleteAllLayersButton');
 
     // Controls palette
     this.playPauseButton = document.getElementById('playPauseButton');
@@ -27,7 +27,6 @@ export default class UI {
     this.moveButton = document.getElementById('moveButton');
 
     this.clearButton = document.getElementById('clearButton');
-    this.clearAllButton = document.getElementById('clearAllButton');
 
     this.faderContainer = document.getElementById('fader-container');
     this.addFaderButton = document.getElementById('addFaderButton');

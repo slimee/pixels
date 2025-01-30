@@ -21,6 +21,7 @@ export default class ControlPanel {
     this.bindBrush();
     this.bindEraserButton();
     this.bindResize();
+    this.bindBrushRepeat();
     this.bindFader();
     this.bindMouse();
     this.addNewLayer();
@@ -117,18 +118,18 @@ export default class ControlPanel {
     });
     this.ui.addLayerButton.addEventListener("click", () => this.addNewLayer());
     this.ui.deleteLayerButton.addEventListener("click", () => this.deleteCurrentLayer());
-    this.ui.deleteAllLayersButton.addEventListener("click", () => this.deleteAllLayers());
   }
 
   bindClearButtons() {
     this.ui.clearButton.addEventListener('click', () => this.canvasManager.clearCurrentLayer());
-    this.ui.clearAllButton.addEventListener('click', () => this.canvasManager.clearAllLayers());
   }
 
   bindBrush() {
-    this.ui.brushSizeInput.addEventListener('change', () => {
+    const updateSize = () => {
       this.state.brush.size = parseInt(this.ui.brushSizeInput.value, 10);
-    });
+    };
+    updateSize();
+    this.ui.brushSizeInput.addEventListener('change', updateSize);
     this.state.on('brush.size', (size) => {
       this.ui.brushSizeInput.value = size;
     });
@@ -151,6 +152,18 @@ export default class ControlPanel {
     const updateBrushShape = () => this.state.brush.shape = this.ui.brushShapeInput.value;
     updateBrushShape();
     this.ui.brushShapeInput.addEventListener('change', updateBrushShape);
+  }
+
+  bindBrushRepeat() {
+    const updateRepeat = () => {
+      this.state.brush.repeat = parseInt(this.ui.brushRepeatInput.value, 10);
+    };
+    this.ui.brushRepeatInput.addEventListener('change', updateRepeat);
+    this.state.on('brush.repeat', (repeat) => {
+      this.ui.brushRepeatInput.value = repeat
+    });
+
+    updateRepeat();
   }
 
   bindEraserButton() {
@@ -180,9 +193,9 @@ export default class ControlPanel {
 
     const playPauseIcon = document.getElementById("playPauseIcon");
     if (this.state.isPlaying) {
-      playPauseIcon.classList.replace("bx-play", "bx-pause");
+      playPauseIcon.setAttribute("href", "svg.svg#pause");
     } else {
-      playPauseIcon.classList.replace("bx-pause", "bx-play");
+      playPauseIcon.setAttribute("href", "svg.svg#play");
     }
   }
 
@@ -460,17 +473,6 @@ export default class ControlPanel {
       this.updateLayersList();
       this.canvasManager.updateCanvas();
     }
-  }
-
-  deleteAllLayers() {
-    while (this.layers.length > 1) {
-      this.layers.splice(this.state.currentLayerIndex, 1);
-      if (this.state.currentLayerIndex >= this.layers.length) {
-        this.state.currentLayerIndex = this.layers.length - 1;
-      }
-    }
-    this.updateLayersList();
-    this.canvasManager.updateCanvas();
   }
 
   save() {

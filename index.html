@@ -40,8 +40,8 @@
     </div>
 </div>
 
-<div class="main-container">
-    <div class="palette-container">
+<div class="row">
+    <div class="column">
         <div class="toolbar">
             <svg id="tutoButton" class="icon">
                 <use href="svg.svg#tuto"></use>
@@ -52,6 +52,8 @@
             <svg id="loadButton" class="icon">
                 <use href="svg.svg#open"></use>
             </svg>
+        </div>
+        <div class="toolbar">
             <svg id="brushButton" class="icon">
                 <use href="svg.svg#brush"></use>
             </svg>
@@ -76,25 +78,37 @@
                 <option value="triangle">Triangle</option>
                 <option value="segment">Segment</option>
             </select>
+            <input id="brushRepeatInput" class="icon" type="number" min="1" max="1000" value="10">
+        </div>
+        <div class="toolbar">
             <svg id="addLayerButton" class="icon">
                 <use href="svg.svg#layer-add"></use>
+            </svg>
+            <svg id="deleteLayerButton" class="icon">
+                <use href="svg.svg#delete-layer"></use>
             </svg>
             <svg id="moveButton" class="icon">
                 <use href="svg.svg#move"></use>
             </svg>
-            <img id="clearButton" src="icons/layer-erase.svg" alt="Logo" class="icon"/>
-            <img id="clearAllButton" src="icons/layers-erase.svg" alt="Logo" class="icon"/>
-            <svg id="deleteLayerButton" class="icon">
-                <use href="svg.svg#delete-layer"></use>
+            <svg id="clearButton" class="icon">
+                <use href="svg.svg#erase-layer"></use>
             </svg>
-            <button id="deleteAllLayersButton" title="Supprimer tout les calques"><i class='bx bxs-trash'></i></button>
-            <button id="playPauseButton"><i id="playPauseIcon" class='bx bx-play'></i></button>
-            <button id="testButton"><i id="testIcon" class='bx bxs-flask'></i></button>
-            <button id="addFaderButton" title="Ajouter un fader"><i id="faderIcon" class='bx bx-candles'></i>
-            </button>
+        </div>
+        <div class="toolbar">
+            <svg id="playPauseButton" class="icon">
+                <use id="playPauseIcon" href="svg.svg#play"></use>
+            </svg>
+            <svg id="testButton" class="icon">
+                <use href="svg.svg#execute"></use>
+            </svg>
+        </div>
+        <div class="toolbar">
+            <svg id="addFaderButton" class="icon">
+                <use href="svg.svg#fader"></use>
+            </svg>
         </div>
     </div>
-    <div class="palette-container">
+    <div class="column">
 
         <span>Layouts</span>
         <div class="palette-content">

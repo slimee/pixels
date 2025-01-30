@@ -4,10 +4,10 @@ export default class DrawState extends State {
   constructor(transformations) {
     const reactive = {
       brush: {
-        size: 15,
+        size: null,
         color: '#ff0000',
         shape: 'circle',
-        speed: 60,
+        repeat: null,
         tool: 'brush',
       },
       faders: [],
