@@ -44,6 +44,7 @@ export default class CanvasManager {
   }
 
   handleDrawInterval() {
+    console.log('draw interval');
     const x = this.state.mouse.x;
     const y = this.state.mouse.y;
 
@@ -62,6 +63,10 @@ export default class CanvasManager {
     } else if (this.state.brush.tool === 'continousBrush') {
       // Dessin continu avec les autres pinceaux
       this.state.drawingLayers.forEach(layer => layer.paint(x, y, this.state.brush));
+    } else {
+      // Pour les autres pinceaux, on dessine immédiatement au mousedown
+      this.state.drawingLayers.forEach(layer => layer.paint(x, y, this.state.brush));
+      this.updateCanvas();
     }
     this.updateCanvas();
   }

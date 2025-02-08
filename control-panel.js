@@ -155,6 +155,7 @@ export default class ControlPanel {
   }
 
   bindBrushRepeat() {
+    this.state.watch('brush.repeat');
     const updateRepeat = () => {
       this.state.brush.repeat = parseInt(this.ui.brushRepeatInput.value, 10);
     };

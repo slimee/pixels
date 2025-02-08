@@ -49,9 +49,9 @@ export default class TransformationManager {
     const faders = Object.keys(this.state.faders);
     const args = [...commands, ...helpers, ...layers, ...faders, 'isFrame', 'frame', 'frameTotal', 'width', 'height', 'brush', 'mouse'];
 
-    console.log('- - - - frame code - - - - -')
-    console.log('args:', args);
-    console.log('code:', this.state.frameCode);
+    // console.log('- - - - frame code - - - - -')
+    // console.log('args:', args);
+    // console.log('code:', this.state.frameCode);
 
     this.frameFunction = new Function(...args, `${this.state.frameCode}`);
   }
@@ -66,15 +66,15 @@ export default class TransformationManager {
 
 
   preparePixelCodeFunction() {
-    console.log('');
-    console.log(' - - - - update pixel code function - - - - ')
+    // console.log('');
+    // console.log(' - - - - update pixel code function - - - - ')
 
     const layerNames = this.state.layers.map(layer => layer.name);
     const preparedPixelCode = preparePixelFunction(this.state.pixelCode, layerNames);
 
-    console.log('layer names:', layerNames);
-    console.log('layer code before:', this.state.pixelCode);
-    console.log('pixel code transformed:', preparedPixelCode);
+    // console.log('layer names:', layerNames);
+    // console.log('layer code before:', this.state.pixelCode);
+    // console.log('pixel code transformed:', preparedPixelCode);
 
     const coords = ['x', 'y'];
     const helpers = Object.keys(this.helper);
@@ -85,7 +85,7 @@ export default class TransformationManager {
     const state = ['isFrame', 'frame', 'frameTotal', 'width', 'height', 'brush', 'mouse'];
     const argsNames = [...coords, ...helpers, ...layers, ...faders, ...inputCN, ...outputCN, ...state];
 
-    console.log('argsNames:', argsNames);
+    // console.log('argsNames:', argsNames);
 
     this.pixelFunction = new Function(...argsNames, `${preparedPixelCode}`);
   }

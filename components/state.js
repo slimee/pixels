@@ -36,7 +36,11 @@ export default class State {
 
   // Ajouter un écouteur
   on(propertyPath, callback) {
-    if (!this._isPathReactive(propertyPath) && !propertyPath.endsWith('.+') && !propertyPath.endsWith('.-')) {
+    if (
+      !this._isPathReactive(propertyPath) &&
+      !propertyPath.endsWith('.+') &&
+      !propertyPath.endsWith('.-')
+    ) {
       throw new Error(`The path "${propertyPath}" is not a reactive property.`);
     }
     if (!this._listeners[propertyPath]) {
@@ -48,14 +52,16 @@ export default class State {
   // Supprimer un écouteur
   off(propertyPath, callback) {
     if (this._listeners[propertyPath]) {
-      this._listeners[propertyPath] = this._listeners[propertyPath].filter(cb => cb !== callback);
+      this._listeners[propertyPath] = this._listeners[propertyPath].filter(
+        (cb) => cb !== callback
+      );
     }
   }
 
   // Émettre un événement
   _emit(propertyPath, value) {
     if (this._listeners[propertyPath]) {
-      this._listeners[propertyPath].forEach(callback => callback(value));
+      this._listeners[propertyPath].forEach((callback) => callback(value));
     }
   }
 
@@ -70,7 +76,7 @@ export default class State {
         return false; // Le chemin n'existe pas
       }
 
-      // Vérifier si la propriété est bien accessible
+      // Vérifier si la propriété est bien accessible (getter/setter)
       const descriptor = Object.getOwnPropertyDescriptor(current, key);
       if (!descriptor || typeof descriptor.get !== 'function' || typeof descriptor.set !== 'function') {
         return false; // La propriété n'est pas réactive
@@ -89,7 +95,9 @@ export default class State {
 
       // Vérification de conflit
       if (parent.hasOwnProperty(key)) {
-        throw new Error(`Conflict detected: The property "${key}" already exists as a non-reactive property.`);
+        throw new Error(
+          `Conflict detected: The property "${key}" already exists as a non-reactive property.`
+        );
       }
 
       if (typeof value === 'object' && value !== null) {
@@ -97,7 +105,7 @@ export default class State {
         let internalValue = {};
         this._initializeReactiveProperties(value, propertyPath, internalValue);
 
-        const instance = this; // Capturer une référence explicite à l'instance de State
+        const instance = this; // Capturer une référence à l'instance
         Object.defineProperty(parent, key, {
           get() {
             return internalValue;
@@ -112,9 +120,9 @@ export default class State {
           configurable: true,
         });
       } else {
-        // Propriété primitive : ajouter un getter et un setter
+        // Propriété primitive : ajouter getter et setter
         let internalValue = value;
-        const instance = this; // Capturer une référence explicite à l'instance de State
+        const instance = this; // Capturer le contexte
 
         Object.defineProperty(parent, key, {
           get() {
@@ -123,7 +131,7 @@ export default class State {
           set(newValue) {
             if (internalValue !== newValue) {
               internalValue = newValue;
-              instance._emit(propertyPath, newValue); // Émettre un événement dans le bon contexte
+              instance._emit(propertyPath, newValue);
             }
           },
           enumerable: true,
@@ -139,7 +147,9 @@ export default class State {
     for (const [key, value] of Object.entries(obj)) {
       // Vérification de conflit
       if (this.hasOwnProperty(key)) {
-        throw new Error(`Conflict detected: The property "${key}" already exists as a reactive property.`);
+        throw new Error(
+          `Conflict detected: The property "${key}" already exists as a reactive property.`
+        );
       }
       this[key] = value;
       this._nonReactiveProperties[key] = value;
@@ -153,7 +163,7 @@ export default class State {
     let current = this;
 
     // Naviguer jusqu'à l'objet parent
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (!current[key]) {
         current[key] = {};
       }
@@ -189,7 +199,7 @@ export default class State {
       } else {
         // Ajouter une propriété réactive simple
         let internalValue = value;
-        const instance = this; // Capturer explicitement le contexte de State
+        const instance = this; // Capturer le contexte
 
         Object.defineProperty(current, lastKey, {
           get() {
@@ -198,10 +208,10 @@ export default class State {
           set(newValue) {
             if (internalValue !== newValue) {
               internalValue = newValue;
-              instance._emit(propertyPath, newValue); // Émettre un événement dans le bon contexte
+              instance._emit(propertyPath, newValue);
             }
           },
-          enumerable: true, // Permet la sérialisation et les boucles
+          enumerable: true,
           configurable: true,
         });
       }
@@ -210,7 +220,7 @@ export default class State {
       current[lastKey] = value;
     }
 
-    // Émettre un événement d'ajout
+    // Émettre un événement d'ajout sur le parent
     this._emit(`${keys.join('.')}.+`, value);
   }
 
@@ -221,7 +231,7 @@ export default class State {
     let current = this;
 
     // Naviguer jusqu'à l'objet parent
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (!current[key]) {
         throw new Error(`The path "${propertyPath}" does not exist.`);
       }
@@ -242,5 +252,72 @@ export default class State {
     // Émettre un événement de suppression
     this._emit(propertyPath, undefined);
     this._emit(`${keys.join('.')}.-`, value);
+  }
+
+  /**
+   * Méthode watch
+   *
+   * Permet de logguer dans la console :
+   * - Le changement de valeur d'une propriété réactive,
+   * - L'ajout de la propriété (lorsqu'elle n'existait pas et qu'elle est ajoutée),
+   * - Sa suppression (lorsqu'elle est retirée).
+   *
+   * Exemple d'utilisation :
+   *   state.watch('user.name');
+   */
+  watch(propertyPath) {
+    // Décomposer le chemin
+    const parts = propertyPath.split('.');
+    const lastKey = parts.pop();
+    const parentPath = parts.join('.');
+
+    // Calcul de la référence vers l'objet parent
+    const getParent = () =>
+      parentPath
+        ? parentPath.split('.').reduce((acc, key) => (acc ? acc[key] : undefined), this)
+        : this;
+
+    // On mémorise l'existence initiale de la propriété
+    let previousExists = !!(getParent() && Object.prototype.hasOwnProperty.call(getParent(), lastKey));
+
+    // Surveiller les changements de valeur de la propriété (si elle est réactive)
+    try {
+      this.on(propertyPath, (newValue) => {
+        console.log(`[watch] La propriété "${propertyPath}" a changé de valeur :`, newValue);
+      });
+    } catch (e) {
+      console.warn(
+        `[watch] Impossible de surveiller les changements de valeur sur "${propertyPath}" : le chemin n'est pas réactif.`
+      );
+    }
+
+    // Événements d'ajout et de suppression :
+    // Les événements d'ajout/suppression sont émis sur l'objet parent avec le suffixe ".+" ou ".-"
+    const addEvent = parentPath ? `${parentPath}.+` : '.+';
+    const removeEvent = parentPath ? `${parentPath}.-` : '.-';
+
+    this.on(addEvent, () => {
+      const parent = getParent();
+      const nowExists = parent && Object.prototype.hasOwnProperty.call(parent, lastKey);
+      if (!previousExists && nowExists) {
+        console.log(
+          `[watch] Ajout de la propriété "${propertyPath}" avec la valeur :`,
+          parent[lastKey]
+        );
+        previousExists = true;
+      }
+    });
+
+    this.on(removeEvent, (oldValue) => {
+      const parent = getParent();
+      const nowExists = parent && Object.prototype.hasOwnProperty.call(parent, lastKey);
+      if (previousExists && !nowExists) {
+        console.log(
+          `[watch] Suppression de la propriété "${propertyPath}". Ancienne valeur :`,
+          oldValue
+        );
+        previousExists = false;
+      }
+    });
   }
 }
