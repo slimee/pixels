@@ -39,12 +39,11 @@ export default class CanvasManager {
       this.updateCanvas();
     }
 
-    this.drawInterval = setInterval(this.handleDrawInterval.bind(this), 1000 / this.state.brush.speed);
+    this.drawInterval = setInterval(this.handleDrawInterval.bind(this), 1000 / this.state.brush.repeat);
     document.addEventListener('mouseup', this.handleMouseUp);
   }
 
   handleDrawInterval() {
-    console.log('draw interval');
     const x = this.state.mouse.x;
     const y = this.state.mouse.y;
 
