@@ -5,6 +5,7 @@ export default class CanvasManager {
     this.helper = helper;
     this.canvasContext = this.ui.canvas.getContext('2d');
     this.drawInterval = null;
+    this.animationFrameId = null;
 
     this.initializeControls();
   }
@@ -31,15 +32,21 @@ export default class CanvasManager {
       this.updateCanvas();
       return;
     } else if (this.state.brush.tool === 'move') {
+      // Logic for move tool
     } else if (this.state.brush.shape === 'segment') {
       // nothing to do
     } else {
-      // Pour les autres pinceaux, on dessine immédiatement au mousedown
       this.state.drawingLayers.forEach(layer => layer.paint(x, y, this.state.brush));
       this.updateCanvas();
     }
 
-    this.drawInterval = setInterval(this.handleDrawInterval.bind(this), 1000 / this.state.brush.repeat);
+    const draw = () => {
+      if (!this.state.mouse.down) return;
+      this.handleDrawInterval();
+      this.animationFrameId = requestAnimationFrame(draw);
+    };
+
+    draw();
     document.addEventListener('mouseup', this.handleMouseUp);
   }
 
@@ -72,7 +79,7 @@ export default class CanvasManager {
 
   handleMouseUp = () => {
     this.state.mouse.down = null;
-    clearInterval(this.drawInterval);
+    cancelAnimationFrame(this.animationFrameId);
     document.removeEventListener('mouseup', this.handleMouseUp);
   }
 
