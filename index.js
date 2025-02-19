@@ -9,7 +9,7 @@ import TransformationHelper from "./transformation-helper.js";
 document.addEventListener('DOMContentLoaded', start);
 
 async function start() {
-  const transformations = await fetch('./external/data/transformations.json')
+  const transformations = await fetch('./_external/data/transformations.json')
     .then(response => response.json())
     .catch(error => console.error('Erreur lors du chargement des transformations:', error));
 
